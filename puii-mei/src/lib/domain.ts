@@ -212,29 +212,23 @@ export interface InterestSignup {
   products: import("./products").UpcomingProductId[];
 }
 
-export type ConfirmationState = "neexpediat" | "asteapta" | "confirmat" | "problema" | "expirat";
+export type ConfirmationState = "asteapta" | "confirmat" | "problema" | "expirat";
 
 /**
- * Confirmarea primirii unei precomenzi. Se creează la tipărirea etichetei
- * coletului, care are două coduri QR:
- *  - QR curier (courierToken) → curierul bifează „Livrat” în contul lui;
- *  - QR client (token) → clientul completează lista de verificare + 4 fotografii.
- * După trimitere nu se mai poate modifica și deschide evaluarea (note de satisfacție).
+ * Confirmarea primirii unei precomenzi, completată de client prin link unic,
+ * valabil un număr limitat de ore de la marcarea ca livrată. După trimitere nu
+ * se mai poate modifica. Include note interne de calitate.
  */
 export interface DeliveryConfirmation {
   /** = id-ul precomenzii (o singură confirmare pe precomandă). */
   id: string;
   token: string;
-  courierToken: string;
   preorderNumber: string;
   farmSlug: string | null;
   lotCode: string | null;
   birdsOrdered: number;
-  createdAt: string;
-  deliveredAt?: string;
-  deliveredBy?: "curier" | "admin";
-  /** Termenul de confirmare (setat la predare). */
-  expiresAt?: string;
+  deliveredAt: string;
+  expiresAt: string;
   sentByEmail: boolean;
   firstOpenedAt?: string;
   submittedAt?: string;
@@ -243,30 +237,12 @@ export interface DeliveryConfirmation {
     packagingOk: boolean;
     coldOk: boolean;
     appearanceOk: boolean;
-    /** true = toate verificările sunt în regulă. */
+    /** true = „confirm primirea în condițiile promise”. */
     conditionOk: boolean;
     problem: string;
-    /** Numărul de fotografii ale coletului salvate. */
-    photos: number;
-  };
-  /** Evaluarea (lista de satisfacție), deschisă după confirmare. */
-  ratingToken?: string;
-  ratingExpiresAt?: string;
-  ratingSubmittedAt?: string;
-  ratings?: {
-    farm: number;
-    courier: number;
-    platform: number;
+    ratingFarm: number;
+    ratingCourier: number;
+    ratingPlatform: number;
     comment: string;
   };
-}
-
-/** Fotografie a coletului, stocată ca base64 (JPEG comprimat în browser). */
-export interface ConfirmationPhoto {
-  /** `${confirmationId}-${index}` */
-  id: string;
-  confirmationId: string;
-  index: number;
-  mime: string;
-  data: string;
 }

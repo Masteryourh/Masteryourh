@@ -11,7 +11,6 @@ import { pgStore } from "./pg-store";
  */
 export interface DocumentStore {
   list<T>(collection: string): Promise<T[]>;
-  get<T extends { id: string }>(collection: string, id: string): Promise<T | null>;
   append<T extends { id: string }>(collection: string, item: T): Promise<T>;
   update<T extends { id: string }>(collection: string, id: string, patch: Partial<T>): Promise<T | null>;
 }
