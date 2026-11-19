@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { submitInterest, type InterestFormState } from "@/app/in-curand/actions";
+import { submitInterest, type InterestFormState } from "@/app/(site)/in-curand/actions";
 import { upcomingProducts } from "@/lib/products";
 import { romanianCounties } from "@/lib/validation/partner";
 import { Icon } from "@/components/ui/Icon";

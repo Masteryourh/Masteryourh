@@ -1,8 +1,13 @@
 import { ButtonLink } from "@/components/ui/Button";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { Container } from "@/components/ui/Container";
 
 export default function NotFound() {
   return (
+    <>
+    <Header />
+    <main id="continut" className="flex-1">
     <Container className="flex flex-col items-center py-28 text-center">
       <p className="font-display text-7xl font-semibold text-grain-500">404</p>
       <h1 className="mt-4 text-3xl font-semibold">Pagina nu a fost găsită</h1>
@@ -12,5 +17,8 @@ export default function NotFound() {
         <ButtonLink href="/trasabilitate" variant="secondary">Caută un lot</ButtonLink>
       </div>
     </Container>
+    </main>
+    <Footer />
+    </>
   );
 }
