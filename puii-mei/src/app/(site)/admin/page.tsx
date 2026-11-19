@@ -57,8 +57,9 @@ export default async function AdminPage() {
       )}
       {!emailEnabled() && (
         <p className="mt-4 rounded-2xl bg-cream-100 p-4 text-sm text-forest-900">
-          Emailurile automate nu sunt configurate. La marcarea „Livrată”, linkul de confirmare apare în tabel: trimite-l
-          clientului pe WhatsApp sau copiază-l. Clientul are {CONFIRMATION_WINDOW_HOURS} ore să confirme.
+          Emailurile automate nu sunt configurate. Clientul confirmă primirea scanând codul QR „Client” de pe eticheta
+          coletului; linkul îl poți trimite și pe WhatsApp din coloana „Confirmare primire”. Are {CONFIRMATION_WINDOW_HOURS}{" "}
+          ore după bifa „Livrat” a curierului.
         </p>
       )}
       {storageKind === "postgres" && (
@@ -128,6 +129,7 @@ export default async function AdminPage() {
                     origin={origin}
                     phone={p.customer.phone}
                     number={p.number}
+                    preorderId={p.id}
                   />
                 </td>
               </tr>
@@ -189,6 +191,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 const stateBadge: Record<ConfirmationState, string> = {
+  neexpediat: "bg-cream-200 text-forest-900",
   asteapta: "bg-grain-300/60 text-forest-900",
   confirmat: "bg-forest-100 text-forest-800",
   problema: "bg-red-100 text-red-800",
@@ -205,13 +208,20 @@ function ConfirmationCell({
   origin,
   phone,
   number,
+  preorderId,
 }: {
   confirmation?: import("@/lib/domain").DeliveryConfirmation;
   origin: string;
   phone: string;
   number: string;
+  preorderId: string;
 }) {
-  if (!confirmation) return <span className="text-xs text-muted">Se creează la „Livrată”</span>;
+  const label = (
+    <a href={`/admin/eticheta/${preorderId}`} className="rounded-lg px-2.5 py-1 text-xs font-semibold text-forest-800 ring-1 ring-forest-900/15 hover:bg-forest-50">
+      Etichetă QR
+    </a>
+  );
+  if (!confirmation) return <div className="space-y-1.5">{label}<p className="text-xs text-muted">Tipărește eticheta înainte de livrare</p></div>;
   const state = confirmationState(confirmation);
   const url = `${origin}/confirmare/${confirmation.token}`;
   return (
@@ -219,27 +229,34 @@ function ConfirmationCell({
       <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${stateBadge[state]}`}>
         {confirmationStateLabels[state]}
       </span>
-      {confirmation.answers && (
+      {confirmation.deliveredBy && <p className="text-xs text-muted">Bifat „Livrat” de {confirmation.deliveredBy}</p>}
+      {confirmation.ratings && (
         <p className="text-xs text-muted">
-          Note: gospodărie {confirmation.answers.ratingFarm}/5 · curier {confirmation.answers.ratingCourier}/5 · Puii mei{" "}
-          {confirmation.answers.ratingPlatform}/5
+          Note: gospodărie {confirmation.ratings.farm}/5 · curier {confirmation.ratings.courier}/5 · Puii mei{" "}
+          {confirmation.ratings.platform}/5
         </p>
       )}
-      {state === "asteapta" && (
-        <div className="flex flex-wrap gap-1.5">
-          <CopyLink url={url} />
-          <a
-            href={whatsappLink(phone, `Bună! Te rugăm să confirmi primirea comenzii ${number} în ${CONFIRMATION_WINDOW_HOURS} ore: ${url}`)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg bg-[#25D366]/15 px-2.5 py-1 text-xs font-semibold text-forest-900 ring-1 ring-[#25D366]/40"
-          >
-            WhatsApp
+      <div className="flex flex-wrap gap-1.5">
+        {label}
+        {confirmation.submittedAt && (
+          <a href={`/admin/confirmare/${preorderId}`} className="rounded-lg px-2.5 py-1 text-xs font-semibold text-forest-800 ring-1 ring-forest-900/15 hover:bg-forest-50">
+            Detalii și fotografii
           </a>
-          {confirmation.sentByEmail && <span className="text-xs text-muted">trimis pe email</span>}
-        </div>
-      )}
-      {!confirmation.firstOpenedAt && state === "asteapta" && <p className="text-xs text-muted">Nedeschis încă</p>}
+        )}
+        {state === "asteapta" && (
+          <>
+            <CopyLink url={url} />
+            <a
+              href={whatsappLink(phone, `Bună! Te rugăm să confirmi primirea comenzii ${number}: ${url}`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg bg-[#25D366]/15 px-2.5 py-1 text-xs font-semibold text-forest-900 ring-1 ring-[#25D366]/40"
+            >
+              WhatsApp
+            </a>
+          </>
+        )}
+      </div>
     </div>
   );
 }

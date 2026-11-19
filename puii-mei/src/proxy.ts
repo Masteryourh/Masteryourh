@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { adminEnabled, isValidAdminAuthorization } from "@/server/auth";
+import { adminEnabled, courierEnabled, isValidAdminAuthorization, isValidCourierAuthorization } from "@/server/auth";
 import { PREVIEW_COOKIE, isValidPreviewKey, maintenanceEnabled } from "@/server/site-mode";
 
 const OPEN_PATHS = new Set(["/in-constructie", "/acces", "/robots.txt", "/sitemap.xml"]);
@@ -19,8 +19,20 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Pagina curierului: HTTP Basic (curier sau admin), indiferent de modul site-ului.
+  if (pathname === "/curier" || pathname.startsWith("/curier/")) {
+    if (!courierEnabled() && !adminEnabled()) return new NextResponse("Not found", { status: 404 });
+    if (!isValidCourierAuthorization(request.headers.get("authorization"))) {
+      return new NextResponse("Autentificare necesară", {
+        status: 401,
+        headers: { "WWW-Authenticate": 'Basic realm="Puii mei curier", charset="UTF-8"' },
+      });
+    }
+    return NextResponse.next();
+  }
+
   // Modul „în construcție”.
-  if (!maintenanceEnabled() || OPEN_PATHS.has(pathname) || pathname.startsWith("/confirmare/")) {
+  if (!maintenanceEnabled() || OPEN_PATHS.has(pathname) || pathname.startsWith("/confirmare/") || pathname.startsWith("/evaluare/")) {
     return NextResponse.next();
   }
   if (isValidPreviewKey(request.cookies.get(PREVIEW_COOKIE)?.value)) return NextResponse.next();

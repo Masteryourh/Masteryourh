@@ -46,6 +46,9 @@ function withLock<R>(name: string, fn: () => Promise<R>): Promise<R> {
 
 export const jsonStore: DocumentStore = {
   list: readCollection,
+  async get<T extends { id: string }>(name: string, id: string) {
+    return (await readCollection<T>(name)).find((i) => i.id === id) ?? null;
+  },
   append<T extends { id: string }>(name: string, item: T) {
     return withLock(name, async () => {
       const items = await readCollection<T>(name);

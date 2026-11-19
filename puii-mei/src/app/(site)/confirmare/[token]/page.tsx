@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { Icon } from "@/components/ui/Icon";
 import { ConfirmationForm } from "@/components/forms/ConfirmationForm";
-import { CONFIRMATION_WINDOW_HOURS, confirmationState, ratingTargets } from "@/lib/confirmation";
+import { CONFIRMATION_WINDOW_HOURS, confirmationState, ratingState } from "@/lib/confirmation";
+import { ButtonLink } from "@/components/ui/Button";
 import { site } from "@/lib/site";
 import { confirmationRepository } from "@/server/repositories/confirmations";
 import { farmRepository } from "@/server/repositories/catalog";
@@ -63,12 +64,26 @@ export default async function ConfirmationPage({ params }: PageProps<"/confirmar
       </section>
 
       <Container className="max-w-3xl py-10 sm:py-14">
+        {state === "neexpediat" && (
+          <div className="rounded-3xl border border-forest-900/8 bg-white p-6 sm:p-8">
+            <h2 className="text-2xl font-semibold">Coletul nu a fost încă predat</h2>
+            <p className="mt-2 leading-relaxed text-muted">
+              Lista de verificare se deschide imediat ce curierul scanează codul lui de pe colet și confirmă predarea.
+              Reîncarcă pagina după predare.
+            </p>
+            <a href={`/confirmare/${token}`} className="mt-5 inline-block rounded-full bg-grain-400 px-6 py-3 font-semibold text-forest-900">
+              Reîncarcă pagina
+            </a>
+          </div>
+        )}
+
         {state === "asteapta" && (
           <>
             <p className="mb-8 rounded-2xl bg-forest-50 p-4 text-sm leading-relaxed text-forest-800">
-              Te rugăm să confirmi starea comenzii în {CONFIRMATION_WINDOW_HOURS} ore de la predare, până la{" "}
-              <strong>{dateTime.format(new Date(confirmation.expiresAt))}</strong>. O confirmare rapidă ne ajută să
-              rezolvăm imediat orice problemă. Poți închide pagina și reveni pe acest link până trimiți confirmarea.
+              Verifică pachetul la ridicare, bifează lista și fotografiază coletul. Confirmarea e deschisă{" "}
+              {CONFIRMATION_WINDOW_HOURS} ore de la predare, până la{" "}
+              <strong>{dateTime.format(new Date(confirmation.expiresAt!))}</strong>. O confirmare rapidă ne ajută să
+              rezolvăm imediat orice problemă. Poți reveni pe acest link până trimiți confirmarea.
             </p>
             <ConfirmationForm token={token} birdsOrdered={confirmation.birdsOrdered} />
           </>
@@ -84,20 +99,29 @@ export default async function ConfirmationPage({ params }: PageProps<"/confirmar
               Trimisă pe {dateTime.format(new Date(confirmation.submittedAt!))}. Confirmarea nu mai poate fi modificată.
             </p>
             <dl className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
-              <Row label="Pui primiți" value={String(confirmation.answers.birdsReceived)} />
+              <Row label="Pui primiți" value={`${confirmation.answers.birdsReceived} din ${confirmation.birdsOrdered}`} />
               <Row label="Ambalaj intact" value={yn(confirmation.answers.packagingOk)} />
-              <Row label="Reci la primire" value={yn(confirmation.answers.coldOk)} />
-              <Row label="Aspect și miros normale" value={yn(confirmation.answers.appearanceOk)} />
+              <Row label="Carne rece" value={yn(confirmation.answers.coldOk)} />
+              <Row label="Aspect și miros în regulă" value={yn(confirmation.answers.appearanceOk)} />
+              <Row label="Fotografii colet" value={String(confirmation.answers.photos)} />
               <Row
                 label="Concluzie"
                 value={confirmation.answers.conditionOk ? "Primit în condițiile promise" : "Problemă semnalată"}
               />
-              {ratingTargets.map((t) => (
-                <Row key={t.key} label={`Nota pentru ${t.label}`} value={`${confirmation.answers![t.key]} din 5`} />
-              ))}
             </dl>
             {confirmation.answers.problem && (
               <p className="mt-5 rounded-2xl bg-red-50 p-4 text-sm text-red-900">{confirmation.answers.problem}</p>
+            )}
+            {ratingState(confirmation) === "asteapta" && (
+              <div className="mt-6 rounded-2xl bg-forest-900 p-5 text-cream-50">
+                <p className="font-semibold">Mai ai un minut?</p>
+                <p className="mt-1 text-sm text-cream-100/80">
+                  Notează gospodăria, curierul și Puii mei. Ne ajută să vedem unde putem face mai bine.
+                </p>
+                <ButtonLink href={`/evaluare/${confirmation.ratingToken}`} className="mt-4">
+                  Notează experiența
+                </ButtonLink>
+              </div>
             )}
             {!confirmation.answers.conditionOk && (
               <p className="mt-5 text-sm text-muted">
@@ -113,7 +137,7 @@ export default async function ConfirmationPage({ params }: PageProps<"/confirmar
             <h2 className="text-2xl font-semibold">Termenul de confirmare a expirat</h2>
             <p className="mt-2 leading-relaxed text-muted">
               Linkul a fost valabil {CONFIRMATION_WINDOW_HOURS} ore de la predarea comenzii, până la{" "}
-              {dateTime.format(new Date(confirmation.expiresAt))}. Dacă ai o problemă cu comanda, scrie-ne la{" "}
+              {dateTime.format(new Date(confirmation.expiresAt!))}. Dacă ai o problemă cu comanda, scrie-ne la{" "}
               <a href={`mailto:${site.company.email}`} className="font-semibold text-forest-700 underline">{site.company.email}</a>{" "}
               sau sună-ne la {site.company.phone}.
             </p>

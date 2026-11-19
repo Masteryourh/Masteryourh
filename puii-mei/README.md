@@ -29,22 +29,31 @@ npm run build && npm start   # producție
 | `/admin` | Precomenzi (schimbare status), loturi, mesaje – protejat cu Basic Auth |
 | `/admin/parteneri` | Solicitări de la gospodării și investitori: status, note interne; gospodăriile aprobate devin profiluri publice |
 | `/admin/gospodarii` | Gospodării: editare (cele create din admin), ascundere/afișare pe site |
-| `/admin/calitate` | Confirmări de primire: stări, note medii (gospodărie, curier, Puii mei), probleme semnalate |
-| `/confirmare/[cod]` | Confirmarea primirii, completată de client prin link unic (12 ore, nu se poate modifica după trimitere) |
+| `/admin/calitate` | Confirmări de primire și satisfacție: note medii (gospodărie, curier, Puii mei), probleme semnalate |
+| `/curier`, `/curier/livrare/[cod]` | Livrările curierului; pagina deschisă din QR-ul „Curier” de pe colet |
+| `/confirmare/[cod]`, `/evaluare/[cod]` | Confirmarea primirii (QR „Client”, cu 4 fotografii) și lista de satisfacție |
 | `/admin/interes` | Cerere pe județe pentru produsele noi, comparată cu gospodăriile care le pot produce |
 | `/api/loturi/[cod]` | API JSON de trasabilitate |
 
 Parametri utili: `/precomanda?lot=PM-2612-A03&pui=12`, `/contact?subiect=partener`.
 
-## Confirmarea primirii
+## Livrare și confirmarea primirii
 
-Când o precomandă e marcată **Livrată** în admin, se creează un link unic `/confirmare/<cod>`, valabil 12 ore
-(`CONFIRMATION_WINDOW_HOURS` în `src/lib/confirmation.ts`). Clientul confirmă starea comenzii și dă note interne
-gospodăriei, curierului și platformei. După trimitere, confirmarea nu mai poate fi modificată.
+1. **Etichetă** – în admin, la fiecare precomandă, „Etichetă QR” deschide o etichetă de 15 × 10 cm cu două coduri QR,
+   de tipărit și lipit pe colet.
+2. **QR „Curier”** → `/curier/livrare/<cod>` (cont de curier: `COURIER_USER` / `COURIER_PASSWORD`; adminul are și el
+   acces). Curierul apasă „Livrat”: precomanda devine livrată, pornește termenul de confirmare
+   (`CONFIRMATION_WINDOW_HOURS`, 12 ore) și clientul primește linkul și pe email (dacă e configurat Resend).
+   Lista tuturor livrărilor: `/curier`.
+3. **QR „Client”** → `/confirmare/<cod>`: lista de verificare (număr de pui, ambalaj intact, carne rece, aspect și
+   miros) + 4 fotografii ale coletului (comprimate în browser). Dacă ceva nu e în regulă, descrierea problemei e
+   obligatorie. După trimitere nu se mai poate modifica.
+4. **Satisfacție** – trimiterea deschide imediat `/evaluare/<cod>` (mulțumire + note 1–5 pentru gospodărie, curier și
+   Puii mei, valabil `RATING_WINDOW_DAYS`).
+5. **Admin** – starea fiecărei confirmări în tabelul de precomenzi, detalii și fotografii la `/admin/confirmare/<id>`,
+   mediile și problemele la `/admin/calitate`.
 
-- Cu `RESEND_API_KEY` și `EMAIL_FROM` setate, linkul se trimite automat pe email.
-- Fără ele, linkul apare în admin (copiere / WhatsApp).
-- Pentru ca nota să ajungă la gospodăria corectă, alocă lotul precomenzii în admin înainte de livrare.
+Pentru ca nota să ajungă la gospodăria corectă, alocă lotul precomenzii înainte de a tipări eticheta.
 
 ## Mod „în construcție”
 

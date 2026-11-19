@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Calitate", robots: { index: false, f
 type RatingKey = (typeof ratingTargets)[number]["key"];
 
 function average(items: DeliveryConfirmation[], key: RatingKey) {
-  const values = items.flatMap((c) => (c.answers ? [c.answers[key]] : []));
+  const values = items.flatMap((c) => (c.ratings ? [c.ratings[key]] : []));
   return values.length ? { avg: values.reduce((a, b) => a + b, 0) / values.length, n: values.length } : null;
 }
 
@@ -21,20 +21,20 @@ const fmt = (n: number) => n.toLocaleString("ro-RO", { minimumFractionDigits: 1,
 export default async function QualityPage() {
   const [all, farms] = await Promise.all([confirmationRepository.list(), farmRepository.listAll()]);
   const farmName = new Map(farms.map((f) => [f.slug, `${f.name}, ${f.village}`]));
-  const submitted = all.filter((c) => c.submittedAt);
+  const rated = all.filter((c) => c.ratings);
   const counts = all.reduce(
     (acc, c) => ({ ...acc, [confirmationState(c)]: (acc[confirmationState(c)] ?? 0) + 1 }),
     {} as Partial<Record<ConfirmationState, number>>,
   );
   const problems = all.filter((c) => confirmationState(c) === "problema");
-  const farmSlugs = [...new Set(submitted.map((c) => c.farmSlug ?? "—"))];
+  const farmSlugs = [...new Set(rated.map((c) => c.farmSlug ?? "—"))];
 
   return (
     <Container className="py-8">
       <h1 className="text-3xl font-semibold">Calitate</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted">
-        Din confirmările de primire completate de clienți. Notele sunt interne și arată unde apar abateri: la gospodărie,
-        la curier sau la platformă.
+        Din confirmările de primire (pasul 1) și evaluările trimise după ele (pasul 2). Notele sunt interne și arată unde
+        apar abateri: la gospodărie, la curier sau la platformă.
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -52,18 +52,18 @@ export default async function QualityPage() {
           <thead className="bg-cream-100 text-xs uppercase tracking-wider text-muted">
             <tr>
               <th className="px-4 py-3 font-semibold">Gospodărie</th>
-              <th className="px-4 py-3 font-semibold">Confirmări</th>
+              <th className="px-4 py-3 font-semibold">Evaluări</th>
               {ratingTargets.map((t) => (
                 <th key={t.key} className="px-4 py-3 font-semibold">{t.label}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-forest-900/5">
-            {submitted.length === 0 && (
-              <tr><td colSpan={2 + ratingTargets.length} className="px-4 py-6 text-center text-muted">Nicio confirmare trimisă încă.</td></tr>
+            {rated.length === 0 && (
+              <tr><td colSpan={2 + ratingTargets.length} className="px-4 py-6 text-center text-muted">Nicio evaluare trimisă încă.</td></tr>
             )}
             {farmSlugs.map((slug) => {
-              const items = submitted.filter((c) => (c.farmSlug ?? "—") === slug);
+              const items = rated.filter((c) => (c.farmSlug ?? "—") === slug);
               return (
                 <tr key={slug}>
                   <td className="px-4 py-3 font-medium">{slug === "—" ? "Fără lot alocat" : farmName.get(slug) ?? slug}</td>
@@ -79,12 +79,12 @@ export default async function QualityPage() {
                 </tr>
               );
             })}
-            {submitted.length > 0 && (
+            {rated.length > 0 && (
               <tr className="bg-cream-50 font-semibold">
                 <td className="px-4 py-3">Total</td>
-                <td className="px-4 py-3">{submitted.length}</td>
+                <td className="px-4 py-3">{rated.length}</td>
                 {ratingTargets.map((t) => {
-                  const a = average(submitted, t.key);
+                  const a = average(rated, t.key);
                   return <td key={t.key} className="px-4 py-3">{a ? `${fmt(a.avg)} / 5` : "—"}</td>;
                 })}
               </tr>
@@ -100,16 +100,16 @@ export default async function QualityPage() {
         {problems.map((c) => (
           <li key={c.id} className="rounded-2xl bg-white p-5 text-sm ring-1 ring-red-200">
             <div className="flex flex-wrap justify-between gap-2">
-              <span className="font-mono font-semibold">{c.preorderNumber}</span>
+              <a href={`/admin/confirmare/${c.id}`} className="font-mono font-semibold underline">{c.preorderNumber}</a>
               <span className="text-muted">{formatDate(c.submittedAt!)}</span>
             </div>
             <p className="mt-1 text-muted">
               {c.farmSlug ? farmName.get(c.farmSlug) : "Fără lot alocat"} · {c.answers!.birdsReceived} din {c.birdsOrdered} pui ·
               ambalaj {c.answers!.packagingOk ? "ok" : "deteriorat"} · {c.answers!.coldOk ? "rece" : "nu era rece"} · aspect{" "}
-              {c.answers!.appearanceOk ? "ok" : "neconform"}
+              {c.answers!.appearanceOk ? "ok" : "neconform"} · {c.answers!.photos} fotografii
             </p>
             <p className="mt-3 whitespace-pre-line rounded-xl bg-red-50 p-3 text-red-900">{c.answers!.problem}</p>
-            {c.answers!.comment && <p className="mt-2 italic text-muted">„{c.answers!.comment}”</p>}
+            {c.ratings?.comment && <p className="mt-2 italic text-muted">„{c.ratings.comment}”</p>}
           </li>
         ))}
       </ul>
