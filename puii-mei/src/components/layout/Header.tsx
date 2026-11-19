@@ -10,7 +10,7 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-forest-900/5 bg-cream-50/85 backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between gap-4 sm:h-20">
         <Logo />
-        <nav aria-label="Navigare principală" className="hidden items-center gap-1 lg:flex">
+        <nav aria-label="Navigare principală" className="hidden items-center gap-0.5 xl:flex">
           {mainNav.map((item) => (
             <NavLink key={item.href} href={item.href}>
               {item.label}

@@ -30,7 +30,7 @@ export function MobileNav() {
   }, [open]);
 
   return (
-    <div className="lg:hidden">
+    <div className="xl:hidden">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -45,7 +45,7 @@ export function MobileNav() {
       </button>
       {open &&
         createPortal(
-        <div id="meniu-mobil" className="fixed inset-x-0 top-16 bottom-0 z-50 overflow-y-auto bg-cream-50 lg:hidden sm:top-20">
+        <div id="meniu-mobil" className="fixed inset-x-0 top-16 bottom-0 z-50 overflow-y-auto bg-cream-50 xl:hidden sm:top-20">
           <nav aria-label="Navigare mobilă" className="flex flex-col gap-1 px-4 py-6">
             {mainNav.map((item) => (
               <NavLink key={item.href} href={item.href} className="px-4 py-3 text-lg">

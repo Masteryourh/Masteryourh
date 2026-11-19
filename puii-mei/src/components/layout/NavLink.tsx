@@ -23,7 +23,7 @@ export function NavLink({
       onClick={onClick}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
+        "whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition-colors",
         active ? "bg-forest-50 text-forest-800" : "text-ink/75 hover:bg-forest-50 hover:text-forest-800",
         className,
       )}
