@@ -7,7 +7,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/loturi/[cod]">)
   const { cod } = await ctx.params;
   const lot = await lotRepository.byCode(cod);
   if (!lot) return NextResponse.json({ error: "Lotul nu a fost găsit." }, { status: 404 });
-  const farm = await farmRepository.bySlug(lot.farmSlug);
+  const farm = await farmRepository.bySlug(lot.farmSlug, { includeInactive: true });
   return NextResponse.json({
     code: lot.code,
     status: lotStatus(lot),

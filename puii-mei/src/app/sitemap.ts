@@ -4,7 +4,7 @@ import { farmRepository, lotRepository } from "@/server/repositories/catalog";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [farms, lots] = await Promise.all([farmRepository.list(), lotRepository.list()]);
-  const staticRoutes = ["", "/precomanda", "/cum-functioneaza", "/gospodarii", "/trasabilitate", "/despre-noi", "/contact", "/confidentialitate"];
+  const staticRoutes = ["", "/precomanda", "/cum-functioneaza", "/gospodarii", "/trasabilitate", "/despre-noi", "/contact", "/devino-partener", "/confidentialitate"];
   return [
     ...staticRoutes.map((r) => ({
       url: `${site.url}${r}`,

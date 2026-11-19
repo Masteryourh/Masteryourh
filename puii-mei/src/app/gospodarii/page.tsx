@@ -45,7 +45,7 @@ export default async function FarmsPage() {
               Îți asigurăm cererea, puii de o zi, furajele și sprijinul tehnic. Tu crești puii după protocolul Puii mei.
             </p>
           </div>
-          <ButtonLink href="/contact?subiect=partener" variant="secondary" className="mt-6 shrink-0 sm:mt-0">
+          <ButtonLink href="/devino-partener" variant="secondary" className="mt-6 shrink-0 sm:mt-0">
             Aplică pentru parteneriat
           </ButtonLink>
         </div>

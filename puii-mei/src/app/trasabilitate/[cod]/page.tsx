@@ -40,7 +40,7 @@ export default async function LotPage({ params }: PageProps<"/trasabilitate/[cod
   const { cod } = await params;
   const lot = await lotRepository.byCode(decodeURIComponent(cod));
   if (!lot) notFound();
-  const farm = await farmRepository.bySlug(lot.farmSlug);
+  const farm = await farmRepository.bySlug(lot.farmSlug, { includeInactive: true });
   const status = lotStatus(lot);
   const day = lotDay(lot);
   const progress = growthProgress(lot);

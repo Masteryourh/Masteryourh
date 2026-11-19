@@ -26,3 +26,10 @@ function safeEqual(a: string, b: string) {
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
+
+/** Verificare în server actions (pe lângă proxy). Aruncă eroare dacă nu e admin. */
+export async function requireAdmin() {
+  const { headers } = await import("next/headers");
+  const h = await headers();
+  if (!isValidAdminAuthorization(h.get("authorization"))) throw new Error("Neautorizat");
+}

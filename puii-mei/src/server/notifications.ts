@@ -1,5 +1,5 @@
 import "server-only";
-import type { ContactMessage, Preorder } from "@/lib/domain";
+import type { ContactMessage, FarmApplication, Preorder } from "@/lib/domain";
 
 /**
  * Punct unic pentru notificări (email / SMS). În prima versiune doar
@@ -12,4 +12,8 @@ export async function notifyNewPreorder(p: Preorder) {
 
 export async function notifyNewContactMessage(m: ContactMessage) {
   console.info(`[puii-mei] Mesaj nou de contact de la ${m.name}: ${m.subject}`);
+}
+
+export async function notifyNewFarmApplication(a: FarmApplication) {
+  console.info(`[puii-mei] Solicitare parteneriat: ${a.name}, ${a.village} (${a.county}), ~${a.capacity} pui/lot`);
 }

@@ -27,7 +27,7 @@ export default async function AdminPage() {
     preorderRepository.list(),
     contactRepository.list(),
     lotRepository.list(),
-    farmRepository.list(),
+    farmRepository.listAll(),
     zoneRepository.listActive(),
   ]);
   const farmName = new Map(farms.map((f) => [f.slug, f.name]));
@@ -37,9 +37,8 @@ export default async function AdminPage() {
   const totalValue = active.reduce((s, p) => s + p.estimate.total, 0);
 
   return (
-    <Container className="py-10">
-      <h1 className="text-3xl font-semibold">Panou de administrare</h1>
-      <p className="mt-1 text-sm text-muted">Versiune inițială: precomenzi, mesaje și loturi.</p>
+    <Container className="py-8">
+      <h1 className="text-3xl font-semibold">Precomenzi și mesaje</h1>
       {storageKind === "temporar" && (
         <p role="alert" className="mt-6 rounded-2xl bg-grain-300/40 p-4 text-sm text-forest-900">
           <strong>Stocare temporară.</strong> Precomenzile se păstrează doar în memoria temporară a serverului și se pot
