@@ -9,7 +9,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata: Metadata = pageMetadata({
   title: "Precomandă pui crescuți la comandă",
   description:
-    "Alege câți pui dorești, lotul și zona de livrare. Vezi valoarea estimativă și plasează precomanda – fără plată online.",
+    "Alege câți pui dorești, lotul și zona de livrare. Vezi valoarea estimativă și hrana de plătit în avans, apoi plasează precomanda.",
   path: "/precomanda",
 });
 
@@ -36,7 +36,7 @@ export default async function PreorderPage({ searchParams }: PageProps<"/precoma
       <PageHeader
         eyebrow="Precomandă"
         title="Rezervă-ți puii din următorul lot"
-        intro="Completezi în 2 minute. Nu plătești nimic online – te sunăm pentru confirmare, iar plata se face la livrare, după greutatea reală."
+        intro="Completezi în 2 minute. Te sunăm pentru confirmare. Hrana puilor (aproximativ 6 kg de furaj pe pui) se plătește în avans, direct în contul gospodăriei; restul, la livrare, după greutatea reală."
       />
       <Container className="py-12 sm:py-16">
         <PreorderForm zones={zones} lots={lots} initialLot={lot} initialBirds={birdsParam >= 2 && birdsParam <= 100 ? birdsParam : undefined} />

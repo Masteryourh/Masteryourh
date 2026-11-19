@@ -30,7 +30,7 @@ const pillars: { icon: IconName; title: string; text: string }[] = [
   {
     icon: "shield",
     title: "Trasabilitate completă",
-    text: "Fiecare lot are un cod unic. Știi unde au crescut puii, cu ce au fost hrăniți și unde au fost procesați.",
+    text: "Fiecare lot are un cod unic. Știi unde au crescut puii, cu ce au fost hrăniți și unde au fost sacrificați.",
   },
 ];
 
@@ -66,7 +66,7 @@ export default async function HomePage() {
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
               Comanzi în avans, noi organizăm creșterea și livrarea. Pui de carne crescuți fără grabă în gospodării
-              locale partenere, procesați autorizat și livrați proaspăt.
+              locale partenere, sacrificați tradițional în gospodărie și livrați proaspăt.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href="/precomanda" size="lg">

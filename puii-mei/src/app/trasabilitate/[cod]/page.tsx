@@ -105,7 +105,7 @@ export default async function LotPage({ params }: PageProps<"/trasabilitate/[cod
               <Item label="Disponibilitate estimată" value={formatDate(availabilityDate(lot))} highlight />
               <Item label="Tip pasăre" value={lot.breed} />
               <Item label="Furajare" value={lot.feed} />
-              <Item label="Procesare" value={lot.processor} />
+              <Item label="Sacrificare" value={lot.processor} />
               <Item
                 label="Mărime lot"
                 value={`${lot.totalBirds} pui${status === "precomenzi-deschise" ? ` · ${availableBirds(lot)} locuri libere` : ""}`}

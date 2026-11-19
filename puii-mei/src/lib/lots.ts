@@ -13,7 +13,7 @@ export function lotStages(lot: Lot): LotStageDefinition[] {
     {
       key: "precomenzi",
       label: "Precomenzi",
-      description: "Clienții rezervă puii din lot. Producția se planifică pe baza cererii.",
+      description: "Clienții rezervă puii din lot și plătesc în avans hrana, direct gospodăriei. Producția se planifică pe baza cererii.",
       startDay: -PREORDER_WINDOW_DAYS,
     },
     {
@@ -36,8 +36,8 @@ export function lotStages(lot: Lot): LotStageDefinition[] {
     },
     {
       key: "procesare",
-      label: "Procesare autorizată",
-      description: "Sacrificare și ambalare într-o unitate autorizată sanitar-veterinar.",
+      label: "Sacrificare tradițională",
+      description: "Puii sunt sacrificați tradițional, în gospodăria în care au crescut, cu respectarea normelor sanitar-veterinare.",
       startDay: lot.growthDays,
     },
     {
@@ -89,7 +89,7 @@ export function lotStatus(lot: Lot, now = new Date()): LotStatus {
 export const statusLabels: Record<LotStatus, string> = {
   "precomenzi-deschise": "Precomenzi deschise",
   "in-crestere": "În creștere",
-  "in-procesare": "În procesare",
+  "in-procesare": "La sacrificare",
   disponibil: "Disponibil pentru livrare",
   livrat: "Livrat",
 };
