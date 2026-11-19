@@ -54,11 +54,18 @@ prisma/schema.prisma   schema completă pentru PostgreSQL: utilizatori, gospodă
 
 **Statusul loturilor** (precomenzi deschise → în creștere → procesare → disponibil → livrat) se calculează automat din data de început și durata creșterii; paginile se regenerează la fiecare oră.
 
-**Precomenzile** sunt validate pe server (Zod), verificate față de locurile libere din lot și salvate în `.data/preorders.json` (ignorat de git). Nu există plăți online – intenționat, până la definirea fluxului comercial.
+**Precomenzile** sunt validate pe server (Zod) și verificate față de locurile libere din lot. Nu există plăți online – intenționat, până la definirea fluxului comercial.
+
+**Stocarea datelor** (`src/server/db/store.ts`):
+- cu `DATABASE_URL` (sau `POSTGRES_URL`) → PostgreSQL, permanent; tabelul se creează automat;
+- fără bază de date, local → `.data/*.json` (ignorat de git);
+- fără bază de date, pe Vercel → `/tmp` (temporar; panoul admin afișează un avertisment).
+
+Pe Vercel: proiect → **Storage** → **Create Database** → **Neon (Postgres)** → conectează la proiect, apoi Redeploy.
 
 ## Pașii următori recomandați
 
-1. Bază de date: activează `prisma/schema.prisma` și implementează repository-urile cu Prisma.
+1. Bază de date relațională completă: activează `prisma/schema.prisma` (loturi, gospodării, livrări în tabele proprii).
 2. Notificări: email de confirmare către client și alertă internă (`src/server/notifications.ts`).
 3. Conturi clienți (Auth.js) și înlocuirea Basic Auth din admin.
 4. Admin: CRUD gospodării/loturi, alocarea precomenzilor pe loturi, jurnal de creștere, planificare livrări.

@@ -1,6 +1,7 @@
 import "server-only";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import type { DocumentStore } from "./store";
 
 /**
  * Stocare minimală pe disc (JSON) pentru prima versiune.
@@ -10,7 +11,10 @@ import path from "node:path";
  * pe baza de date (schema este pregătită în `prisma/schema.prisma`) – restul
  * aplicației nu trebuie modificat.
  */
-const DATA_DIR = process.env.PUII_MEI_DATA_DIR ?? path.join(process.cwd(), ".data");
+// Pe Vercel sistemul de fișiere e doar-citire, cu excepția /tmp (temporar).
+const DATA_DIR =
+  process.env.PUII_MEI_DATA_DIR ||
+  (process.env.VERCEL ? "/tmp/puii-mei" : path.join(process.cwd(), ".data"));
 
 const locks = new Map<string, Promise<unknown>>();
 
@@ -40,9 +44,9 @@ function withLock<R>(name: string, fn: () => Promise<R>): Promise<R> {
   return next;
 }
 
-export const jsonStore = {
+export const jsonStore: DocumentStore = {
   list: readCollection,
-  append<T>(name: string, item: T) {
+  append<T extends { id: string }>(name: string, item: T) {
     return withLock(name, async () => {
       const items = await readCollection<T>(name);
       items.push(item);
