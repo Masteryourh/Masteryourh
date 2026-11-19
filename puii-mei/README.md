@@ -53,7 +53,7 @@ Ascunde site-ul de public până la lansare. Se activează din variabilele de me
 src/
   app/(site)/          paginile publice (cu meniu și footer) și server actions
   app/in-constructie/  pagina afișată în modul „în construcție”
-  app/                 layout rădăcină, sitemap, robots, /acces (precomanda/actions.ts, contact/actions.ts, admin/actions.ts)
+  app/                 layout rădăcină, sitemap, robots, /acces
   components/          layout, ui, sections, forms, farms, lots (componente reutilizabile)
   data/                date pilot: gospodării, loturi, zone, pași, FAQ
   lib/
