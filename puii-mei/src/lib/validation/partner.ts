@@ -33,6 +33,10 @@ export const partnerApplicationSchema = z.object({
     .max(80, "Verifică numărul de ani."),
   hasShelter: checkbox,
   hasOutdoorArea: checkbox,
+  canTurkeys: checkbox,
+  canDucks: checkbox,
+  canPheasants: checkbox,
+  hasGreenhouse: checkbox,
   dsvStatus: z.enum(["inregistrat", "in-curs", "neinregistrat"], { message: "Alege situația înregistrării la DSV." }),
   message: z.string().trim().max(1500, "Mesajul poate avea maximum 1500 de caractere.").default(""),
   termsConsent: checkbox.refine((v) => v, { message: "Este necesar acordul pentru prelucrarea datelor." }),
@@ -92,5 +96,24 @@ export const investorApplicationSchema = z
     }
     if (!d.interestLots && !d.interestInfrastructure && !d.interestExpansion) {
       ctx.addIssue({ code: "custom", path: ["interests"], message: "Alege cel puțin un domeniu de interes." });
+    }
+  });
+
+export const interestSchema = z
+  .object({
+    name: nameSchema,
+    email: emailSchema,
+    phone: z.string().trim().max(20).default(""),
+    county: z.enum(romanianCounties, { message: "Alege județul." }),
+    curcani: checkbox,
+    rate: checkbox,
+    fazani: checkbox,
+    "legume-sera": checkbox,
+    termsConsent: checkbox.refine((v) => v, { message: "Este necesar acordul pentru prelucrarea datelor." }),
+    website: z.string().max(0).optional().or(z.literal("")),
+  })
+  .superRefine((d, ctx) => {
+    if (!d.curcani && !d.rate && !d.fazani && !d["legume-sera"]) {
+      ctx.addIssue({ code: "custom", path: ["products"], message: "Alege cel puțin un produs." });
     }
   });

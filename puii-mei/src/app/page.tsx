@@ -6,6 +6,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Steps } from "@/components/sections/Steps";
 import { Faq } from "@/components/sections/Faq";
 import { CtaBand } from "@/components/sections/CtaBand";
+import { UpcomingProductGrid } from "@/components/sections/UpcomingProducts";
 import { FarmCard } from "@/components/farms/FarmCard";
 import { LotCard } from "@/components/lots/LotCard";
 import { LotLookup } from "@/components/lots/LotLookup";
@@ -224,8 +225,27 @@ export default async function HomePage() {
         </Container>
       </section>
 
+      {/* ÎN CURÂND */}
+      <section className="bg-cream-100 py-20 sm:py-28">
+        <Container>
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <SectionHeading
+              eyebrow="În curând"
+              title="Mai mult decât pui"
+              intro="Urmează curcani, rațe, fazani și legume din seră. Ce ajunge în zona ta depinde de gospodăriile partenere din regiune."
+            />
+            <ButtonLink href="/in-curand" variant="secondary">
+              Anunță-mă când ajung în zona mea
+            </ButtonLink>
+          </div>
+          <div className="mt-12">
+            <UpcomingProductGrid />
+          </div>
+        </Container>
+      </section>
+
       {/* FAQ */}
-      <section className="pb-8">
+      <section className="pt-20 pb-8 sm:pt-28">
         <Container className="grid gap-10 lg:grid-cols-[1fr_1.4fr]">
           <SectionHeading
             eyebrow="Întrebări frecvente"

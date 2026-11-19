@@ -25,9 +25,11 @@ npm run build && npm start   # producție
 | `/trasabilitate`, `/trasabilitate/[cod]` | Căutare după cod lot, etape, status, dată estimată |
 | `/despre-noi`, `/contact`, `/confidentialitate` | Misiune, formular contact, GDPR |
 | `/devino-partener` | Aplicare ca gospodărie parteneră sau ca investitor (`#gospodarie` / `#investitor`) |
+| `/in-curand` | Produse în curând (curcani, rațe, fazani, legume din seră) + formular „Anunță-mă” |
 | `/admin` | Precomenzi (schimbare status), loturi, mesaje – protejat cu Basic Auth |
 | `/admin/parteneri` | Solicitări de la gospodării și investitori: status, note interne; gospodăriile aprobate devin profiluri publice |
 | `/admin/gospodarii` | Gospodării: editare (cele create din admin), ascundere/afișare pe site |
+| `/admin/interes` | Cerere pe județe pentru produsele noi, comparată cu gospodăriile care le pot produce |
 | `/api/loturi/[cod]` | API JSON de trasabilitate |
 
 Parametri utili: `/precomanda?lot=PM-2612-A03&pui=12`, `/contact?subiect=partener`.

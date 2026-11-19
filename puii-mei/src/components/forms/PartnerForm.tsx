@@ -92,6 +92,15 @@ export function PartnerForm() {
             <Checkbox id="hasShelter" defaultChecked={v.hasShelter === "on"}>Adăpost pentru păsări (hală, grajd amenajat, șopron închis)</Checkbox>
             <Checkbox id="hasOutdoorArea" defaultChecked={v.hasOutdoorArea === "on"}>Padoc sau teren unde puii pot ieși afară</Checkbox>
           </div>
+          <div className="space-y-3 sm:col-span-2">
+            <p className="text-sm font-semibold text-forest-900">
+              Ai putea produce și altceva? <span className="font-normal text-muted">(pentru etapele următoare)</span>
+            </p>
+            <Checkbox id="canTurkeys" defaultChecked={v.canTurkeys === "on"}>Curcani</Checkbox>
+            <Checkbox id="canDucks" defaultChecked={v.canDucks === "on"}>Rațe</Checkbox>
+            <Checkbox id="canPheasants" defaultChecked={v.canPheasants === "on"}>Fazani</Checkbox>
+            <Checkbox id="hasGreenhouse" defaultChecked={v.hasGreenhouse === "on"}>Am seră (legume)</Checkbox>
+          </div>
           <Field id="message" label="Spune-ne mai multe" error={errors.message} className="sm:col-span-2">
             <textarea {...fieldA11y("message", errors.message)} defaultValue={v.message} rows={4} maxLength={1500} placeholder="Ex. ce păsări ai crescut până acum, cum arată spațiul, când ai putea începe" className={inputClasses} />
           </Field>

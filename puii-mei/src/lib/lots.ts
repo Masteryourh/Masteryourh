@@ -1,4 +1,10 @@
 import type { Lot, LotStageDefinition, LotStageKey, LotStatus } from "./domain";
+import type { Species } from "./products";
+
+/** Specia lotului; loturile vechi, fără câmp, sunt loturi de pui. */
+export function lotSpecies(lot: Lot): Species {
+  return lot.species ?? "pui";
+}
 
 const DAY = 24 * 60 * 60 * 1000;
 /** Zile între finalul creșterii și disponibilitatea pentru livrare. */

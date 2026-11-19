@@ -89,6 +89,14 @@ export default async function PartnerApplicationsPage({ searchParams }: PageProp
               <Item label="DSV" value={dsvLabels[a.dsvStatus]} />
               <Item label="Adăpost" value={a.hasShelter ? "Da" : "Nu"} />
               <Item label="Padoc / teren" value={a.hasOutdoorArea ? "Da" : "Nu"} />
+              <Item
+                label="Ar putea produce și"
+                value={
+                  [a.canTurkeys && "curcani", a.canDucks && "rațe", a.canPheasants && "fazani", a.hasGreenhouse && "legume din seră"]
+                    .filter(Boolean)
+                    .join(", ") || "—"
+                }
+              />
             </dl>
             {a.message && <p className="mt-4 whitespace-pre-line rounded-2xl bg-cream-100 p-4 text-sm">{a.message}</p>}
 

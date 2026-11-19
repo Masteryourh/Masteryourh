@@ -20,8 +20,8 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/devino-partener" className="text-cream-100/80 hover:text-white">
-                Devino partener
+              <Link href="/in-curand" className="text-cream-100/80 hover:text-white">
+                Produse în curând
               </Link>
             </li>
             {mainNav.map((i) => (
