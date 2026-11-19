@@ -12,7 +12,7 @@ const steps: Record<Kind, string[]> = {
     "Trimiți formularul.",
     "Te sunăm ca să discutăm despre gospodărie.",
     "Venim în vizită și verificăm împreună spațiul.",
-    "Semnăm parteneriatul și publicăm profilul gospodăriei.",
+    "Semnăm contractul de consultanță și publicăm profilul gospodăriei.",
     "Primești primul lot, pe baza precomenzilor.",
   ],
   investitor: [

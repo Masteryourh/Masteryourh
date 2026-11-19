@@ -135,6 +135,30 @@ export default async function HomePage() {
         </Container>
       </section>
 
+      {/* INTENȚIA */}
+      <section className="pb-20 sm:pb-28">
+        <Container>
+          <div className="grid items-center gap-8 rounded-[2rem] bg-forest-900 p-8 sm:p-12 lg:grid-cols-[1.4fr_1fr]">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-grain-300">Intenția noastră</p>
+              <h2 className="mt-3 text-3xl font-semibold text-cream-50 sm:text-4xl">
+                O gospodărie poate deveni o afacere de familie
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-cream-100/80">
+                Vrem ca munca din gospodărie să aducă un venit stabil și legal, fără ca gospodarul să plece de acasă.
+                Fiecare gospodar din program primește consultanță pe bază de contract: acte, taxe, contabilitate, plăți
+                și administrare.
+              </p>
+            </div>
+            <div className="lg:justify-self-end">
+              <ButtonLink href="/despre-noi#intentie" size="lg">
+                De ce am pornit Puii mei <Icon name="arrow" className="h-5 w-5" />
+              </ButtonLink>
+            </div>
+          </div>
+        </Container>
+      </section>
+
       {/* CUM FUNCȚIONEAZĂ */}
       <section id="cum-functioneaza" className="bg-forest-50/60 py-20 sm:py-28">
         <Container>

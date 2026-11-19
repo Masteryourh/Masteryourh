@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Photo } from "@/components/ui/Photo";
 import { CtaBand } from "@/components/sections/CtaBand";
+import { Intention } from "@/components/sections/Intention";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -49,6 +50,8 @@ export default function AboutPage() {
         </div>
         <Photo src="/images/despre-noi.jpg" alt="Gospodar și pui într-o curte rurală" className="aspect-[4/3] rounded-[2rem]" />
       </Container>
+
+      <Intention />
 
       <section className="bg-forest-900 py-16 sm:py-24">
         <Container>
