@@ -21,12 +21,12 @@ const pillars: { icon: IconName; title: string; text: string }[] = [
   {
     icon: "clipboard",
     title: "Producție la comandă",
-    text: "Creștem doar câți pui au fost comandați. Cererea agregată înseamnă planificare corectă, fără risipă și fără stocuri vechi.",
+    text: "Gospodăriile cresc doar câți pui au fost comandați. Cererea adunată dinainte înseamnă planificare corectă, fără risipă și fără stocuri vechi.",
   },
   {
     icon: "home",
     title: "Gospodării partenere",
-    text: "Lucrăm cu gospodării locale, selectate și monitorizate, care respectă același protocol de creștere și cerințele legale.",
+    text: "Gospodării locale, verificate și monitorizate, care respectă același protocol de creștere și cerințele legale.",
   },
   {
     icon: "shield",
@@ -66,8 +66,8 @@ export default async function HomePage() {
               Puii tăi, crescuți <span className="text-forest-500 italic">pentru tine.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
-              Comanzi în avans, noi organizăm creșterea și livrarea. Pui de carne crescuți fără grabă în gospodării
-              locale partenere, sacrificați tradițional în gospodărie și livrați proaspăt.
+              Comanzi în avans, gospodăriile noastre partenere îi cresc pentru tine. Pui de carne crescuți fără grabă,
+              sacrificați tradițional în gospodărie și predați proaspăt.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href="/precomanda" size="lg">
@@ -119,7 +119,7 @@ export default async function HomePage() {
           <SectionHeading
             eyebrow="De ce Puii mei"
             title="Nu un magazin de carne. Un mod diferit de a produce."
-            intro="Puii mei conectează direct familiile care vor să știe ce mănâncă cu gospodăriile care vor să crească păsări corect. Tu comanzi astăzi, noi creștem pentru tine, tu primești proaspăt."
+            intro="Puii mei pune în legătură direct familiile care vor să știe ce mănâncă cu gospodăriile care vor să crească păsări corect. Tu comanzi astăzi, gospodăriile partenere cresc pentru tine, tu primești proaspăt."
           />
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             {pillars.map((p) => (
@@ -131,6 +131,30 @@ export default async function HomePage() {
                 <p className="mt-2 leading-relaxed text-muted">{p.text}</p>
               </div>
             ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* INTENȚIA */}
+      <section className="pb-20 sm:pb-28">
+        <Container>
+          <div className="grid items-center gap-8 rounded-[2rem] bg-forest-900 p-8 sm:p-12 lg:grid-cols-[1.4fr_1fr]">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-grain-300">Intenția noastră</p>
+              <h2 className="mt-3 text-3xl font-semibold text-cream-50 sm:text-4xl">
+                O gospodărie poate deveni o afacere de familie
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-cream-100/80">
+                Vrem ca munca din gospodărie să aducă un venit stabil și legal, fără ca gospodarul să plece de acasă.
+                Fiecare gospodar din program primește consultanță pe bază de contract: acte, taxe, contabilitate, plăți
+                și administrare.
+              </p>
+            </div>
+            <div className="lg:justify-self-end">
+              <ButtonLink href="/despre-noi#intentie" size="lg">
+                De ce am pornit Puii mei <Icon name="arrow" className="h-5 w-5" />
+              </ButtonLink>
+            </div>
           </div>
         </Container>
       </section>

@@ -155,7 +155,7 @@ export function PreorderForm({
             <StepTitle n={2} title="Din ce lot?" />
             <p className="mt-2 text-sm text-muted">Alegerea lotului stabilește gospodăria și data estimată a livrării.</p>
             <div className="mt-5 grid gap-3">
-              <LotRadio checked={lotCode === ""} onChange={() => setLotCode("")} title="Primul lot disponibil" subtitle="Te alocăm în cel mai apropiat lot cu locuri libere." />
+              <LotRadio checked={lotCode === ""} onChange={() => setLotCode("")} title="Primul lot disponibil" subtitle="Precomanda intră în cel mai apropiat lot cu locuri libere." />
               {lots.map((l) => (
                 <LotRadio
                   key={l.code}
@@ -180,7 +180,7 @@ export function PreorderForm({
           {/* 3. Livrare */}
           <fieldset className="rounded-3xl border border-forest-900/8 bg-white p-6 sm:p-8">
             <legend className="sr-only">Livrare</legend>
-            <StepTitle n={3} title="Unde livrăm?" />
+            <StepTitle n={3} title="Unde primești puii?" />
             <div className="mt-5 grid gap-5">
               <Field id="zoneId" label="Zona de livrare" required error={errors.zoneId} hint={zone ? `${zone.localities}. Zi de livrare: ${zone.deliveryDay}.` : undefined}>
                 <select {...fieldA11y("zoneId", errors.zoneId, !!zone)} value={zoneId} onChange={(e) => setZoneId(e.target.value)} className={inputClasses}>

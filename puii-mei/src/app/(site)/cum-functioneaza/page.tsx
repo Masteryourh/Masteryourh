@@ -11,17 +11,29 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata: Metadata = pageMetadata({
   title: "Cum funcționează precomanda de pui",
   description:
-    "Alegi cantitatea, plasezi precomanda, noi organizăm creșterea în gospodării partenere, urmărești lotul și primești puiul proaspăt, sacrificat tradițional în gospodărie.",
+    "Alegi cantitatea, plasezi precomanda, gospodăriile partenere cresc puii, urmărești lotul și primești puiul proaspăt, sacrificat tradițional în gospodărie.",
   path: "/cum-functioneaza",
 });
 
-const responsibilities: { icon: IconName; title: string; text: string }[] = [
-  { icon: "clipboard", title: "Precomenzi și planificare", text: "Adunăm cererea și planificăm loturile, astfel încât fiecare pui crescut să aibă deja un client." },
-  { icon: "leaf", title: "Hrană plătită în avans", text: "Clienții plătesc în avans hrana puilor, aproximativ 6 kg de furaj pe pui, direct în contul gospodăriei partenere." },
-  { icon: "chart", title: "Monitorizarea creșterii", text: "Jurnal zilnic al fiecărui lot, vizite periodice și supraveghere veterinară." },
-  { icon: "shield", title: "Sacrificare tradițională", text: "Fiecare lot este sacrificat în gospodăria în care a crescut, cu respectarea normelor sanitar-veterinare și etichetarea lotului." },
-  { icon: "truck", title: "Distribuție", text: "Livrare în lanț frigorific, în ziua stabilită pentru zona ta, sau ridicare personală." },
-  { icon: "users", title: "Relația cu clienții", text: "Confirmări, actualizări despre lot și suport, într-un singur loc." },
+const roles: { who: string; subtitle: string; items: { icon: IconName; title: string; text: string }[] }[] = [
+  {
+    who: "Gospodăria parteneră",
+    subtitle: "Crește, sacrifică și vinde.",
+    items: [
+      { icon: "sprout", title: "Creșterea puilor", text: "Adăpost, hrană și îngrijire zilnică, după protocolul comun de creștere." },
+      { icon: "shield", title: "Sacrificare tradițională", text: "Fiecare lot este sacrificat în gospodăria în care a crescut, cu respectarea normelor sanitar-veterinare și etichetarea lotului." },
+      { icon: "truck", title: "Vânzarea", text: "Vinde direct clientului: încasează avansul pentru hrană și plata la final, apoi predă puii proaspeți în ziua stabilită." },
+    ],
+  },
+  {
+    who: "Puii mei",
+    subtitle: "Platformă și consultanță.",
+    items: [
+      { icon: "clipboard", title: "Precomenzi", text: "Platforma preia precomenzile și le transmite gospodăriilor, ca fiecare pui crescut să aibă deja un client." },
+      { icon: "chart", title: "Consultanță", text: "Sprijin pentru gospodării: protocol de creștere, evidența lotului și cerințele sanitar-veterinare." },
+      { icon: "users", title: "Trasabilitate și informare", text: "Publică datele fiecărui lot și îți trimite confirmări și actualizări." },
+    ],
+  },
 ];
 
 export default function HowItWorksPage() {
@@ -29,8 +41,8 @@ export default function HowItWorksPage() {
     <>
       <PageHeader
         eyebrow="Cum funcționează"
-        title="Tu comanzi. Noi îi creștem."
-        intro="Puii mei inversează modelul obișnuit: nu cumperi ce s-a produs deja, ci comanzi înainte, iar producția se organizează pentru tine."
+        title="Tu comanzi. Gospodăriile îi cresc."
+        intro="Modelul e inversat: nu cumperi ce s-a produs deja, ci comanzi înainte, iar gospodăriile partenere cresc puii pentru tine."
       />
       <section className="py-16 sm:py-20">
         <Container className="max-w-4xl">
@@ -40,16 +52,28 @@ export default function HowItWorksPage() {
       <section className="bg-cream-100 py-16 sm:py-24">
         <Container>
           <SectionHeading
-            eyebrow="Ce gestionăm noi"
-            title="Tu alegi. Noi ne ocupăm de restul."
-            intro="Coordonăm și oferim consultanță pe tot parcursul, de la planificare la livrare, împreună cu gospodăriile partenere. Vânzarea și plata se fac direct între tine și gospodărie."
+            eyebrow="Cine ce face"
+            title="Gospodăriile cresc. Puii mei vă pune în legătură."
+            intro="Vânzarea și plata se fac direct între tine și gospodăria parteneră. Puii mei este platforma care preia precomenzile și oferă consultanță gospodăriilor."
           />
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {responsibilities.map((r) => (
-              <div key={r.title} className="rounded-3xl bg-white p-7">
-                <Icon name={r.icon} className="h-7 w-7 text-forest-700" />
-                <h3 className="mt-4 text-xl font-semibold">{r.title}</h3>
-                <p className="mt-2 leading-relaxed text-muted">{r.text}</p>
+          <div className="mt-12 grid gap-6 lg:grid-cols-2">
+            {roles.map((role) => (
+              <div key={role.who} className="rounded-[2rem] bg-white p-6 sm:p-8">
+                <h3 className="text-2xl font-semibold">{role.who}</h3>
+                <p className="mt-1 text-muted">{role.subtitle}</p>
+                <ul className="mt-6 space-y-5">
+                  {role.items.map((r) => (
+                    <li key={r.title} className="flex gap-4">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-forest-50 text-forest-700">
+                        <Icon name={r.icon} className="h-6 w-6" />
+                      </span>
+                      <div>
+                        <p className="font-semibold text-forest-900">{r.title}</p>
+                        <p className="mt-1 leading-relaxed text-muted">{r.text}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>

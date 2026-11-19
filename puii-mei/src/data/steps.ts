@@ -12,14 +12,14 @@ export const steps: { title: string; text: string; detail: string; icon: IconNam
     title: "Plasezi precomanda",
     text: "Completezi un formular scurt. Te sunăm pentru confirmare și îți comunicăm detaliile avansului pentru hrană.",
     detail:
-      "Primești un număr de precomandă și te sunăm pentru confirmare. Comenzile adunate ne permit să planificăm exact câți pui creștem.",
+      "Primești un număr de precomandă și te sunăm pentru confirmare. Precomenzile adunate le arată gospodăriilor partenere exact câți pui să crească.",
     icon: "clipboard",
   },
   {
-    title: "Noi organizăm creșterea",
+    title: "Gospodăria îi crește",
     text: "Puii tăi cresc într-o gospodărie parteneră monitorizată, fără grabă.",
     detail:
-      "Gospodăria parteneră crește puii cu hrana plătită în avans, după un protocol comun de creștere. Noi coordonăm și monitorizăm procesul.",
+      "Gospodăria parteneră crește puii cu hrana plătită în avans, după un protocol comun de creștere. Puii mei îi oferă consultanță și publică evidența fiecărui lot.",
     icon: "sprout",
   },
   {
