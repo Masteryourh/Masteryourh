@@ -19,7 +19,7 @@ export function Header() {
         </nav>
         <div className="flex items-center gap-2">
           <div className="hidden sm:block">
-            <ButtonLink href="/precomanda">Vreau să comand</ButtonLink>
+            <ButtonLink href="/precomanda" className="whitespace-nowrap">Vreau să comand</ButtonLink>
           </div>
           <MobileNav />
         </div>
