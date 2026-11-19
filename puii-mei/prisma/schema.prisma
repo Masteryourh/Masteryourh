@@ -1,0 +1,178 @@
+// Schema pregătită pentru integrarea bazei de date (PostgreSQL).
+// NU este încă conectată: prima versiune folosește repository-uri cu stocare JSON
+// (src/server/repositories). Pentru activare: `npm i prisma @prisma/client`,
+// setează DATABASE_URL, rulează `npx prisma migrate dev`, apoi implementează
+// repository-urile cu Prisma Client – paginile nu trebuie modificate.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CLIENT
+  ADMIN
+  FARMER
+}
+
+enum PreorderStatus {
+  NOUA
+  CONFIRMATA
+  ALOCATA_LOT
+  IN_LIVRARE
+  LIVRATA
+  ANULATA
+}
+
+enum LotStage {
+  PRECOMENZI
+  PUI_DE_O_ZI
+  CRESTERE
+  FINISARE
+  PROCESARE
+  LIVRARE
+}
+
+enum DeliveryStatus {
+  PLANIFICATA
+  IN_CURS
+  FINALIZATA
+}
+
+// Conturi (clienți, administratori, gospodari)
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  phone        String?
+  role         UserRole   @default(CLIENT)
+  passwordHash String?
+  createdAt    DateTime   @default(now())
+  preorders    Preorder[]
+  farm         Farm?      @relation(fields: [farmId], references: [id])
+  farmId       String?
+}
+
+model Farm {
+  id                     String   @id @default(cuid())
+  slug                   String   @unique
+  name                   String
+  owner                  String
+  village                String
+  county                 String
+  lat                    Float
+  lng                    Float
+  since                  Int
+  capacityPerLot         Int
+  shortDescription       String
+  description            String
+  practices              String[]
+  veterinaryRegistration String
+  active                 Boolean  @default(true)
+  photos                 FarmPhoto[]
+  lots                   Lot[]
+  users                  User[]
+}
+
+model FarmPhoto {
+  id     String @id @default(cuid())
+  farm   Farm   @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  farmId String
+  src    String
+  alt    String
+  order  Int    @default(0)
+}
+
+model Lot {
+  id            String     @id @default(cuid())
+  code          String     @unique
+  farm          Farm       @relation(fields: [farmId], references: [id])
+  farmId        String
+  breed         String
+  startDate     DateTime
+  growthDays    Int
+  totalBirds    Int
+  feed          String
+  processor     String
+  notes         String?
+  preorders     Preorder[]
+  events        LotEvent[]
+  deliveries    Delivery[]
+}
+
+// Jurnal de trasabilitate: etape, cântăriri, vizite veterinare etc.
+model LotEvent {
+  id         String    @id @default(cuid())
+  lot        Lot       @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  lotId      String
+  stage      LotStage
+  date       DateTime
+  title      String
+  details    String?
+  avgWeightG Int?
+  createdAt  DateTime  @default(now())
+}
+
+model DeliveryZone {
+  id          String     @id
+  name        String
+  localities  String
+  fee         Decimal    @db.Decimal(10, 2)
+  deliveryDay String
+  active      Boolean    @default(true)
+  preorders   Preorder[]
+  deliveries  Delivery[]
+}
+
+model Preorder {
+  id               String         @id @default(cuid())
+  number           String         @unique
+  createdAt        DateTime       @default(now())
+  status           PreorderStatus @default(NOUA)
+  user             User?          @relation(fields: [userId], references: [id])
+  userId           String?
+  customerName     String
+  customerPhone    String
+  customerEmail    String
+  birds            Int
+  lot              Lot?           @relation(fields: [lotId], references: [id])
+  lotId            String?
+  zone             DeliveryZone   @relation(fields: [zoneId], references: [id])
+  zoneId           String
+  address          String
+  notes            String
+  pricePerKg       Decimal        @db.Decimal(10, 2)
+  avgWeightKg      Decimal        @db.Decimal(5, 2)
+  estimatedTotal   Decimal        @db.Decimal(10, 2)
+  finalWeightKg    Decimal?       @db.Decimal(6, 2)
+  finalTotal       Decimal?       @db.Decimal(10, 2)
+  marketingConsent Boolean        @default(false)
+  delivery         Delivery?      @relation(fields: [deliveryId], references: [id])
+  deliveryId       String?
+}
+
+model Delivery {
+  id        String         @id @default(cuid())
+  date      DateTime
+  zone      DeliveryZone   @relation(fields: [zoneId], references: [id])
+  zoneId    String
+  lot       Lot            @relation(fields: [lotId], references: [id])
+  lotId     String
+  status    DeliveryStatus @default(PLANIFICATA)
+  preorders Preorder[]
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  name      String
+  email     String
+  phone     String
+  subject   String
+  message   String
+  handled   Boolean  @default(false)
+}
