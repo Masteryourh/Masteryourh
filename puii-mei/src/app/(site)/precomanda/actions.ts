@@ -3,7 +3,7 @@
 import { estimatePrice } from "@/lib/pricing";
 import { availableBirds, availabilityDate, isOpenForPreorder, normalizeLotCode } from "@/lib/lots";
 import { flattenErrors } from "@/lib/validation/common";
-import { preorderSchema } from "@/lib/validation/preorder";
+import { parseLocation, preorderSchema } from "@/lib/validation/preorder";
 import { lotRepository, zoneRepository } from "@/server/repositories/catalog";
 import { preorderRepository } from "@/server/repositories/preorders";
 import { notifyNewPreorder } from "@/server/notifications";
@@ -59,6 +59,9 @@ export async function submitPreorder(
       lotCode,
       zoneId: zone.id,
       address: data.address,
+      ...(data.zoneId !== "ridicare-personala" && data.zoneId !== "alta-zona"
+        ? { location: parseLocation(data.lat, data.lng) ?? undefined, addressNote: data.addressNote }
+        : {}),
       notes: data.notes,
       estimate: estimatePrice(data.birds, zone),
       marketingConsent: data.marketingConsent,

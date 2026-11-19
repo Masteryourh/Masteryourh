@@ -63,7 +63,8 @@ export function pgStore(connectionString: string): DocumentStore {
       await init();
       const res = await pool.query<{ data: T }>(
         "UPDATE documents SET data = data || $3::jsonb WHERE collection = $1 AND id = $2 RETURNING data",
-        [collection, id, JSON.stringify(patch)],
+        // Câmpurile setate pe `undefined` se șterg (devin null), ca în stocarea în fișiere.
+        [collection, id, JSON.stringify(patch, (_k, v) => (v === undefined ? null : v))],
       );
       return res.rows[0]?.data ?? null;
     },

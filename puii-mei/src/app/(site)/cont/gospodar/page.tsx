@@ -5,7 +5,11 @@ import { AccountBar } from "@/components/account/AccountBar";
 import { LotStatusBadge } from "@/components/lots/LotStatusBadge";
 import { availabilityDate, availableBirds, growthProgress, lotStatus } from "@/lib/lots";
 import { formatDate, formatLei } from "@/lib/format";
-import type { PreorderStatus } from "@/lib/domain";
+import type { Parcel, PreorderStatus } from "@/lib/domain";
+import { DELIVERY, parcelStage, parcelStageLabels, tourStatusLabels } from "@/lib/delivery";
+import { CreateTourForm } from "@/components/delivery/FarmerTourTools";
+import { parcelRepository, tourRepository } from "@/server/repositories/delivery";
+import { generateLabelAction } from "./livrari-actions";
 import { farmRepository, lotRepository, zoneRepository } from "@/server/repositories/catalog";
 import { preorderRepository } from "@/server/repositories/preorders";
 import { requireUser } from "@/server/session";
@@ -50,6 +54,15 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
   const farmPreorders = preorders.filter((p) => p.lotCode && lotCodes.has(p.lotCode) && p.status !== "anulata");
   const zoneName = new Map(zones.map((z) => [z.id, z.name]));
   const activeLots = lots.filter((l) => lotStatus(l) !== "livrat");
+  const [allParcels, allTours] = await Promise.all([parcelRepository.list(), tourRepository.list()]);
+  const parcels = allParcels.filter((x) => x.farmSlug === farm.slug);
+  const parcelById = new Map(parcels.map((x) => [x.id, x]));
+  const preorderById = new Map(farmPreorders.map((x) => [x.id, x]));
+  const farmTours = allTours.filter((t) => t.farmSlug === farm.slug);
+  const activeTourIds = new Set(farmTours.filter((t) => t.status !== "anulata").map((t) => t.id));
+  const readyParcels = parcels.filter(
+    (x) => !x.delivered && (!x.tourId || !activeTourIds.has(x.tourId)) && preorderById.has(x.id),
+  );
 
   return (
     <Container className="py-8">
@@ -117,14 +130,14 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="bg-cream-100 text-xs uppercase tracking-wider text-muted">
             <tr>
-              {["Nr.", "Client", "Pui", "Lot", "Livrare", "Status"].map((h) => (
+              {["Nr.", "Client", "Pui", "Lot", "Livrare", "Status", "Etichetă"].map((h) => (
                 <th key={h} className="px-4 py-3 font-semibold">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-forest-900/5">
             {farmPreorders.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-muted">Nicio precomandă alocată încă pe loturile tale.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-muted">Nicio precomandă alocată încă pe loturile tale.</td></tr>
             )}
             {farmPreorders.map((p) => (
               <tr key={p.id}>
@@ -136,19 +149,99 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
                 <td className="px-4 py-3">{p.birds}</td>
                 <td className="px-4 py-3 font-mono text-xs">{p.lotCode}</td>
                 <td className="px-4 py-3">{zoneName.get(p.zoneId) ?? p.zoneId}</td>
-                <td className="px-4 py-3">{preorderLabels[p.status]}</td>
+                <td className="px-4 py-3">
+                  {preorderLabels[p.status]}
+                  {!p.location && !["ridicare-personala", "alta-zona"].includes(p.zoneId) && (
+                    <span className="block text-xs text-red-700">fără pin pe hartă</span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <LabelCell preorderId={p.id} parcel={parcelById.get(p.id)} delivered={p.status === "livrata"} />
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
+      <h2 className="mt-10 text-2xl font-semibold">Ture de livrare</h2>
+      <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:items-start">
+        <ul className="space-y-3">
+          {farmTours.length === 0 && <li className="rounded-2xl bg-white p-5 text-muted ring-1 ring-forest-900/10">Nicio tură încă.</li>}
+          {farmTours.map((t) => (
+            <li key={t.id}>
+              <Link href={`/cont/gospodar/ture/${t.id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white p-4 ring-1 ring-forest-900/10 hover:ring-forest-700/40">
+                <span>
+                  <span className="font-mono font-semibold">{t.code}</span>
+                  <span className="block text-sm text-muted">{t.date} · {t.parcelIds.length} colete</span>
+                </span>
+                <span className="flex items-center gap-2">
+                  {t.pinRequest?.status === "asteapta" && <span className="rounded-full bg-grain-400 px-2.5 py-1 text-xs font-semibold">Cerere curier</span>}
+                  <span className="rounded-full bg-cream-200 px-2.5 py-1 text-xs font-semibold">{tourStatusLabels[t.status]}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <div>
+          <h3 className="mb-3 font-sans text-lg font-semibold">Tură nouă</h3>
+          {readyParcels.length ? (
+            <CreateTourForm
+              farmSlug={farm.slug}
+              parcels={readyParcels.map((x) => ({
+                id: x.id,
+                label: `${x.preorderNumber} · ${preorderById.get(x.id)?.customer.name ?? ""} · ${x.birds} pui`,
+                hasPin: Boolean(preorderById.get(x.id)?.location),
+              }))}
+              defaultHours={DELIVERY.defaultTourHours}
+              today={todayIso()}
+            />
+          ) : (
+            <p className="rounded-2xl bg-cream-100 p-4 text-sm text-muted">
+              Generează întâi etichetele comenzilor (în tabelul de mai sus). Coletele cu etichetă care nu sunt într-o tură apar aici.
+            </p>
+          )}
+        </div>
+      </div>
+
       <h2 className="mt-10 text-2xl font-semibold">În curând în contul tău</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <Soon title="Etichete și livrări" text="Generezi etichetele cu coduri QR pentru colete, organizezi turele și trimiți PIN-ul curierului pe WhatsApp." />
         <Soon title="Cheltuieli și documente" text="Registrul de cheltuieli pe lot, facturi, avize, documente contabile și înregistrări, toate descărcabile." />
       </div>
     </Container>
+  );
+}
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function LabelCell({ preorderId, parcel, delivered }: { preorderId: string; parcel?: Parcel; delivered: boolean }) {
+  const small = "rounded-lg px-2.5 py-1 text-xs font-semibold";
+  if (!parcel) {
+    return delivered ? (
+      <span className="text-xs text-muted">—</span>
+    ) : (
+      <form action={generateLabelAction}>
+        <input type="hidden" name="id" value={preorderId} />
+        <button className={`${small} bg-grain-400 text-forest-900`}>Generează eticheta</button>
+      </form>
+    );
+  }
+  return (
+    <div className="flex flex-col items-start gap-1">
+      <span className="text-xs text-muted">{parcelStageLabels[parcelStage(parcel)]} · v{parcel.version}</span>
+      <div className="flex flex-wrap gap-1">
+        <Link href={`/cont/gospodar/etichete?ids=${parcel.id}`} className={`${small} ring-1 ring-forest-900/15`}>Tipărește</Link>
+        {!parcel.loaded && (
+          <form action={generateLabelAction}>
+            <input type="hidden" name="id" value={preorderId} />
+            <input type="hidden" name="regenerate" value="1" />
+            <button className={`${small} ring-1 ring-forest-900/15`} title="Codurile vechi nu mai funcționează">Regenerează</button>
+          </form>
+        )}
+      </div>
+    </div>
   );
 }
 

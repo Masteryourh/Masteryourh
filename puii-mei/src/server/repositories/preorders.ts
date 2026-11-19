@@ -11,6 +11,8 @@ export interface PreorderRepository {
   create(data: NewPreorder): Promise<Preorder>;
   list(): Promise<Preorder[]>;
   updateStatus(id: string, status: PreorderStatus): Promise<Preorder | null>;
+  update(id: string, patch: Partial<Preorder>): Promise<Preorder | null>;
+  byId(id: string): Promise<Preorder | null>;
 }
 
 function generateNumber(now: Date) {
@@ -37,5 +39,11 @@ export const preorderRepository: PreorderRepository = {
   },
   async updateStatus(id, status) {
     return store.update<Preorder>(COLLECTION, id, { status });
+  },
+  async update(id, patch) {
+    return store.update<Preorder>(COLLECTION, id, patch);
+  },
+  async byId(id) {
+    return store.get<Preorder>(COLLECTION, id);
   },
 };

@@ -28,6 +28,28 @@ function secret() {
 
 const sign = (data: string) => createHmac("sha256", secret()).update(data).digest("base64url");
 
+/** Semnează orice obiect mic (folosit și pentru sesiunea temporară a curierului). */
+export function signPayload(p: object) {
+  const data = Buffer.from(JSON.stringify(p)).toString("base64url");
+  return `${data}.${sign(data)}`;
+}
+
+/** Verifică semnătura și expirarea (`exp`, în secunde). */
+export function verifyPayload<T extends { exp: number }>(token: string | undefined | null): T | null {
+  if (!token) return null;
+  const [data, sig] = token.split(".");
+  if (!data || !sig) return null;
+  try {
+    const expected = Buffer.from(sign(data));
+    const actual = Buffer.from(sig);
+    if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) return null;
+    const p = JSON.parse(Buffer.from(data, "base64url").toString()) as T;
+    return typeof p.exp === "number" && p.exp * 1000 >= Date.now() ? p : null;
+  } catch {
+    return null;
+  }
+}
+
 export function encodeSession(p: SessionPayload) {
   const data = Buffer.from(JSON.stringify(p)).toString("base64url");
   return `${data}.${sign(data)}`;

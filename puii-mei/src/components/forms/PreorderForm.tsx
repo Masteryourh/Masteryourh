@@ -1,17 +1,17 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { submitPreorder } from "@/app/(site)/precomanda/actions";
 import { initialPreorderState } from "@/app/(site)/precomanda/form-state";
-import type { DeliveryZone } from "@/lib/domain";
+import type { DeliveryZone, GeoPoint } from "@/lib/domain";
+import { MapPicker } from "@/components/maps/MapPicker";
 import { estimatePrice, pricing } from "@/lib/pricing";
 import { formatDate, formatLei, formatNumber } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { buttonClasses } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Checkbox, Field, Honeypot, fieldA11y, inputClasses } from "./Field";
-import { SubmitButton } from "./SubmitButton";
 
 export interface LotOption {
   code: string;
@@ -35,9 +35,13 @@ export function PreorderForm({
   initialLot?: string;
 }) {
   const [state, formAction] = useActionState(submitPreorder, initialPreorderState);
+  // Trimitere fără resetarea automată a formularului (ca valorile să rămână după o eroare).
+  const [submitting, startSubmit] = useTransition();
   const [birds, setBirds] = useState(initialBirds ?? 8);
   const [zoneId, setZoneId] = useState("");
   const [lotCode, setLotCode] = useState(lots.some((l) => l.code === initialLot) ? initialLot! : "");
+  const [address, setAddress] = useState("");
+  const [location, setLocation] = useState<GeoPoint | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
 
   const errors = state.status === "error" ? state.errors : {};
@@ -93,7 +97,13 @@ export function PreorderForm({
 
   return (
     <div ref={topRef} className="scroll-mt-28">
-      <form action={formAction} noValidate className="relative grid gap-8 lg:grid-cols-[1fr_380px] lg:items-start">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const fd = new FormData(e.currentTarget);
+          startSubmit(() => formAction(fd));
+        }}
+        noValidate className="relative grid gap-8 lg:grid-cols-[1fr_380px] lg:items-start">
         <Honeypot />
         <div className="space-y-8">
           {errors.form && (
@@ -194,9 +204,33 @@ export function PreorderForm({
                 </select>
               </Field>
               {needsAddress && (
-                <Field id="address" label="Adresa de livrare" required error={errors.address}>
-                  <input {...fieldA11y("address", errors.address)} defaultValue={values.address} autoComplete="street-address" placeholder="Strada, număr, bloc, apartament, localitate" className={inputClasses} />
-                </Field>
+                <>
+                  <Field id="address" label="Adresa de livrare" required error={errors.address}>
+                    <input
+                      {...fieldA11y("address", errors.address)}
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      autoComplete="street-address"
+                      placeholder="Strada, număr, bloc, apartament, localitate"
+                      className={inputClasses}
+                    />
+                  </Field>
+                  <div>
+                    <p className="mb-1.5 text-sm font-semibold text-forest-900">
+                      Locul exact pe hartă <span className="text-grain-600">*</span>
+                    </p>
+                    <p className="mb-3 text-sm text-muted">
+                      Pune pinul pe poarta sau pe casa ta. Curierul ajunge direct acolo, chiar dacă adresa e greu de găsit.
+                    </p>
+                    <MapPicker center={zone?.center ?? { lat: 47.5303, lng: 25.5512 }} value={location} onChange={setLocation} address={address} />
+                    <input type="hidden" name="lat" value={location?.lat ?? ""} />
+                    <input type="hidden" name="lng" value={location?.lng ?? ""} />
+                    {errors.location && !location && <p className="mt-1.5 text-sm font-medium text-red-700">{errors.location}</p>}
+                  </div>
+                  <Field id="addressNote" label="Repere pentru curier" error={errors.addressNote}>
+                    <input {...fieldA11y("addressNote", errors.addressNote)} defaultValue={values.addressNote} placeholder="Ex. poarta verde, după pod" className={inputClasses} />
+                  </Field>
+                </>
               )}
             </div>
           </fieldset>
@@ -264,7 +298,9 @@ export function PreorderForm({
               </p>
             )}
             <div className="mt-6">
-              <SubmitButton pendingText="Se trimite…">Trimite precomanda</SubmitButton>
+              <button type="submit" disabled={submitting} className={buttonClasses("primary", "lg", "w-full sm:w-auto")}>
+                {submitting ? "Se trimite…" : "Trimite precomanda"}
+              </button>
             </div>
             <ul className="mt-6 space-y-2 text-xs text-cream-100/70">
               <li className="flex gap-2"><Icon name="check" className="h-4 w-4 shrink-0 text-grain-300" /> Fără plată pe site; avansul se plătește direct gospodăriei</li>
