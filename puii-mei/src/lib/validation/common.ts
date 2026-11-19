@@ -22,7 +22,8 @@ export const emailSchema = z
 
 /** Câmpurile de tip checkbox trimit „on” când sunt bifate. */
 export const checkbox = z
-  .union([z.literal("on"), z.literal("true"), z.null(), z.undefined()])
+  .string()
+  .optional()
   .transform((v) => v === "on" || v === "true");
 
 export type FieldErrors<K extends string = string> = Partial<Record<K, string>>;

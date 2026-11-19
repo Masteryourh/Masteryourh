@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import type { Preorder, PreorderStatus } from "@/lib/domain";
-import { jsonStore } from "@/server/db/json-store";
+import { store } from "@/server/db/store";
 
 const COLLECTION = "preorders";
 
@@ -29,13 +29,13 @@ export const preorderRepository: PreorderRepository = {
       createdAt: now.toISOString(),
       status: "noua",
     };
-    return jsonStore.append(COLLECTION, preorder);
+    return store.append(COLLECTION, preorder);
   },
   async list() {
-    const items = await jsonStore.list<Preorder>(COLLECTION);
+    const items = await store.list<Preorder>(COLLECTION);
     return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   },
   async updateStatus(id, status) {
-    return jsonStore.update<Preorder>(COLLECTION, id, { status });
+    return store.update<Preorder>(COLLECTION, id, { status });
   },
 };

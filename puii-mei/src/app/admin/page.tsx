@@ -8,6 +8,7 @@ import { availableBirds, lotStatus } from "@/lib/lots";
 import { formatDate, formatLei } from "@/lib/format";
 import type { PreorderStatus } from "@/lib/domain";
 import { updatePreorderStatus } from "./actions";
+import { storageKind } from "@/server/db/store";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Administrare", robots: { index: false, follow: false } };
@@ -39,6 +40,15 @@ export default async function AdminPage() {
     <Container className="py-10">
       <h1 className="text-3xl font-semibold">Panou de administrare</h1>
       <p className="mt-1 text-sm text-muted">Versiune inițială: precomenzi, mesaje și loturi.</p>
+      {storageKind === "temporar" && (
+        <p role="alert" className="mt-6 rounded-2xl bg-grain-300/40 p-4 text-sm text-forest-900">
+          <strong>Stocare temporară.</strong> Precomenzile se păstrează doar în memoria temporară a serverului și se pot
+          pierde. Conectează o bază de date PostgreSQL (Vercel → Storage → Neon) ca să le salvezi permanent.
+        </p>
+      )}
+      {storageKind === "postgres" && (
+        <p className="mt-4 text-sm text-forest-700">Datele sunt salvate în baza de date PostgreSQL.</p>
+      )}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-4">
         <Stat label="Precomenzi active" value={String(active.length)} />
