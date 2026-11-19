@@ -23,7 +23,7 @@ export default async function FarmsPage() {
       <PageHeader
         eyebrow="Gospodării partenere"
         title="Oameni reali, gospodării reale"
-        intro="Fiecare gospodărie parteneră este vizitată, verificată și monitorizată. Lucrăm după un protocol comun de creștere, cu evidență zilnică pentru fiecare lot."
+        intro="Fiecare gospodărie parteneră este vizitată, verificată și monitorizată. Toate lucrează după un protocol comun de creștere, cu evidență zilnică pentru fiecare lot."
       />
       <Container className="py-14 sm:py-20">
         <p className="mb-8 rounded-2xl bg-grain-300/30 px-4 py-3 text-sm text-forest-900">
@@ -42,7 +42,7 @@ export default async function FarmsPage() {
           <div>
             <h2 className="text-2xl font-semibold">Ai o gospodărie și vrei să devii partener?</h2>
             <p className="mt-2 max-w-xl text-muted">
-              Îți asigurăm cererea, puii de o zi, furajele și sprijinul tehnic. Tu crești puii după protocolul Puii mei.
+              Primești precomenzi cu hrana plătită în avans de clienți și consultanță pentru creștere. Tu crești și vinzi puii după protocolul Puii mei.
             </p>
           </div>
           <ButtonLink href="/devino-partener#gospodarie" variant="secondary" className="mt-6 shrink-0 sm:mt-0">

@@ -3,7 +3,7 @@ export const site = {
   slogan: "Crescuți pentru tine.",
   tagline: "Știi ce comanzi. Știi unde cresc. Știi ce ajunge pe masa ta.",
   description:
-    "Puii mei – pui de carne crescuți la comandă în gospodării locale partenere. Precomanzi online, urmărești creșterea lotului tău și primești carne proaspătă, din gospodăria în care a crescut.",
+    "Puii mei – pui de carne crescuți la comandă în gospodării locale partenere. Precomanzi online, gospodăriile partenere cresc puii, iar tu urmărești lotul și primești carne proaspătă, din gospodăria în care a crescut.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.puiimei.ro",
   locale: "ro_RO",
   company: {

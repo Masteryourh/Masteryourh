@@ -16,7 +16,7 @@ export const metadata: Metadata = pageMetadata({
 const values = [
   { title: "Transparență", text: "Publicăm gospodăria, calendarul și etapele fiecărui lot. Fără etichete vagi de tipul „de țară”." },
   { title: "Corectitudine", text: "Gospodăriile primesc un preț corect și cerere garantată. Clienții plătesc pentru ce primesc, la greutatea reală." },
-  { title: "Legalitate", text: "Respectăm cerințele sanitar-veterinare. Puii sunt sacrificați tradițional, în gospodăria în care au crescut." },
+  { title: "Legalitate", text: "Gospodăriile partenere respectă cerințele sanitar-veterinare. Puii sunt sacrificați tradițional, în gospodăria în care au crescut." },
   { title: "Comunitate", text: "Construim o comunitate de clienți și producători care cred că mâncarea bună începe cu încredere." },
 ];
 
@@ -36,14 +36,15 @@ export default function AboutPage() {
             raftul supermarketului și un vecin de încredere – dacă are norocul să-l găsească.
           </p>
           <p>
-            Puii mei propune o a treia cale: <strong>producție la comandă</strong>. Clienții comandă online cantitatea
-            dorită, iar noi organizăm producția împreună cu gospodăriile partenere. Puii sunt crescuți în gospodării
-            monitorizate, cu respectarea cerințelor legale și a standardelor de creștere, iar fiecare etapă este urmărită
-            pentru transparență și trasabilitate.
+            Puii mei propune o a treia cale: <strong>producție la comandă</strong>. Clienții precomandă online cantitatea
+            dorită, iar gospodăriile partenere cresc puii pentru ei. Puii sunt crescuți în gospodării monitorizate, cu
+            respectarea cerințelor legale și a standardelor de creștere, iar fiecare etapă este urmărită pentru
+            transparență și trasabilitate.
           </p>
           <p>
-            Gestionăm întregul proces: precomenzi, planificarea producției, aprovizionarea, monitorizarea creșterii,
-            sacrificarea tradițională în gospodărie și distribuția către clienți. Vânzarea se face direct între client și gospodăria parteneră, iar Puii mei oferă organizarea și consultanța.
+            Rolul nostru este de platformă și consultanță: preluăm precomenzile, oferim gospodăriilor sprijin pentru
+            creștere, evidență și cerințele sanitar-veterinare și publicăm trasabilitatea fiecărui lot. Creșterea,
+            sacrificarea tradițională și vânzarea sunt făcute de gospodăria parteneră, direct către client.
           </p>
         </div>
         <Photo src="/images/despre-noi.jpg" alt="Gospodar și pui într-o curte rurală" className="aspect-[4/3] rounded-[2rem]" />
@@ -67,8 +68,8 @@ export default function AboutPage() {
               <div>
                 <h3 className="font-sans text-lg font-semibold text-cream-50">Pentru gospodării</h3>
                 <p className="mt-2 leading-relaxed">
-                  Cerere sigură înainte de a începe creșterea, aprovizionare organizată și acces la clienți din oraș, fără
-                  intermediari inutili.
+                  Cerere sigură înainte de a începe creșterea, hrana plătită în avans de clienți, consultanță și acces la
+                  clienți din oraș, fără intermediari.
                 </p>
               </div>
             </div>
