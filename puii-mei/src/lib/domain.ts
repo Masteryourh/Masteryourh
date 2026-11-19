@@ -1,0 +1,129 @@
+/**
+ * Modelul de domeniu Puii mei.
+ *
+ * Tipurile de aici sunt sursa unică de adevăr pentru întreaga aplicație
+ * (website public, viitorul panou de administrare, API). Ele oglindesc
+ * schema din `prisma/schema.prisma`, pregătită pentru integrarea unei baze
+ * de date relaționale.
+ */
+
+export type ISODate = string; // format YYYY-MM-DD
+
+/** Gospodărie parteneră care crește puii la comandă. */
+export interface Farm {
+  slug: string;
+  name: string;
+  owner: string;
+  village: string;
+  county: string;
+  /** Coordonate aproximative, pentru hartă (viitor). */
+  coordinates: { lat: number; lng: number };
+  since: number;
+  /** Capacitate maximă pe lot (număr de pui). */
+  capacityPerLot: number;
+  shortDescription: string;
+  description: string;
+  practices: string[];
+  /** Căi relative din /public. Lipsa fișierului afișează un placeholder. */
+  photos: { src: string; alt: string }[];
+  veterinaryRegistration: string;
+}
+
+/** Etapele prin care trece un lot de producție. */
+export type LotStageKey =
+  | "precomenzi"
+  | "pui-de-o-zi"
+  | "crestere"
+  | "finisare"
+  | "procesare"
+  | "livrare";
+
+export interface LotStageDefinition {
+  key: LotStageKey;
+  label: string;
+  description: string;
+  /** Ziua (față de începutul creșterii) la care începe etapa. Poate fi negativă. */
+  startDay: number;
+}
+
+export type LotStatus =
+  | "precomenzi-deschise"
+  | "in-crestere"
+  | "in-procesare"
+  | "disponibil"
+  | "livrat";
+
+/** Lot de producție – unitatea de bază a trasabilității. */
+export interface Lot {
+  code: string;
+  farmSlug: string;
+  breed: string;
+  /** Data la care puii de o zi intră în gospodărie. */
+  startDate: ISODate;
+  /** Durata totală a creșterii, în zile. */
+  growthDays: number;
+  totalBirds: number;
+  /** Pui deja rezervați prin precomenzi (actualizat de admin). */
+  reservedBirds: number;
+  feed: string;
+  processor: string;
+  notes?: string;
+}
+
+export interface DeliveryZone {
+  id: string;
+  name: string;
+  localities: string;
+  /** Cost livrare în lei; 0 = gratuit. */
+  fee: number;
+  deliveryDay: string;
+  active: boolean;
+}
+
+export type PreorderStatus =
+  | "noua"
+  | "confirmata"
+  | "alocata-lot"
+  | "in-livrare"
+  | "livrata"
+  | "anulata";
+
+export interface Preorder {
+  id: string;
+  number: string;
+  createdAt: string;
+  status: PreorderStatus;
+  customer: {
+    name: string;
+    phone: string;
+    email: string;
+  };
+  birds: number;
+  /** Lotul preferat sau `null` pentru „primul disponibil”. */
+  lotCode: string | null;
+  zoneId: string;
+  address: string;
+  notes: string;
+  estimate: PriceEstimate;
+  marketingConsent: boolean;
+}
+
+export interface ContactMessage {
+  id: string;
+  createdAt: string;
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+}
+
+export interface PriceEstimate {
+  birds: number;
+  avgWeightKg: number;
+  pricePerKg: number;
+  estimatedKg: number;
+  productValue: number;
+  deliveryFee: number;
+  total: number;
+}
