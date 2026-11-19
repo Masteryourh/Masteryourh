@@ -42,6 +42,14 @@ export function pgStore(connectionString: string): DocumentStore {
       );
       return res.rows.map((r) => r.data);
     },
+    async get<T extends { id: string }>(collection: string, id: string) {
+      await init();
+      const res = await pool.query<{ data: T }>("SELECT data FROM documents WHERE collection = $1 AND id = $2", [
+        collection,
+        id,
+      ]);
+      return (res.rows[0]?.data as T | undefined) ?? null;
+    },
     async append<T extends { id: string }>(collection: string, item: T) {
       await init();
       await pool.query("INSERT INTO documents (collection, id, data) VALUES ($1, $2, $3)", [

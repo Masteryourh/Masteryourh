@@ -1,35 +1,18 @@
+import "server-only";
+import type { User, UserRole } from "@/lib/domain";
+import { getCurrentUser } from "./session";
+
 /**
- * Autentificare minimă pentru panoul de administrare (HTTP Basic).
- * Panoul este activ doar dacă ADMIN_USER și ADMIN_PASSWORD sunt definite.
- * Va fi înlocuită de conturi reale (clienți / administratori) într-o etapă următoare.
+ * Verificări de acces pentru server actions și route handlers (pe lângă proxy,
+ * care redirecționează paginile protejate spre autentificare).
  */
-export function adminEnabled() {
-  return Boolean(process.env.ADMIN_USER && process.env.ADMIN_PASSWORD);
+export async function requireRole(roles: UserRole[]): Promise<User> {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== "admin" && !roles.includes(user.role))) throw new Error("Neautorizat");
+  return user;
 }
 
-export function isValidAdminAuthorization(header: string | null) {
-  if (!adminEnabled() || !header?.startsWith("Basic ")) return false;
-  try {
-    const decoded = atob(header.slice(6));
-    const idx = decoded.indexOf(":");
-    const user = decoded.slice(0, idx);
-    const pass = decoded.slice(idx + 1);
-    return safeEqual(user, process.env.ADMIN_USER!) && safeEqual(pass, process.env.ADMIN_PASSWORD!);
-  } catch {
-    return false;
-  }
-}
-
-function safeEqual(a: string, b: string) {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
-}
-
-/** Verificare în server actions (pe lângă proxy). Aruncă eroare dacă nu e admin. */
-export async function requireAdmin() {
-  const { headers } = await import("next/headers");
-  const h = await headers();
-  if (!isValidAdminAuthorization(h.get("authorization"))) throw new Error("Neautorizat");
+/** Doar administratorii. */
+export async function requireAdmin(): Promise<User> {
+  return requireRole(["admin"]);
 }

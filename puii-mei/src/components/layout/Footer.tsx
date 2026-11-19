@@ -54,6 +54,11 @@ export function Footer() {
           <ul className="mt-4 space-y-2 text-sm text-cream-100/80">
             <li>{site.company.legalName}</li>
             <li>
+              <Link href="/cont" className="hover:text-white">
+                Intră în cont
+              </Link>
+            </li>
+            <li>
               <Link href="/confidentialitate" className="hover:text-white">
                 Politica de confidențialitate
               </Link>
