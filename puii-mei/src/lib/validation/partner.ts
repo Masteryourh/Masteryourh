@@ -54,3 +54,43 @@ export const farmEditSchema = z.object({
     .transform((v) => v.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 12)),
   veterinaryRegistration: z.string().trim().max(160).default(""),
 });
+
+export const investmentRangeLabels = {
+  "sub-10k": "Sub 10.000 €",
+  "10k-50k": "10.000 – 50.000 €",
+  "50k-200k": "50.000 – 200.000 €",
+  "peste-200k": "Peste 200.000 €",
+  nestabilit: "Încă nu am stabilit",
+} as const;
+
+export const investorTypeLabels = {
+  "persoana-fizica": "Persoană fizică",
+  companie: "Companie",
+} as const;
+
+export const investorApplicationSchema = z
+  .object({
+    name: nameSchema,
+    phone: phoneSchema,
+    email: emailSchema,
+    investorType: z.enum(["persoana-fizica", "companie"], { message: "Alege tipul de investitor." }),
+    company: z.string().trim().max(120, "Numele companiei este prea lung.").default(""),
+    interestLots: checkbox,
+    interestInfrastructure: checkbox,
+    interestExpansion: checkbox,
+    amountRange: z.enum(["sub-10k", "10k-50k", "50k-200k", "peste-200k", "nestabilit"], {
+      message: "Alege un interval orientativ.",
+    }),
+    region: z.string().trim().max(120, "Textul este prea lung.").default(""),
+    message: z.string().trim().max(1500, "Mesajul poate avea maximum 1500 de caractere.").default(""),
+    termsConsent: checkbox.refine((v) => v, { message: "Este necesar acordul pentru prelucrarea datelor." }),
+    website: z.string().max(0).optional().or(z.literal("")),
+  })
+  .superRefine((d, ctx) => {
+    if (d.investorType === "companie" && d.company.length < 2) {
+      ctx.addIssue({ code: "custom", path: ["company"], message: "Completează numele companiei." });
+    }
+    if (!d.interestLots && !d.interestInfrastructure && !d.interestExpansion) {
+      ctx.addIssue({ code: "custom", path: ["interests"], message: "Alege cel puțin un domeniu de interes." });
+    }
+  });

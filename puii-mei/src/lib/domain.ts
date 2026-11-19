@@ -170,3 +170,24 @@ export interface FarmApplication {
   /** Slug-ul gospodăriei create din această solicitare. */
   farmSlug?: string;
 }
+
+export type InvestmentRange = "sub-10k" | "10k-50k" | "50k-200k" | "peste-200k" | "nestabilit";
+
+/** Solicitare de parteneriat trimisă de un investitor. */
+export interface InvestorApplication {
+  id: string;
+  createdAt: string;
+  status: FarmApplicationStatus;
+  name: string;
+  phone: string;
+  email: string;
+  investorType: "persoana-fizica" | "companie";
+  company: string;
+  interestLots: boolean;
+  interestInfrastructure: boolean;
+  interestExpansion: boolean;
+  amountRange: InvestmentRange;
+  region: string;
+  message: string;
+  internalNote: string;
+}

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import type { FarmApplicationStatus } from "@/lib/domain";
 import { farmEditSchema } from "@/lib/validation/partner";
 import { requireAdmin } from "@/server/auth";
-import { applicationRepository } from "@/server/repositories/applications";
+import { applicationRepository, investorRepository } from "@/server/repositories/applications";
 import { farmRepository } from "@/server/repositories/catalog";
 
 const statuses: FarmApplicationStatus[] = ["noua", "in-evaluare", "vizita-programata", "aprobata", "respinsa"];
@@ -70,4 +70,14 @@ export async function toggleFarmActive(formData: FormData) {
   if (!farm) throw new Error("Gospodăria nu există");
   await farmRepository.setActive(farm, !farm.active);
   revalidatePath("/", "layout");
+}
+
+export async function updateInvestorApplication(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const status = String(formData.get("status") ?? "") as FarmApplicationStatus;
+  const internalNote = String(formData.get("internalNote") ?? "").slice(0, 2000);
+  if (!id || !statuses.includes(status)) throw new Error("Date invalide");
+  await investorRepository.update(id, { status, internalNote });
+  revalidatePath("/admin", "layout");
 }

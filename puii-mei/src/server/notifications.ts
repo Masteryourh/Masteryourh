@@ -1,5 +1,5 @@
 import "server-only";
-import type { ContactMessage, FarmApplication, Preorder } from "@/lib/domain";
+import type { ContactMessage, FarmApplication, InvestorApplication, Preorder } from "@/lib/domain";
 
 /**
  * Punct unic pentru notificări (email / SMS). În prima versiune doar
@@ -16,4 +16,8 @@ export async function notifyNewContactMessage(m: ContactMessage) {
 
 export async function notifyNewFarmApplication(a: FarmApplication) {
   console.info(`[puii-mei] Solicitare parteneriat: ${a.name}, ${a.village} (${a.county}), ~${a.capacity} pui/lot`);
+}
+
+export async function notifyNewInvestorApplication(a: InvestorApplication) {
+  console.info(`[puii-mei] Solicitare investitor: ${a.name}${a.company ? ` (${a.company})` : ""}, interval ${a.amountRange}`);
 }

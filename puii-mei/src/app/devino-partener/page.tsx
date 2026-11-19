@@ -2,69 +2,84 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Icon, type IconName } from "@/components/ui/Icon";
-import { PartnerForm } from "@/components/forms/PartnerForm";
+import { PartnerChooser } from "@/components/forms/PartnerChooser";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Devino gospodărie parteneră",
+  title: "Devino partener – gospodării și investitori",
   description:
-    "Ai o gospodărie și vrei să crești pui la comandă? Aplică pentru parteneriat cu Puii mei: cerere asigurată prin precomenzi, hrană plătită în avans de clienți și consultanță.",
+    "Gospodăriile pot crește pui la comandă cu Puii mei, iar investitorii pot susține producția locală. Aplică pentru parteneriat.",
   path: "/devino-partener",
 });
 
-const benefits: { icon: IconName; title: string; text: string }[] = [
-  { icon: "clipboard", title: "Cerere asigurată", text: "Crești doar puii deja comandați. Știi dinainte câți pui și pentru cine." },
-  { icon: "leaf", title: "Hrana plătită în avans", text: "Clienții plătesc în avans hrana puilor, direct în contul gospodăriei tale." },
-  { icon: "users", title: "Clienți din oraș", text: "Vinzi direct clienților, fără intermediari. Noi organizăm precomenzile și livrarea." },
-  { icon: "chart", title: "Consultanță", text: "Te ajutăm cu protocolul de creștere, evidența lotului și cerințele sanitar-veterinare." },
-];
-
-const process = [
-  "Trimiți formularul de mai jos.",
-  "Te sunăm ca să discutăm despre gospodărie.",
-  "Venim în vizită și verificăm împreună spațiul.",
-  "Semnăm parteneriatul și publicăm profilul gospodăriei.",
-  "Primești primul lot, pe baza precomenzilor.",
+const audiences: {
+  id: "gospodarie" | "investitor";
+  eyebrow: string;
+  title: string;
+  cta: string;
+  items: { icon: IconName; title: string; text: string }[];
+}[] = [
+  {
+    id: "gospodarie",
+    eyebrow: "Pentru gospodării",
+    title: "Crești pui la comandă, pentru clienți siguri",
+    cta: "Aplică ca gospodărie",
+    items: [
+      { icon: "clipboard", title: "Cerere asigurată", text: "Crești doar puii deja comandați. Știi dinainte câți pui și pentru cine." },
+      { icon: "leaf", title: "Hrana plătită în avans", text: "Clienții plătesc în avans hrana puilor, direct în contul gospodăriei tale." },
+      { icon: "users", title: "Clienți din oraș", text: "Vinzi direct clienților. Noi organizăm precomenzile și livrarea." },
+      { icon: "chart", title: "Consultanță", text: "Te ajutăm cu protocolul de creștere, evidența lotului și cerințele sanitar-veterinare." },
+    ],
+  },
+  {
+    id: "investitor",
+    eyebrow: "Pentru investitori",
+    title: "Susții producția locală, cu cerere confirmată",
+    cta: "Aplică ca investitor",
+    items: [
+      { icon: "clipboard", title: "Producție la comandă", text: "Fiecare lot pornește doar după ce precomenzile confirmă cererea." },
+      { icon: "home", title: "Gospodării noi", text: "Adăposturi și echipamente pentru gospodăriile care vor să intre în producție." },
+      { icon: "pin", title: "Extindere regională", text: "Ducem modelul Puii mei în orașe și județe noi, împreună cu parteneri locali." },
+      { icon: "shield", title: "Transparență", text: "Trasabilitate pe fiecare lot și raportare clară despre producția susținută." },
+    ],
+  },
 ];
 
 export default function BecomePartnerPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Pentru gospodării"
-        title="Crește pui la comandă cu Puii mei"
-        intro="Căutăm gospodării care vor să crească pui corect, cu evidență clară, pentru clienți care știu și apreciază de unde vine mâncarea."
+        eyebrow="Devino partener"
+        title="Construim împreună rețeaua Puii mei"
+        intro="Căutăm gospodării care vor să crească pui corect, cu evidență clară, și investitori care vor să susțină producția locală de calitate."
       />
       <Container className="py-14 sm:py-20">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {benefits.map((b) => (
-            <div key={b.title} className="rounded-3xl bg-cream-100 p-6">
-              <Icon name={b.icon} className="h-7 w-7 text-forest-700" />
-              <h2 className="mt-4 font-display text-xl font-semibold">{b.title}</h2>
-              <p className="mt-2 leading-relaxed text-muted">{b.text}</p>
-            </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          {audiences.map((a) => (
+            <section key={a.id} className="flex flex-col rounded-[2rem] bg-cream-100 p-6 sm:p-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-grain-600">{a.eyebrow}</p>
+              <h2 className="mt-2 text-2xl font-semibold sm:text-3xl">{a.title}</h2>
+              <ul className="mt-6 grid flex-1 gap-4 sm:grid-cols-2">
+                {a.items.map((b) => (
+                  <li key={b.title} className="rounded-2xl bg-white p-5">
+                    <Icon name={b.icon} className="h-6 w-6 text-forest-700" />
+                    <h3 className="mt-3 font-sans text-base font-semibold">{b.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-muted">{b.text}</p>
+                  </li>
+                ))}
+              </ul>
+              <a
+                href={`#${a.id}`}
+                className="mt-6 inline-flex items-center justify-center gap-2 self-start rounded-full bg-grain-400 px-6 py-3 font-semibold text-forest-900 hover:bg-grain-500"
+              >
+                {a.cta} <Icon name="arrow" className="h-5 w-5" />
+              </a>
+            </section>
           ))}
         </div>
 
-        <div className="mt-16 grid gap-10 lg:grid-cols-[1fr_1.6fr] lg:items-start">
-          <div className="lg:sticky lg:top-28">
-            <h2 className="text-3xl font-semibold">Cum devii partener</h2>
-            <ol className="mt-6 space-y-4">
-              {process.map((step, i) => (
-                <li key={step} className="flex gap-4">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-grain-300 text-sm font-semibold text-forest-900">
-                    {i + 1}
-                  </span>
-                  <span className="pt-1 leading-relaxed">{step}</span>
-                </li>
-              ))}
-            </ol>
-            <p className="mt-8 rounded-2xl bg-forest-50 p-4 text-sm leading-relaxed text-forest-800">
-              Nu e nevoie să ai totul pregătit de la început. Dacă înregistrarea la DSV e în curs sau nu ai încă un adăpost
-              potrivit, aplică oricum și discutăm ce e necesar.
-            </p>
-          </div>
-          <PartnerForm />
+        <div className="mt-16">
+          <PartnerChooser />
         </div>
       </Container>
     </>

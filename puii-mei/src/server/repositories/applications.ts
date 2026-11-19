@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import type { FarmApplication, FarmApplicationStatus } from "@/lib/domain";
+import type { FarmApplication, FarmApplicationStatus, InvestorApplication } from "@/lib/domain";
 import { store } from "@/server/db/store";
 
 const COLLECTION = "farm-applications";
@@ -27,6 +27,30 @@ export const applicationRepository = {
   },
   async update(id: string, patch: Partial<Pick<FarmApplication, "status" | "internalNote" | "farmSlug">>) {
     return store.update<FarmApplication>(COLLECTION, id, patch);
+  },
+};
+
+const INVESTORS = "investor-applications";
+
+export type NewInvestorApplication = Omit<InvestorApplication, "id" | "createdAt" | "status" | "internalNote">;
+
+export const investorRepository = {
+  async create(data: NewInvestorApplication) {
+    const app: InvestorApplication = {
+      ...data,
+      id: randomUUID(),
+      createdAt: new Date().toISOString(),
+      status: "noua",
+      internalNote: "",
+    };
+    return store.append(INVESTORS, app);
+  },
+  async list() {
+    const items = await store.list<InvestorApplication>(INVESTORS);
+    return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+  async update(id: string, patch: Partial<Pick<InvestorApplication, "status" | "internalNote">>) {
+    return store.update<InvestorApplication>(INVESTORS, id, patch);
   },
 };
 

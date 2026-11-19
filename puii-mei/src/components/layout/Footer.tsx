@@ -21,7 +21,7 @@ export function Footer() {
             </li>
             <li>
               <Link href="/devino-partener" className="text-cream-100/80 hover:text-white">
-                Devino gospodărie parteneră
+                Devino partener
               </Link>
             </li>
             {mainNav.map((i) => (

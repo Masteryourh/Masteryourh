@@ -24,9 +24,9 @@ npm run build && npm start   # producție
 | `/gospodarii`, `/gospodarii/[slug]` | Gospodării partenere: localizare, fotografii, practici, loturi |
 | `/trasabilitate`, `/trasabilitate/[cod]` | Căutare după cod lot, etape, status, dată estimată |
 | `/despre-noi`, `/contact`, `/confidentialitate` | Misiune, formular contact, GDPR |
-| `/devino-partener` | Formular de aplicare pentru gospodării noi |
+| `/devino-partener` | Aplicare ca gospodărie parteneră sau ca investitor (`#gospodarie` / `#investitor`) |
 | `/admin` | Precomenzi (schimbare status), loturi, mesaje – protejat cu Basic Auth |
-| `/admin/parteneri` | Solicitări de parteneriat: status, note interne, aprobare → profil de gospodărie |
+| `/admin/parteneri` | Solicitări de la gospodării și investitori: status, note interne; gospodăriile aprobate devin profiluri publice |
 | `/admin/gospodarii` | Gospodării: editare (cele create din admin), ascundere/afișare pe site |
 | `/api/loturi/[cod]` | API JSON de trasabilitate |
 
