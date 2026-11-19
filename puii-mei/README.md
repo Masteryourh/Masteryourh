@@ -29,10 +29,22 @@ npm run build && npm start   # producție
 | `/admin` | Precomenzi (schimbare status), loturi, mesaje – protejat cu Basic Auth |
 | `/admin/parteneri` | Solicitări de la gospodării și investitori: status, note interne; gospodăriile aprobate devin profiluri publice |
 | `/admin/gospodarii` | Gospodării: editare (cele create din admin), ascundere/afișare pe site |
+| `/admin/calitate` | Confirmări de primire: stări, note medii (gospodărie, curier, Puii mei), probleme semnalate |
+| `/confirmare/[cod]` | Confirmarea primirii, completată de client prin link unic (12 ore, nu se poate modifica după trimitere) |
 | `/admin/interes` | Cerere pe județe pentru produsele noi, comparată cu gospodăriile care le pot produce |
 | `/api/loturi/[cod]` | API JSON de trasabilitate |
 
 Parametri utili: `/precomanda?lot=PM-2612-A03&pui=12`, `/contact?subiect=partener`.
+
+## Confirmarea primirii
+
+Când o precomandă e marcată **Livrată** în admin, se creează un link unic `/confirmare/<cod>`, valabil 12 ore
+(`CONFIRMATION_WINDOW_HOURS` în `src/lib/confirmation.ts`). Clientul confirmă starea comenzii și dă note interne
+gospodăriei, curierului și platformei. După trimitere, confirmarea nu mai poate fi modificată.
+
+- Cu `RESEND_API_KEY` și `EMAIL_FROM` setate, linkul se trimite automat pe email.
+- Fără ele, linkul apare în admin (copiere / WhatsApp).
+- Pentru ca nota să ajungă la gospodăria corectă, alocă lotul precomenzii în admin înainte de livrare.
 
 ## Mod „în construcție”
 

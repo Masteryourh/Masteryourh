@@ -108,6 +108,8 @@ export interface Preorder {
   notes: string;
   estimate: PriceEstimate;
   marketingConsent: boolean;
+  /** Când a fost marcată ca livrată. */
+  deliveredAt?: string;
 }
 
 export interface ContactMessage {
@@ -208,4 +210,39 @@ export interface InterestSignup {
   phone: string;
   county: string;
   products: import("./products").UpcomingProductId[];
+}
+
+export type ConfirmationState = "asteapta" | "confirmat" | "problema" | "expirat";
+
+/**
+ * Confirmarea primirii unei precomenzi, completată de client prin link unic,
+ * valabil un număr limitat de ore de la marcarea ca livrată. După trimitere nu
+ * se mai poate modifica. Include note interne de calitate.
+ */
+export interface DeliveryConfirmation {
+  /** = id-ul precomenzii (o singură confirmare pe precomandă). */
+  id: string;
+  token: string;
+  preorderNumber: string;
+  farmSlug: string | null;
+  lotCode: string | null;
+  birdsOrdered: number;
+  deliveredAt: string;
+  expiresAt: string;
+  sentByEmail: boolean;
+  firstOpenedAt?: string;
+  submittedAt?: string;
+  answers?: {
+    birdsReceived: number;
+    packagingOk: boolean;
+    coldOk: boolean;
+    appearanceOk: boolean;
+    /** true = „confirm primirea în condițiile promise”. */
+    conditionOk: boolean;
+    problem: string;
+    ratingFarm: number;
+    ratingCourier: number;
+    ratingPlatform: number;
+    comment: string;
+  };
 }
