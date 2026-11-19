@@ -22,5 +22,6 @@ export const mainNav = [
   { href: "/gospodarii", label: "Gospodării partenere" },
   { href: "/trasabilitate", label: "Trasabilitate" },
   { href: "/despre-noi", label: "Despre noi" },
+  { href: "/devino-partener", label: "Devino partener" },
   { href: "/contact", label: "Contact" },
 ] as const;
