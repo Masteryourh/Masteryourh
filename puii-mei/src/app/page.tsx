@@ -12,7 +12,6 @@ import { LotLookup } from "@/components/lots/LotLookup";
 import { farmRepository, lotRepository } from "@/server/repositories/catalog";
 import { lotStatus } from "@/lib/lots";
 import { pricing } from "@/lib/pricing";
-import { formatLei } from "@/lib/format";
 
 // Statusul loturilor depinde de dată – regenerăm pagina periodic.
 export const revalidate = 3600;
@@ -77,21 +76,21 @@ export default async function HomePage() {
                 Cum funcționează?
               </ButtonLink>
             </div>
-            <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4 border-t border-forest-900/10 pt-6">
-              <div>
+            <dl className="mt-10 grid max-w-lg grid-cols-3 gap-3 border-t border-forest-900/10 pt-6 sm:gap-4">
+              <div className="flex flex-col justify-between">
                 <dt className="text-xs text-muted">Preț estimativ</dt>
-                <dd className="mt-1 font-display text-2xl font-semibold text-forest-900">
-                  {formatLei(pricing.pricePerKg)}
+                <dd className="mt-1 whitespace-nowrap font-display text-xl font-semibold text-forest-900 sm:text-2xl">
+                  {pricing.pricePerKg} lei
                   <span className="text-sm font-normal text-muted">/kg</span>
                 </dd>
               </div>
-              <div>
+              <div className="flex flex-col justify-between">
                 <dt className="text-xs text-muted">Durata creșterii</dt>
-                <dd className="mt-1 font-display text-2xl font-semibold text-forest-900">~8 săpt.</dd>
+                <dd className="mt-1 whitespace-nowrap font-display text-xl font-semibold text-forest-900 sm:text-2xl">~8 săpt.</dd>
               </div>
-              <div>
+              <div className="flex flex-col justify-between">
                 <dt className="text-xs text-muted">Gospodării partenere</dt>
-                <dd className="mt-1 font-display text-2xl font-semibold text-forest-900">{farms.length}</dd>
+                <dd className="mt-1 whitespace-nowrap font-display text-xl font-semibold text-forest-900 sm:text-2xl">{farms.length}</dd>
               </div>
             </dl>
           </div>
@@ -100,7 +99,7 @@ export default async function HomePage() {
               src="/images/hero.jpg"
               alt="Pui crescuți liber în curtea unei gospodării rurale"
               priority
-              className="aspect-[4/5] rounded-[2rem] shadow-2xl shadow-forest-900/15 sm:aspect-[5/4] lg:aspect-[4/5]"
+              className="aspect-[4/3] rounded-[2rem] shadow-2xl shadow-forest-900/15 sm:aspect-[5/4] lg:aspect-[4/5]"
             />
             {growingLot && (
               <div className="absolute -bottom-5 left-4 right-4 rounded-2xl bg-white/95 p-4 shadow-xl shadow-forest-900/10 backdrop-blur sm:left-auto sm:right-6 sm:w-72">
