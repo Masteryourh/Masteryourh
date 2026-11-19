@@ -20,9 +20,7 @@ export function proxy(request: NextRequest) {
   }
 
   // Modul „în construcție”.
-  if (!maintenanceEnabled() || OPEN_PATHS.has(pathname) || pathname.startsWith("/confirmare/")) {
-    return NextResponse.next();
-  }
+  if (!maintenanceEnabled() || OPEN_PATHS.has(pathname)) return NextResponse.next();
   if (isValidPreviewKey(request.cookies.get(PREVIEW_COOKIE)?.value)) return NextResponse.next();
 
   const res = NextResponse.rewrite(new URL("/in-constructie", request.url));
