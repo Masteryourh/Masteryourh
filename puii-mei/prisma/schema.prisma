@@ -37,6 +37,13 @@ enum LotStage {
   LIVRARE
 }
 
+enum Species {
+  PUI
+  CURCANI
+  RATE
+  FAZANI
+}
+
 enum DeliveryStatus {
   PLANIFICATA
   IN_CURS
@@ -92,6 +99,7 @@ model Lot {
   code          String     @unique
   farm          Farm       @relation(fields: [farmId], references: [id])
   farmId        String
+  species       Species    @default(PUI)
   breed         String
   startDate     DateTime
   growthDays    Int

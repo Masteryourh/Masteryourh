@@ -57,6 +57,8 @@ export type LotStatus =
 export interface Lot {
   code: string;
   farmSlug: string;
+  /** Specia crescută în lot. Lipsă = „pui” (loturile existente). */
+  species?: import("./products").Species;
   breed: string;
   /** Data la care puii de o zi intră în gospodărie. */
   startDate: ISODate;
@@ -163,6 +165,11 @@ export interface FarmApplication {
   experienceYears: number;
   hasShelter: boolean;
   hasOutdoorArea: boolean;
+  /** Ce altceva ar putea produce gospodăria (etapele următoare). */
+  canTurkeys?: boolean;
+  canDucks?: boolean;
+  canPheasants?: boolean;
+  hasGreenhouse?: boolean;
   dsvStatus: DsvStatus;
   message: string;
   /** Note interne ale echipei Puii mei. */
@@ -190,4 +197,15 @@ export interface InvestorApplication {
   region: string;
   message: string;
   internalNote: string;
+}
+
+/** Înscriere „Anunță-mă” pentru produsele din etapele următoare. */
+export interface InterestSignup {
+  id: string;
+  createdAt: string;
+  name: string;
+  email: string;
+  phone: string;
+  county: string;
+  products: import("./products").UpcomingProductId[];
 }
