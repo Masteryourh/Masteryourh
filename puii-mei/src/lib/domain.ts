@@ -209,3 +209,26 @@ export interface InterestSignup {
   county: string;
   products: import("./products").UpcomingProductId[];
 }
+
+export type UserRole = "admin" | "gospodar" | "investitor";
+export type UserStatus = "invitat" | "activ" | "dezactivat";
+
+/** Cont de utilizator al platformei (curierii nu au cont: primesc acces temporar pe tură). */
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  phone: string;
+  role: UserRole;
+  /** Pentru gospodari: gospodăria administrată. */
+  farmSlug?: string;
+  status: UserStatus;
+  passwordHash?: string;
+  /** Crește la schimbarea parolei / dezactivare: invalidează sesiunile vechi. */
+  sessionVersion: number;
+  /** Link de invitație sau de resetare a parolei. */
+  setupToken?: string;
+  setupExpiresAt?: string;
+  createdAt: string;
+  lastLoginAt?: string;
+}

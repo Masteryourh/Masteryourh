@@ -26,7 +26,12 @@ npm run build && npm start   # producție
 | `/despre-noi`, `/contact`, `/confidentialitate` | Misiune, formular contact, GDPR |
 | `/devino-partener` | Aplicare ca gospodărie parteneră sau ca investitor (`#gospodarie` / `#investitor`) |
 | `/in-curand` | Produse în curând (curcani, rațe, fazani, legume din seră) + formular „Anunță-mă” |
-| `/admin` | Precomenzi (schimbare status), loturi, mesaje – protejat cu Basic Auth |
+| `/cont/autentificare` | Intrare în cont (email + parolă); `/cont` duce la dashboard-ul rolului |
+| `/cont/activare/[cod]` | Setarea parolei din linkul de invitație / resetare (valabil 7 zile, o singură folosire) |
+| `/cont/gospodar` | Dashboard gospodar: loturile, precomenzile pe loturile lui |
+| `/cont/investitor` | Dashboard investitor (investiții, contracte, cronologie – în etapa 4) |
+| `/admin` | Precomenzi (schimbare status), loturi, mesaje – doar pentru administratori |
+| `/admin/utilizatori` | Conturi: creare, link de activare (copiere / WhatsApp), resetare parolă, dezactivare |
 | `/admin/parteneri` | Solicitări de la gospodării și investitori: status, note interne; gospodăriile aprobate devin profiluri publice |
 | `/admin/gospodarii` | Gospodării: editare (cele create din admin), ascundere/afișare pe site |
 | `/admin/interes` | Cerere pe județe pentru produsele noi, comparată cu gospodăriile care le pot produce |
@@ -44,7 +49,17 @@ Ascunde site-ul de public până la lansare. Se activează din variabilele de me
 | `PREVIEW_KEY` | un cuvânt secret | `https://www.puiimei.ro/acces?cheie=<PREVIEW_KEY>` deschide site-ul complet pe acel dispozitiv, 30 de zile |
 
 - `/acces?iesire=1` șterge accesul (vezi site-ul ca un vizitator).
-- `/admin` rămâne accesibil cu utilizator și parolă.
+- Conturile (`/cont/...`, `/admin`) rămân accesibile, cu autentificare.
+
+## Conturi
+
+- Roluri: **admin**, **gospodar** (legat de o gospodărie), **investitor**. Curierii nu au cont: primesc acces
+  temporar pe fiecare tură (etapa 2).
+- Primul administrator e cel din `ADMIN_USER` / `ADMIN_PASSWORD`; restul conturilor se creează din
+  `/admin/utilizatori`. Persoana primește un link de activare și își alege parola (min. 10 caractere, litere și cifre).
+- Sesiune semnată (`SESSION_SECRET`), cookie `httpOnly`, 14 zile. Dezactivarea unui cont sau setarea unei parole noi
+  închide imediat sesiunile vechi. După 5 parole greșite, contul e blocat 15 minute.
+- Parolele sunt salvate doar ca hash `scrypt`.
 - Lansare: șterge `MAINTENANCE_MODE` (sau pune `0`) și fă Redeploy.
 
 ## Arhitectură

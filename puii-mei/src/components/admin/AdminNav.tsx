@@ -9,6 +9,7 @@ const items = [
   { href: "/admin/parteneri", label: "Solicitări parteneri" },
   { href: "/admin/gospodarii", label: "Gospodării" },
   { href: "/admin/interes", label: "Interes produse" },
+  { href: "/admin/utilizatori", label: "Utilizatori" },
 ];
 
 export function AdminNav({ newApplications }: { newApplications: number }) {
