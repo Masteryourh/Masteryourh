@@ -1,35 +1,43 @@
 import type { DeliveryZone } from "@/lib/domain";
 
-/** Zone de livrare pentru faza pilot. */
+/** Zone de livrare pentru faza pilot: Bucovina, județul Suceava. */
 export const deliveryZones: DeliveryZone[] = [
   {
-    id: "cluj-napoca",
-    name: "Cluj-Napoca",
-    localities: "Toate cartierele",
+    id: "campulung-moldovenesc",
+    name: "Câmpulung Moldovenesc",
+    localities: "Câmpulung Moldovenesc, Pojorâta, Vama, Fundu Moldovei",
     fee: 15,
     deliveryDay: "Sâmbătă",
     active: true,
   },
   {
-    id: "floresti-baciu",
-    name: "Florești, Baciu, Gilău",
-    localities: "Florești, Baciu, Gilău, Luna de Sus",
+    id: "vatra-dornei",
+    name: "Vatra Dornei",
+    localities: "Vatra Dornei, Dorna Candrenilor, Iacobeni, Șaru Dornei",
     fee: 20,
     deliveryDay: "Sâmbătă",
     active: true,
   },
   {
-    id: "apahida-jucu",
-    name: "Apahida, Jucu, Bonțida",
-    localities: "Apahida, Sânnicoară, Jucu, Bonțida",
+    id: "gura-humorului",
+    name: "Gura Humorului",
+    localities: "Gura Humorului, Mănăstirea Humorului, Frasin, Vatra Moldoviței",
     fee: 20,
     deliveryDay: "Vineri",
     active: true,
   },
   {
-    id: "turda-campia-turzii",
-    name: "Turda, Câmpia Turzii",
-    localities: "Turda, Câmpia Turzii, Mihai Viteazu",
+    id: "suceava",
+    name: "Suceava",
+    localities: "Municipiul Suceava, Ipotești, Șcheia",
+    fee: 25,
+    deliveryDay: "Vineri",
+    active: true,
+  },
+  {
+    id: "radauti",
+    name: "Rădăuți",
+    localities: "Rădăuți, Marginea, Sucevița",
     fee: 25,
     deliveryDay: "Vineri",
     active: true,
@@ -37,7 +45,7 @@ export const deliveryZones: DeliveryZone[] = [
   {
     id: "ridicare-personala",
     name: "Ridicare personală",
-    localities: "Punct de ridicare Cluj-Napoca (adresa se comunică la confirmare)",
+    localities: "Punct de ridicare în Câmpulung Moldovenesc (adresa se comunică la confirmare)",
     fee: 0,
     deliveryDay: "Vineri sau sâmbătă",
     active: true,

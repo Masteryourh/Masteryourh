@@ -84,7 +84,7 @@ export function InvestorForm() {
               ))}
             </select>
           </Field>
-          <Field id="inv-region" label="Regiune de interes" error={errors.region} hint="Ex. Cluj, Transilvania, toată țara.">
+          <Field id="inv-region" label="Regiune de interes" error={errors.region} hint="Ex. Bucovina, județul Suceava, toată țara.">
             <input {...fieldA11y("inv-region", errors.region, true)} name="region" defaultValue={v.region} className={inputClasses} />
           </Field>
           <Field id="inv-message" label="Mesaj" error={errors.message} className="sm:col-span-2">
