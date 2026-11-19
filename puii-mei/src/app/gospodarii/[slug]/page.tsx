@@ -112,7 +112,9 @@ export default async function FarmPage({ params }: PageProps<"/gospodarii/[slug]
           name: farm.name,
           description: farm.shortDescription,
           address: { "@type": "PostalAddress", addressLocality: farm.village, addressRegion: farm.county, addressCountry: "RO" },
-          geo: { "@type": "GeoCoordinates", latitude: farm.coordinates.lat, longitude: farm.coordinates.lng },
+          ...(farm.coordinates && {
+            geo: { "@type": "GeoCoordinates", latitude: farm.coordinates.lat, longitude: farm.coordinates.lng },
+          }),
         }}
       />
     </>

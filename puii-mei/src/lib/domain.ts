@@ -17,7 +17,7 @@ export interface Farm {
   village: string;
   county: string;
   /** Coordonate aproximative, pentru hartă (viitor). */
-  coordinates: { lat: number; lng: number };
+  coordinates?: { lat: number; lng: number };
   since: number;
   /** Capacitate maximă pe lot (număr de pui). */
   capacityPerLot: number;
@@ -126,4 +126,68 @@ export interface PriceEstimate {
   productValue: number;
   deliveryFee: number;
   total: number;
+}
+
+/** Gospodărie cu metadate de administrare (demo din cod sau creată din admin). */
+export interface FarmRecord extends Farm {
+  id: string;
+  active: boolean;
+  /** „demo” = definită în src/data/farms.ts; „admin” = creată din panoul de administrare. */
+  source: "demo" | "admin";
+  createdAt?: string;
+  applicationId?: string;
+}
+
+export type DsvStatus = "inregistrat" | "in-curs" | "neinregistrat";
+
+export type FarmApplicationStatus =
+  | "noua"
+  | "in-evaluare"
+  | "vizita-programata"
+  | "aprobata"
+  | "respinsa";
+
+/** Solicitare de parteneriat trimisă de o gospodărie nouă. */
+export interface FarmApplication {
+  id: string;
+  createdAt: string;
+  status: FarmApplicationStatus;
+  name: string;
+  phone: string;
+  email: string;
+  farmName: string;
+  village: string;
+  county: string;
+  /** Câți pui poate crește pe lot (estimare). */
+  capacity: number;
+  experienceYears: number;
+  hasShelter: boolean;
+  hasOutdoorArea: boolean;
+  dsvStatus: DsvStatus;
+  message: string;
+  /** Note interne ale echipei Puii mei. */
+  internalNote: string;
+  /** Slug-ul gospodăriei create din această solicitare. */
+  farmSlug?: string;
+}
+
+export type InvestmentRange = "sub-10k" | "10k-50k" | "50k-200k" | "peste-200k" | "nestabilit";
+
+/** Solicitare de parteneriat trimisă de un investitor. */
+export interface InvestorApplication {
+  id: string;
+  createdAt: string;
+  status: FarmApplicationStatus;
+  name: string;
+  phone: string;
+  email: string;
+  investorType: "persoana-fizica" | "companie";
+  company: string;
+  interestLots: boolean;
+  interestInfrastructure: boolean;
+  interestExpansion: boolean;
+  amountRange: InvestmentRange;
+  region: string;
+  message: string;
+  internalNote: string;
 }

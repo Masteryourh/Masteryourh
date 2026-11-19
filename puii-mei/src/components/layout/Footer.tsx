@@ -19,6 +19,11 @@ export function Footer() {
                 Precomandă
               </Link>
             </li>
+            <li>
+              <Link href="/devino-partener" className="text-cream-100/80 hover:text-white">
+                Devino partener
+              </Link>
+            </li>
             {mainNav.map((i) => (
               <li key={i.href}>
                 <Link href={i.href} className="text-cream-100/80 hover:text-white">

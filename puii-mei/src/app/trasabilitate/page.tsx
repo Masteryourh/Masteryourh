@@ -35,7 +35,7 @@ export default async function TraceabilityPage({ searchParams }: PageProps<"/tra
     error = `Nu am găsit lotul „${normalizeLotCode(cod)}”. Verifică codul de pe etichetă (format PM-AALL-X00).`;
   }
 
-  const [lots, farms] = await Promise.all([lotRepository.list(), farmRepository.list()]);
+  const [lots, farms] = await Promise.all([lotRepository.list(), farmRepository.listAll()]);
   const farmBySlug = new Map(farms.map((f) => [f.slug, f]));
 
   return (

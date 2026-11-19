@@ -184,9 +184,14 @@ export default async function HomePage() {
               title="Oamenii care cresc puii tăi"
               intro="Gospodării de familie, verificate și monitorizate, care lucrează după același protocol de creștere."
             />
-            <ButtonLink href="/gospodarii" variant="secondary">
-              Toate gospodăriile
-            </ButtonLink>
+            <div className="flex flex-wrap gap-3">
+              <ButtonLink href="/gospodarii" variant="secondary">
+                Toate gospodăriile
+              </ButtonLink>
+              <ButtonLink href="/devino-partener" variant="ghost">
+                Ai o gospodărie? Devino partener
+              </ButtonLink>
+            </div>
           </div>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {farms.map((farm) => (

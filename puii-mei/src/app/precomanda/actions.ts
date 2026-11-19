@@ -1,7 +1,7 @@
 "use server";
 
 import { estimatePrice } from "@/lib/pricing";
-import { availableBirds, availabilityDate, isOpenForPreorder } from "@/lib/lots";
+import { availableBirds, availabilityDate, isOpenForPreorder, normalizeLotCode } from "@/lib/lots";
 import { flattenErrors } from "@/lib/validation/common";
 import { preorderSchema } from "@/lib/validation/preorder";
 import { lotRepository, zoneRepository } from "@/server/repositories/catalog";
@@ -36,7 +36,8 @@ export async function submitPreorder(
   let lotCode: string | null = null;
   let availableFrom: string | null = null;
   if (data.lotCode) {
-    const lot = await lotRepository.byCode(data.lotCode);
+    const code = normalizeLotCode(data.lotCode);
+    const lot = (await lotRepository.openForPreorder()).find((l) => l.code === code);
     if (!lot || !isOpenForPreorder(lot)) {
       return { status: "error", errors: { lotCode: "Lotul ales nu mai acceptă precomenzi." }, values: raw };
     }
