@@ -1,35 +1,35 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
-/** Pasăre rotisată pe platou, cu copanele în sus (în stilul curcanului de sărbătoare). */
+/** Pui rotisat, văzut din lateral, cu copanele în sus. Desen original. */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 48 48" aria-hidden className={cn("h-11 w-11 shrink-0 sm:h-12 sm:w-12", className)}>
-      <circle cx="24" cy="24" r="24" fill="#1b3424"/>
-      <g transform="translate(24 27) scale(1.06) translate(-24 -27)">
-      <ellipse cx="24" cy="36.6" rx="19.2" ry="4.7" fill="#e4d3ad"/>
-      <ellipse cx="24" cy="36.2" rx="17" ry="3.6" fill="#fdfbf6"/>
-      <ellipse cx="8.6" cy="35" rx="2.6" ry="1.3" transform="rotate(-20 8.6 35)" fill="#3f6b4d"/>
-      <ellipse cx="10.6" cy="36.9" rx="2.3" ry="1.1" transform="rotate(15 10.6 36.9)" fill="#5e8f5a"/>
-      <ellipse cx="39.4" cy="35" rx="2.6" ry="1.3" transform="rotate(20 39.4 35)" fill="#3f6b4d"/>
-      <ellipse cx="37.4" cy="36.9" rx="2.3" ry="1.1" transform="rotate(-15 37.4 36.9)" fill="#5e8f5a"/>
-      <circle cx="12.9" cy="37.6" r="1" fill="#b8323a"/>
-      <circle cx="35.1" cy="37.6" r="1" fill="#b8323a"/>
-      <circle cx="33.5" cy="38.3" r="0.85" fill="#b8323a"/>
-      <path d="M8 29.8C8 22.4 15.2 17.8 24 17.8s16 4.6 16 12c0 4.6-3.5 6.6-8.2 6.6H16.2C11.5 36.4 8 34.4 8 29.8z" fill="#b8691f"/>
-      <path d="M10.2 28.4c.8-5.4 6.6-8.8 13.8-8.8s13 3.4 13.8 8.8c-2.6 3.6-7.6 5.6-13.8 5.6s-11.2-2-13.8-5.6z" fill="#d1863a"/>
-      <path d="M24 19.8c-1.1 3.6-1.2 8.4.2 13.4" stroke="#a65a1a" strokeWidth=".9" fill="none" strokeLinecap="round" opacity={0.7}/>
-      <ellipse cx="18.6" cy="23.6" rx="4.3" ry="1.8" transform="rotate(-20 18.6 23.6)" fill="#f1c46a" opacity={0.85}/>
-      <ellipse cx="16.4" cy="25.6" rx="1.4" ry=".7" transform="rotate(-20 16.4 25.6)" fill="#fdfbf6" opacity={0.55}/>
-      <ellipse cx="30.6" cy="25.4" rx="2.6" ry="1.2" transform="rotate(18 30.6 25.4)" fill="#f1c46a" opacity={0.5}/>
-      <ellipse cx="15" cy="20.2" rx="4.4" ry="6.7" transform="rotate(-28 15 20.2)" fill="#a65a1a"/>
-      <ellipse cx="14" cy="19" rx="1.5" ry="3.4" transform="rotate(-28 14 19)" fill="#d1863a" opacity={0.9}/>
-      <path d="M11.9 14.4 10.8 12.3" stroke="#f0e5cc" strokeWidth="2" strokeLinecap="round"/>
-      <path transform="translate(10.6 11.6) rotate(-28)" d="M-2 .9V-1.5l.65-1.1.65 1.1.7-1.1.7 1.1.65-1.1.65 1.1V.9z" fill="#ffffff"/>
-      <ellipse cx="33" cy="20.2" rx="4.4" ry="6.7" transform="rotate(28 33 20.2)" fill="#a65a1a"/>
-      <ellipse cx="34" cy="19" rx="1.5" ry="3.4" transform="rotate(28 34 19)" fill="#d1863a" opacity={0.9}/>
-      <path d="M36.1 14.4 37.2 12.3" stroke="#f0e5cc" strokeWidth="2" strokeLinecap="round"/>
-      <path transform="translate(37.4 11.6) rotate(28)" d="M-2 .9V-1.5l.65-1.1.65 1.1.7-1.1.7 1.1.65-1.1.65 1.1V.9z" fill="#ffffff"/>
+    <svg viewBox="0 0 64 44" aria-hidden className={cn("h-10 w-[58px] shrink-0 sm:h-11 sm:w-16", className)}>
+      <g strokeLinejoin="round" strokeLinecap="round">
+      <path d="M51.60 11.40 54.91 8.81" stroke="#3b230f" strokeWidth="5" strokeLinecap="round"/>
+      <circle cx="56.34" cy="9.67" r="2.35" fill="#3b230f"/>
+      <circle cx="54.43" cy="7.22" r="2.35" fill="#3b230f"/>
+      <path d="M51.60 11.40 54.91 8.81" stroke="#f6ead2" strokeWidth="2.4" strokeLinecap="round"/>
+      <circle cx="56.34" cy="9.67" r="1.5" fill="#f6ead2"/>
+      <circle cx="54.43" cy="7.22" r="1.5" fill="#f6ead2"/>
+      <path d="M35.5 22.5C34 16.5 39 12.2 44.5 12.6c3 .2 5.2-1 7.2-2.6l1.6 2.2c-1.8 1.6-2.8 3.8-3.8 6.6-1.8 4.8-6.4 7.6-9.8 7-2-.4-3.6-1.6-4.2-3.3z" fill="#a95d1f" stroke="#3b230f" strokeWidth="1.8"/>
+      <path d="M8.2 34.2C3.4 26.2 8.2 13.6 20.2 9.6 30.6 6.2 43 9.4 47.6 17.6c3.4 6 3.2 13.6-1.4 18.2-2.6 2.6-6.4 3.4-11.4 3.4H15.4c-3.4 0-5.8-1.6-7.2-5z" fill="#c4702a" stroke="#3b230f" strokeWidth="1.8"/>
+      <path d="M10.4 22.6c3-7.4 10.6-11 19.2-11 6.4 0 11.8 2.2 14.6 6-4.4-2.4-9.8-3.4-15.4-3-7.4.6-13.6 3.4-18.4 8z" fill="#dc8d3e"/>
+      <ellipse cx="22" cy="13.4" rx="5" ry="1.6" transform="rotate(-12 22 13.4)" fill="#f3bb6c"/>
+      <ellipse cx="12.6" cy="20.4" rx="1.9" ry="0.9" transform="rotate(-48 12.6 20.4)" fill="#f3bb6c"/>
+      <ellipse cx="36.8" cy="13.2" rx="2.2" ry="0.9" transform="rotate(14 36.8 13.2)" fill="#f3bb6c"/>
+      <path d="M14.6 28.4c3.8-5.4 12.2-6.4 18.2-2.2-3 5.2-10.8 7.6-17 5.6-1.6-.6-2.2-2-1.2-3.4z" fill="#a95d1f" stroke="#3b230f" strokeWidth="1.8"/>
+      <path d="M19.4 28.6c3.2-1.8 7.4-2 10.6-.8" stroke="#dc8d3e" strokeWidth="1" fill="none"/>
+      <path d="M12.6 35.4c4.6 1.6 11.4 1.8 17.6.8" stroke="#3b230f" strokeWidth="1.1" fill="none" opacity={0.55}/>
+      <path d="M55.80 18.80 59.28 16.45" stroke="#3b230f" strokeWidth="5" strokeLinecap="round"/>
+      <circle cx="60.65" cy="17.40" r="2.35" fill="#3b230f"/>
+      <circle cx="58.91" cy="14.83" r="2.35" fill="#3b230f"/>
+      <path d="M55.80 18.80 59.28 16.45" stroke="#f6ead2" strokeWidth="2.4" strokeLinecap="round"/>
+      <circle cx="60.65" cy="17.40" r="1.5" fill="#f6ead2"/>
+      <circle cx="58.91" cy="14.83" r="1.5" fill="#f6ead2"/>
+      <path d="M39.6 30C38.4 23.6 44 19.6 49.4 20.2c2.8.2 5.2-1 7-2.4l1.4 2.2c-1.8 1.6-2.8 4-3.6 6.6-1.6 5-6.2 7.8-9.8 7.2-2.4-.4-4.2-1.8-4.8-3.8z" fill="#b8661f" stroke="#3b230f" strokeWidth="1.8"/>
+      <ellipse cx="45.2" cy="23.6" rx="3.4" ry="1.2" transform="rotate(-24 45.2 23.6)" fill="#e09a4a"/>
+      <ellipse cx="41.4" cy="16.4" rx="2.6" ry="1" transform="rotate(-30 41.4 16.4)" fill="#d1863a"/>
       </g>
     </svg>
   );
