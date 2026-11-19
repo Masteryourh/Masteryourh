@@ -34,11 +34,26 @@ npm run build && npm start   # producție
 
 Parametri utili: `/precomanda?lot=PM-2612-A03&pui=12`, `/contact?subiect=partener`.
 
+## Mod „în construcție”
+
+Ascunde site-ul de public până la lansare. Se activează din variabilele de mediu (Vercel → Environment Variables), apoi Redeploy:
+
+| Variabilă | Valoare | Efect |
+|---|---|---|
+| `MAINTENANCE_MODE` | `1` | Vizitatorii văd doar pagina „Site în construcție”; Google e rugat să nu indexeze |
+| `PREVIEW_KEY` | un cuvânt secret | `https://www.puiimei.ro/acces?cheie=<PREVIEW_KEY>` deschide site-ul complet pe acel dispozitiv, 30 de zile |
+
+- `/acces?iesire=1` șterge accesul (vezi site-ul ca un vizitator).
+- `/admin` rămâne accesibil cu utilizator și parolă.
+- Lansare: șterge `MAINTENANCE_MODE` (sau pune `0`) și fă Redeploy.
+
 ## Arhitectură
 
 ```
 src/
-  app/                 rute, server actions (precomanda/actions.ts, contact/actions.ts, admin/actions.ts)
+  app/(site)/          paginile publice (cu meniu și footer) și server actions
+  app/in-constructie/  pagina afișată în modul „în construcție”
+  app/                 layout rădăcină, sitemap, robots, /acces
   components/          layout, ui, sections, forms, farms, lots (componente reutilizabile)
   data/                date pilot: gospodării, loturi, zone, pași, FAQ
   lib/

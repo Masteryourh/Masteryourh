@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { submitPartnerApplication, type PartnerFormState } from "@/app/devino-partener/actions";
+import { submitPartnerApplication, type PartnerFormState } from "@/app/(site)/devino-partener/actions";
 import { dsvLabels, romanianCounties } from "@/lib/validation/partner";
 import { Icon } from "@/components/ui/Icon";
 import { Checkbox, Field, Honeypot, fieldA11y, inputClasses } from "./Field";

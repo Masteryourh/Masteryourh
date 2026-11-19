@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { submitInvestorApplication, type PartnerFormState } from "@/app/devino-partener/actions";
+import { submitInvestorApplication, type PartnerFormState } from "@/app/(site)/devino-partener/actions";
 import { investmentRangeLabels, investorTypeLabels } from "@/lib/validation/partner";
 import { Icon } from "@/components/ui/Icon";
 import { Checkbox, Field, Honeypot, fieldA11y, inputClasses } from "./Field";

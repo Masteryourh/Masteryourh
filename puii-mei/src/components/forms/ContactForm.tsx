@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { submitContact, type ContactFormState } from "@/app/contact/actions";
+import { submitContact, type ContactFormState } from "@/app/(site)/contact/actions";
 import { contactSubjects } from "@/lib/validation/contact";
 import { Icon } from "@/components/ui/Icon";
 import { Checkbox, Field, Honeypot, fieldA11y, inputClasses } from "./Field";
