@@ -6,7 +6,7 @@ import type { Lot } from "@/lib/domain";
  * (vezi `src/lib/lots.ts`).
  */
 const breed = "Pui cu creștere lentă (hibrid de exterior)";
-const processor = "Abator autorizat sanitar-veterinar (partener regional)";
+const processor = "Sacrificare tradițională în gospodăria de creștere";
 
 export const lots: Lot[] = [
   {

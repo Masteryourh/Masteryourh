@@ -61,7 +61,8 @@ export function PreorderForm({
         </span>
         <h2 className="mt-6 text-3xl font-semibold">Mulțumim! Precomanda ta a fost înregistrată.</h2>
         <p className="mx-auto mt-3 max-w-lg text-lg text-muted">
-          Te vom contacta telefonic în cel mult o zi lucrătoare pentru confirmare. Păstrează numărul precomenzii.
+          Te vom contacta telefonic în cel mult o zi lucrătoare pentru confirmare și îți vom trimite detaliile pentru avansul
+          de hrană, care se plătește direct în contul gospodăriei. Păstrează numărul precomenzii.
         </p>
         <dl className="mx-auto mt-8 grid max-w-xl gap-4 rounded-3xl bg-cream-100 p-6 text-left sm:grid-cols-2">
           <Summary label="Număr precomandă" value={<span className="font-mono">{r.number}</span>} />
@@ -70,6 +71,11 @@ export function PreorderForm({
           <Summary label="Disponibil estimat" value={r.availableFrom ? formatDate(r.availableFrom) : "Se comunică la alocare"} />
           <Summary label="Livrare" value={r.zoneName} />
           <Summary label="Valoare estimativă" value={formatLei(r.total)} />
+          <Summary
+            className="sm:col-span-2"
+            label="Hrană plătită în avans, direct gospodăriei"
+            value={`~${formatNumber(r.birds * pricing.feedKgPerBird)} kg furaj (suma exactă se comunică la confirmare)`}
+          />
         </dl>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           {r.lotCode && (
@@ -241,13 +247,17 @@ export function PreorderForm({
                 label="Livrare"
                 value={!zone ? "—" : estimate.deliveryFee === 0 ? "Gratuită" : formatLei(estimate.deliveryFee)}
               />
+              <Row label="Hrană în avans" value={`~${formatNumber(estimate.birds * pricing.feedKgPerBird)} kg furaj`} />
               <Row label="Lot" value={lot ? lot.code : "Primul disponibil"} />
               {lot && <Row label="Disponibil estimat" value={formatDate(lot.availableFrom)} />}
             </dl>
             <div className="mt-6 flex items-baseline justify-between border-t border-white/15 pt-5">
-              <span className="text-sm text-cream-100/80">Valoare estimativă</span>
+              <span className="text-sm text-cream-100/80">Valoare estimativă carne</span>
               <span className="font-display text-3xl font-semibold text-grain-300">{formatLei(estimate.total)}</span>
             </div>
+            <p className="mt-2 text-xs text-cream-100/60">
+              Se plătește la livrare, după greutatea reală. Hrana se plătește separat, în avans, direct gospodăriei.
+            </p>
             {zone && zone.fee > 0 && estimate.deliveryFee > 0 && (
               <p className="mt-2 text-xs text-cream-100/60">
                 Livrare gratuită pentru comenzi de peste {formatLei(pricing.freeDeliveryFrom)}.
@@ -257,9 +267,9 @@ export function PreorderForm({
               <SubmitButton pendingText="Se trimite…">Trimite precomanda</SubmitButton>
             </div>
             <ul className="mt-6 space-y-2 text-xs text-cream-100/70">
-              <li className="flex gap-2"><Icon name="check" className="h-4 w-4 shrink-0 text-grain-300" /> Fără plată online acum</li>
+              <li className="flex gap-2"><Icon name="check" className="h-4 w-4 shrink-0 text-grain-300" /> Fără plată pe site; avansul se plătește direct gospodăriei</li>
               <li className="flex gap-2"><Icon name="check" className="h-4 w-4 shrink-0 text-grain-300" /> Prețul final se stabilește la cântărire</li>
-              <li className="flex gap-2"><Icon name="check" className="h-4 w-4 shrink-0 text-grain-300" /> Anulare gratuită până la începutul lotului</li>
+              <li className="flex gap-2"><Icon name="check" className="h-4 w-4 shrink-0 text-grain-300" /> Poți anula gratuit până la confirmare</li>
             </ul>
           </div>
         </aside>
@@ -303,9 +313,9 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function Summary({ label, value }: { label: string; value: React.ReactNode }) {
+function Summary({ label, value, className }: { label: string; value: React.ReactNode; className?: string }) {
   return (
-    <div>
+    <div className={className}>
       <dt className="text-xs text-muted">{label}</dt>
       <dd className="mt-0.5 font-semibold text-forest-900">{value}</dd>
     </div>

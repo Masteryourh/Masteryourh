@@ -16,7 +16,7 @@ export const metadata: Metadata = pageMetadata({
 const values = [
   { title: "Transparență", text: "Publicăm gospodăria, calendarul și etapele fiecărui lot. Fără etichete vagi de tipul „de țară”." },
   { title: "Corectitudine", text: "Gospodăriile primesc un preț corect și cerere garantată. Clienții plătesc pentru ce primesc, la greutatea reală." },
-  { title: "Legalitate", text: "Respectăm cerințele sanitar-veterinare. Procesarea se face doar prin operatori autorizați." },
+  { title: "Legalitate", text: "Respectăm cerințele sanitar-veterinare. Puii sunt sacrificați tradițional, în gospodăria în care au crescut." },
   { title: "Comunitate", text: "Construim o comunitate de clienți și producători care cred că mâncarea bună începe cu încredere." },
 ];
 
@@ -43,7 +43,7 @@ export default function AboutPage() {
           </p>
           <p>
             Gestionăm întregul proces: precomenzi, planificarea producției, aprovizionarea, monitorizarea creșterii,
-            procesarea prin operatori autorizați și distribuția către clienți.
+            sacrificarea tradițională în gospodărie și distribuția către clienți. Vânzarea se face direct între client și gospodăria parteneră, iar Puii mei oferă organizarea și consultanța.
           </p>
         </div>
         <Photo src="/images/despre-noi.jpg" alt="Gospodar și pui într-o curte rurală" className="aspect-[4/3] rounded-[2rem]" />

@@ -2,11 +2,13 @@ import type { DeliveryZone, PriceEstimate } from "./domain";
 
 /**
  * Parametri comerciali pentru estimarea prețului.
- * Prețul final se confirmă la cântărirea fiecărui pui după procesare.
+ * Prețul final se confirmă la cântărirea fiecărui pui după sacrificare.
  */
 export const pricing = {
   pricePerKg: 34, // lei / kg carcasă, TVA inclus (estimativ)
   avgWeightKg: 2.2, // greutate medie carcasă
+  /** Hrana plătită în avans: aproximativ 6 kg de furaj pentru fiecare pui. */
+  feedKgPerBird: 6,
   minBirds: 2,
   maxBirds: 100,
   presets: [4, 8, 12, 20],
