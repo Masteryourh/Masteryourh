@@ -9,6 +9,11 @@ import { formatDate, formatLei } from "@/lib/format";
 import type { PreorderStatus } from "@/lib/domain";
 import { updatePreorderLot, updatePreorderStatus } from "./actions";
 import { storageKind } from "@/server/db/store";
+import { FeedCell } from "@/components/orders/FeedCell";
+import { CopyButton } from "@/components/orders/CopyButton";
+import { feedAdvance } from "@/lib/pricing";
+import { site } from "@/lib/site";
+import { farmPaymentRepository } from "@/server/repositories/farm-payments";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Administrare", robots: { index: false, follow: false } };
@@ -31,6 +36,10 @@ export default async function AdminPage() {
     zoneRepository.listActive(),
   ]);
   const farmName = new Map(farms.map((f) => [f.slug, f.name]));
+  const lotFarm = new Map(lots.map((l) => [l.code, l.farmSlug]));
+  const payments = new Map(
+    (await Promise.all(farms.map((f) => farmPaymentRepository.bySlug(f.slug)))).filter((x) => x !== null).map((x) => [x.id, x]),
+  );
   const zoneName = new Map(zones.map((z) => [z.id, z.name]));
   const active = preorders.filter((p) => p.status !== "anulata");
   const totalBirds = active.reduce((s, p) => s + p.birds, 0);
@@ -58,21 +67,28 @@ export default async function AdminPage() {
 
       <h2 className="mt-12 text-2xl font-semibold">Precomenzi</h2>
       <div className="mt-4 overflow-x-auto rounded-2xl border border-forest-900/10 bg-white">
-        <table className="w-full min-w-[1100px] text-left text-sm">
+        <table className="w-full min-w-[1250px] text-left text-sm">
           <thead className="bg-cream-100 text-xs uppercase tracking-wider text-muted">
             <tr>
-              {["Nr.", "Data", "Client", "Pui", "Lot", "Zonă", "Valoare", "Status"].map((h) => (
+              {["Nr.", "Data", "Client", "Pui", "Lot", "Zonă", "Valoare", "Avans hrană", "Status"].map((h) => (
                 <th key={h} className="px-4 py-3 font-semibold">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-forest-900/5">
             {preorders.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-6 text-center text-muted">Nicio precomandă încă.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-6 text-center text-muted">Nicio precomandă încă.</td></tr>
             )}
             {preorders.map((p) => (
               <tr key={p.id} className="align-top">
-                <td className="px-4 py-3 font-mono text-xs">{p.number}</td>
+                <td className="px-4 py-3 font-mono text-xs">
+                  {p.number}
+                  {p.trackingToken && (
+                    <div className="mt-1.5">
+                      <CopyButton value={`${site.url}/comanda/${p.trackingToken}`} label="Link client" />
+                    </div>
+                  )}
+                </td>
                 <td className="px-4 py-3">{formatDate(p.createdAt)}</td>
                 <td className="px-4 py-3">
                   <div className="font-medium">{p.customer.name}</div>
@@ -100,6 +116,17 @@ export default async function AdminPage() {
                 </td>
                 <td className="px-4 py-3">{zoneName.get(p.zoneId) ?? p.zoneId}</td>
                 <td className="px-4 py-3">{formatLei(p.estimate.total)}</td>
+                <td className="px-4 py-3">
+                  {p.lotCode ? (
+                    <FeedCell
+                      preorder={p}
+                      amount={feedAdvance(p.birds, payments.get(lotFarm.get(p.lotCode) ?? "")?.feedPricePerKg).amount}
+                      canConfirm
+                    />
+                  ) : (
+                    <span className="text-xs text-muted">după alocarea lotului</span>
+                  )}
+                </td>
                 <td className="px-4 py-3">
                   <form action={updatePreorderStatus} className="flex gap-2">
                     <input type="hidden" name="id" value={p.id} />

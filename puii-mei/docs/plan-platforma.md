@@ -29,6 +29,12 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
 - **Etapa 1 – conturi**: admin, gospodar, investitor; email + parolă; invitații cu link de activare (WhatsApp);
   dashboard gospodar și investitor.
 
+### Comanda mea și plata hranei (implementat)
+- Link secret „Comanda mea” pentru fiecare precomandă (fără cont) + căutare după număr și telefon; butoane „Comanda mea”
+  și „Contul meu” în header.
+- Avansul pentru hrană: datele de plată ale gospodăriei (IBAN, preț furaj), „Am făcut plata” la client, „Confirm
+  primirea” la gospodar/admin. Fără plăți online.
+
 ## 3. Etapa 2 – livrări (implementată)
 
 ### Precomanda

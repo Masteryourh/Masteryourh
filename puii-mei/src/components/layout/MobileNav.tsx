@@ -55,6 +55,10 @@ export function MobileNav() {
             <Link href="/precomanda" className={buttonClasses("primary", "lg", "mt-6")}>
               Vreau să comand
             </Link>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <Link href="/comanda" className={buttonClasses("secondary", "md")}>Comanda mea</Link>
+              <Link href="/cont" className={buttonClasses("secondary", "md")}>Contul meu</Link>
+            </div>
           </nav>
         </div>,
           document.body,

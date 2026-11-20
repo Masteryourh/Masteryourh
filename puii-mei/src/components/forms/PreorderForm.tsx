@@ -6,7 +6,7 @@ import { submitPreorder } from "@/app/(site)/precomanda/actions";
 import { initialPreorderState } from "@/app/(site)/precomanda/form-state";
 import type { DeliveryZone, GeoPoint } from "@/lib/domain";
 import { MapPicker } from "@/components/maps/MapPicker";
-import { estimatePrice, pricing } from "@/lib/pricing";
+import { estimatePrice, feedAdvance, pricing } from "@/lib/pricing";
 import { formatDate, formatLei, formatNumber } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { buttonClasses } from "@/components/ui/Button";
@@ -19,6 +19,8 @@ export interface LotOption {
   village: string;
   availableFrom: string;
   free: number;
+  /** Prețul furajului setat de gospodărie (lei / kg), dacă există. */
+  feedPricePerKg?: number;
 }
 
 const NO_ADDRESS_ZONES = ["ridicare-personala", "alta-zona"];
@@ -49,6 +51,7 @@ export function PreorderForm({
   const zone = zones.find((z) => z.id === zoneId) ?? null;
   const lot = lots.find((l) => l.code === lotCode) ?? null;
   const estimate = estimatePrice(birds, zone);
+  const feed = feedAdvance(Number.isNaN(birds) ? 0 : birds, lot?.feedPricePerKg);
   const needsAddress = zoneId !== "" && !NO_ADDRESS_ZONES.includes(zoneId);
   const maxBirds = lot ? Math.min(lot.free, pricing.maxBirds) : pricing.maxBirds;
 
@@ -58,39 +61,53 @@ export function PreorderForm({
 
   if (state.status === "success") {
     const r = state.result;
+    const link = typeof window === "undefined" ? `/comanda/${r.trackingToken}` : `${window.location.origin}/comanda/${r.trackingToken}`;
+    const waText = `Precomanda mea Puii mei ${r.number}: ${link}`;
     return (
-      <div ref={topRef} className="scroll-mt-28 rounded-[2rem] border border-forest-900/8 bg-white p-8 text-center sm:p-12" role="status">
-        <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-forest-50 text-forest-700">
-          <Icon name="check" className="h-8 w-8" />
-        </span>
-        <h2 className="mt-6 text-3xl font-semibold">Mulțumim! Precomanda ta a fost înregistrată.</h2>
-        <p className="mx-auto mt-3 max-w-lg text-lg text-muted">
-          Te vom contacta telefonic în cel mult o zi lucrătoare pentru confirmare și îți vom trimite detaliile pentru avansul
-          de hrană, care se plătește direct în contul gospodăriei. Păstrează numărul precomenzii.
-        </p>
-        <dl className="mx-auto mt-8 grid max-w-xl gap-4 rounded-3xl bg-cream-100 p-6 text-left sm:grid-cols-2">
-          <Summary label="Număr precomandă" value={<span className="font-mono">{r.number}</span>} />
+      <div ref={topRef} className="scroll-mt-28 rounded-[2rem] border border-forest-900/8 bg-white p-6 sm:p-12" role="status">
+        <div className="text-center">
+          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-forest-50 text-forest-700">
+            <Icon name="check" className="h-8 w-8" />
+          </span>
+          <h2 className="mt-6 text-3xl font-semibold">Mulțumim! Precomanda ta a fost înregistrată.</h2>
+          <p className="mx-auto mt-3 max-w-lg text-lg text-muted">
+            Numărul precomenzii: <strong className="font-mono text-forest-900">{r.number}</strong>. Pe pagina comenzii tale găsești
+            datele pentru plata hranei, evoluția lotului și livrarea.
+          </p>
+        </div>
+
+        <div className="mx-auto mt-8 max-w-xl rounded-3xl bg-forest-900 p-6 text-cream-50 sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-grain-300">Pasul următor</p>
+          <p className="mt-2 font-display text-2xl font-semibold text-cream-50">Plătește avansul pentru hrană</p>
+          <p className="mt-2 text-sm text-cream-100/80">
+            ~{formatNumber(r.feedKg)} kg furaj, aproximativ <strong className="text-cream-50">{formatLei(r.feedAmount)}</strong>, prin transfer bancar
+            direct în contul gospodăriei. Suma exactă și IBAN-ul sunt pe pagina comenzii
+            {r.lotCode ? "" : " (apar după ce comanda e alocată unui lot)"}.
+          </p>
+          <Link href={`/comanda/${r.trackingToken}#plata`} className={buttonClasses("primary", "lg", "mt-5 w-full")}>
+            Vezi datele de plată
+          </Link>
+        </div>
+
+        <div className="mx-auto mt-6 max-w-xl rounded-3xl bg-cream-100 p-5 text-sm">
+          <p className="font-semibold text-forest-900">Păstrează linkul comenzii</p>
+          <p className="mt-1 text-muted">
+            Îl primești și pe email ({r.email}). Dacă îl pierzi, îl găsești oricând la{" "}
+            <Link href="/comanda" className="font-semibold text-forest-700 underline">puiimei.ro/comanda</Link>, cu numărul precomenzii și telefonul.
+          </p>
+          <a href={`https://wa.me/?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener noreferrer" className={buttonClasses("secondary", "md", "mt-4")}>
+            Trimite-mi linkul pe WhatsApp
+          </a>
+        </div>
+
+        <dl className="mx-auto mt-6 grid max-w-xl gap-4 rounded-3xl p-2 text-left sm:grid-cols-2">
           <Summary label="Cantitate" value={`${r.birds} pui (~${formatNumber(r.estimatedKg)} kg)`} />
           <Summary label="Lot" value={r.lotCode ?? "Primul lot disponibil"} />
           <Summary label="Disponibil estimat" value={r.availableFrom ? formatDate(r.availableFrom) : "Se comunică la alocare"} />
           <Summary label="Livrare" value={r.zoneName} />
-          <Summary label="Valoare estimativă" value={formatLei(r.total)} />
-          <Summary
-            className="sm:col-span-2"
-            label="Hrană plătită în avans, direct gospodăriei"
-            value={`~${formatNumber(r.birds * pricing.feedKgPerBird)} kg furaj (suma exactă se comunică la confirmare)`}
-          />
+          <Summary label="Acum: avans hrană" value={`~${formatLei(r.feedAmount)}`} />
+          <Summary label="La livrare: carne (estimativ)" value={formatLei(r.total)} />
         </dl>
-        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          {r.lotCode && (
-            <Link href={`/trasabilitate/${r.lotCode}`} className={buttonClasses("primary", "lg")}>
-              Urmărește lotul {r.lotCode}
-            </Link>
-          )}
-          <Link href="/" className={buttonClasses("secondary", "lg")}>
-            Înapoi la prima pagină
-          </Link>
-        </div>
       </div>
     );
   }
@@ -281,17 +298,24 @@ export function PreorderForm({
                 label="Livrare"
                 value={!zone ? "—" : estimate.deliveryFee === 0 ? "Gratuită" : formatLei(estimate.deliveryFee)}
               />
-              <Row label="Hrană în avans" value={`~${formatNumber(estimate.birds * pricing.feedKgPerBird)} kg furaj`} />
               <Row label="Lot" value={lot ? lot.code : "Primul disponibil"} />
               {lot && <Row label="Disponibil estimat" value={formatDate(lot.availableFrom)} />}
             </dl>
-            <div className="mt-6 flex items-baseline justify-between border-t border-white/15 pt-5">
-              <span className="text-sm text-cream-100/80">Valoare estimativă carne</span>
-              <span className="font-display text-3xl font-semibold text-grain-300">{formatLei(estimate.total)}</span>
+            <div className="mt-6 rounded-2xl bg-white/10 p-4">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-sm font-semibold text-cream-50">Acum: avans hrană</span>
+                <span className="font-display text-2xl font-semibold text-grain-300">~{formatLei(feed.amount)}</span>
+              </div>
+              <p className="mt-1 text-xs text-cream-100/70">
+                ~{formatNumber(feed.kg)} kg furaj, prin transfer direct în contul gospodăriei. După trimitere primești IBAN-ul și
+                suma exactă.
+              </p>
             </div>
-            <p className="mt-2 text-xs text-cream-100/60">
-              Se plătește la livrare, după greutatea reală. Hrana se plătește separat, în avans, direct gospodăriei.
-            </p>
+            <div className="mt-4 flex items-baseline justify-between gap-3 border-t border-white/15 pt-4">
+              <span className="text-sm text-cream-100/80">La livrare: carne (estimativ)</span>
+              <span className="font-display text-xl font-semibold text-cream-50">{formatLei(estimate.total)}</span>
+            </div>
+            <p className="mt-1 text-xs text-cream-100/60">Se plătește la livrare, după greutatea reală.</p>
             {zone && zone.fee > 0 && estimate.deliveryFee > 0 && (
               <p className="mt-2 text-xs text-cream-100/60">
                 Livrare gratuită pentru comenzi de peste {formatLei(pricing.freeDeliveryFrom)}.
@@ -303,7 +327,7 @@ export function PreorderForm({
               </button>
             </div>
             <ul className="mt-6 space-y-2 text-xs text-cream-100/70">
-              <li className="flex gap-2"><Icon name="check" className="h-4 w-4 shrink-0 text-grain-300" /> Fără plată pe site; avansul se plătește direct gospodăriei</li>
+              <li className="flex gap-2"><Icon name="check" className="h-4 w-4 shrink-0 text-grain-300" /> Fără plată pe site: avansul se plătește prin transfer, direct gospodăriei</li>
               <li className="flex gap-2"><Icon name="check" className="h-4 w-4 shrink-0 text-grain-300" /> Prețul final se stabilește la cântărire</li>
               <li className="flex gap-2"><Icon name="check" className="h-4 w-4 shrink-0 text-grain-300" /> Poți anula gratuit până la confirmare</li>
             </ul>

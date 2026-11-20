@@ -26,6 +26,7 @@ npm run build && npm start   # producție
 | `/despre-noi`, `/contact`, `/confidentialitate` | Misiune, formular contact, GDPR |
 | `/devino-partener` | Aplicare ca gospodărie parteneră sau ca investitor (`#gospodarie` / `#investitor`) |
 | `/in-curand` | Produse în curând (curcani, rațe, fazani, legume din seră) + formular „Anunță-mă” |
+| `/comanda`, `/comanda/[cod]` | „Comanda mea” (fără cont): căutare după număr + telefon; pagina comenzii cu plata avansului pentru hrană (IBAN-ul gospodăriei, sumă, referință, „Am făcut plata”), stadiul, lotul și livrarea |
 | `/cont/autentificare` | Intrare în cont (email + parolă); `/cont` duce la dashboard-ul rolului |
 | `/cont/activare/[cod]` | Setarea parolei din linkul de invitație / resetare (valabil 7 zile, o singură folosire) |
 | `/cont/gospodar` | Dashboard gospodar: loturile, precomenzile pe loturile lui |
@@ -42,6 +43,16 @@ npm run build && npm start   # producție
 | `/api/loturi/[cod]` | API JSON de trasabilitate |
 
 Parametri utili: `/precomanda?lot=PM-2612-A03&pui=12`, `/contact?subiect=partener`.
+
+## Plata hranei (avans)
+
+1. La precomandă, sumarul arată separat **avansul pentru hrană** (acum) și **carnea** (la livrare, după greutate).
+2. După trimitere, clientul primește numărul și linkul secret **„Comanda mea”** (ecran, email dacă e configurat
+   Resend, buton WhatsApp). Îl regăsește oricând la `/comanda` cu numărul + telefonul.
+3. Gospodarul își completează în panou **titularul, IBAN-ul, banca și prețul furajului** (lei/kg). Avansul =
+   pui × 6 kg × preț. Clientul vede datele după ce comanda are lot.
+4. Clientul face transferul (detalii: „Hrana <număr comandă>”) și apasă **„Am făcut plata”**; gospodarul (sau adminul)
+   apasă **„Confirm primirea”**. Statusul apare la client, la gospodar și în admin.
 
 ## Livrări
 
