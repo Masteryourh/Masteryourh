@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { createUser, type UserFormState } from "@/app/(site)/admin/utilizatori/actions";
+import { createUser, type UserFormState } from "@/app/(panou)/admin/utilizatori/actions";
 import { roleLabels } from "@/lib/roles";
 import { Field, fieldA11y, inputClasses } from "@/components/forms/Field";
 import { SubmitButton } from "@/components/forms/SubmitButton";

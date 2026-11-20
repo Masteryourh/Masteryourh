@@ -92,6 +92,7 @@ Ascunde site-ul de public până la lansare. Se activează din variabilele de me
 ```
 src/
   app/(site)/          paginile publice (cu meniu și footer) și server actions
+  app/(panou)/         panourile de control: /admin, /cont/gospodar, /cont/investitor (meniu lateral, fără meniul site-ului)
   app/in-constructie/  pagina afișată în modul „în construcție”
   app/                 layout rădăcină, sitemap, robots, /acces
   components/          layout, ui, sections, forms, farms, lots (componente reutilizabile)

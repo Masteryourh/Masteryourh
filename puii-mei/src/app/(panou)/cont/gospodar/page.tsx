@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
-import { AccountBar } from "@/components/account/AccountBar";
 import { LotStatusBadge } from "@/components/lots/LotStatusBadge";
 import { availabilityDate, availableBirds, growthProgress, lotStatus } from "@/lib/lots";
 import { formatDate, formatLei } from "@/lib/format";
@@ -37,7 +36,6 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
   if (!farm) {
     return (
       <Container className="max-w-3xl py-10">
-        <AccountBar user={user} title="Contul gospodarului" />
         <p className="mt-8 rounded-3xl bg-white p-6 text-muted ring-1 ring-forest-900/10">
           Contul tău nu este încă legat de o gospodărie. Echipa Puii mei îl configurează în scurt timp.
         </p>
@@ -66,7 +64,6 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
 
   return (
     <Container className="py-8">
-      <AccountBar user={user} title="Contul gospodarului" />
       {user.role === "admin" && (
         <form className="mt-4 flex flex-wrap items-center gap-2 rounded-2xl bg-cream-100 p-3 text-sm">
           <label htmlFor="gospodarie" className="font-semibold">Previzualizare ca administrator:</label>
