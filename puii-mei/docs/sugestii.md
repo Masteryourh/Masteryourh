@@ -3,7 +3,7 @@
 Listă de sugestii și pași rămași, adunați din discuții. La expresia **„sugestii uitate”** se citește lista și se
 actualizează (se bifează ce s-a făcut, se adaugă ce apare nou).
 
-_Ultima actualizare: 20 noiembrie 2026_
+_Ultima actualizare: 21 noiembrie 2026_
 
 ## De construit (etapele următoare)
 
@@ -17,13 +17,17 @@ _Ultima actualizare: 20 noiembrie 2026_
 - [ ] **Google Maps** (opțional): geocodare și distanțe reale pe drum pentru trasee (acum OpenStreetMap + calcul propriu).
 - [ ] **Bază de date relațională completă** (schema Prisma) când crește volumul de date.
 
+- [ ] **Clip animat real în hero** (Higgsfield, image-to-video): necesită plan plătit Higgsfield. Acum scena e animată
+      în cod (nori, iarbă în vânt, semințe). Clipul se pune în `public/images/poveste/` și înlocuiește animația din cod.
+- [ ] **Imagini Higgsfield pentru gospodării** (profilurile au încă imagini de rezervă) și pentru paginile interioare.
+
 ## De configurat (Vercel / servicii)
 
 - [ ] **SESSION_SECRET** în Vercel → Environment Variables (o valoare lungă, aleatorie), apoi Redeploy.
 - [ ] **Resend** (`RESEND_API_KEY`, `EMAIL_FROM`, ex. „Puii mei <comenzi@puiimei.ro>”): emailul cu linkul
       „Comanda mea” și celelalte emailuri pleacă doar după configurare.
 - [ ] **Vercel Blob** pentru fișiere (necesar la etapa 3).
-- [ ] **Conectorul Higgsfield** (imagini/video AI): claude.ai/customize/connectors, apoi sesiune nouă.
+- [x] **Conectorul Higgsfield** conectat (plan gratuit: doar modelul de imagini `z_image`, fără video).
 
 ## De completat pe site
 

@@ -18,7 +18,7 @@ npm run build && npm start   # producție
 
 | Rută | Conținut |
 |---|---|
-| `/` | Homepage: hero, propunere de valoare, 5 pași, loturi deschise, gospodării, căutare lot, FAQ |
+| `/` | Homepage: hero animat (scena din Bucovina), drumul puiului în 7 pași pe scroll, loturi deschise, gospodării, trasabilitate, FAQ |
 | `/cum-functioneaza` | Procesul detaliat în 5 pași + ce gestionăm noi |
 | `/precomanda` | Formular: cantitate, lot, zonă livrare, date contact, preț estimat live, confirmare cu număr |
 | `/gospodarii`, `/gospodarii/[slug]` | Gospodării partenere: localizare, fotografii, practici, loturi |

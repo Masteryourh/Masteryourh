@@ -1,9 +1,9 @@
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { Icon, type IconName } from "@/components/ui/Icon";
-import { Photo } from "@/components/ui/Photo";
+import { Icon } from "@/components/ui/Icon";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { Steps } from "@/components/sections/Steps";
+import { Hero } from "@/components/home/Hero";
+import { Story } from "@/components/home/Story";
 import { Faq } from "@/components/sections/Faq";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { UpcomingProductGrid } from "@/components/sections/UpcomingProducts";
@@ -12,28 +12,9 @@ import { LotCard } from "@/components/lots/LotCard";
 import { LotLookup } from "@/components/lots/LotLookup";
 import { farmRepository, lotRepository } from "@/server/repositories/catalog";
 import { lotStatus } from "@/lib/lots";
-import { pricing } from "@/lib/pricing";
 
 // Statusul loturilor depinde de dată – regenerăm pagina periodic.
 export const revalidate = 3600;
-
-const pillars: { icon: IconName; title: string; text: string }[] = [
-  {
-    icon: "clipboard",
-    title: "Producție la comandă",
-    text: "Gospodăriile cresc doar câți pui au fost comandați. Cererea adunată dinainte înseamnă planificare corectă, fără risipă și fără stocuri vechi.",
-  },
-  {
-    icon: "home",
-    title: "Gospodării partenere",
-    text: "Gospodării locale, verificate și monitorizate, care respectă același protocol de creștere și cerințele legale.",
-  },
-  {
-    icon: "shield",
-    title: "Trasabilitate completă",
-    text: "Fiecare lot are un cod unic. Știi unde au crescut puii, cu ce au fost hrăniți și unde au fost sacrificați.",
-  },
-];
 
 function openMonths(dates: string[]) {
   const fmt = new Intl.DateTimeFormat("ro-RO", { month: "long", timeZone: "Europe/Bucharest" });
@@ -48,92 +29,18 @@ export default async function HomePage() {
     lotRepository.openForPreorder(),
   ]);
   const farmBySlug = new Map(farms.map((f) => [f.slug, f]));
-  const growingLot = lots.find((l) => lotStatus(l) === "in-crestere");
 
   return (
     <>
-      {/* HERO */}
-      <section className="relative overflow-hidden bg-cream-100">
-        <Container className="grid items-center gap-10 py-12 sm:py-16 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:py-24">
-          <div className="animate-fade-up">
-            <p className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3.5 py-1.5 text-xs font-semibold text-forest-800 ring-1 ring-forest-900/10">
-              <span className="h-2 w-2 rounded-full bg-forest-500" aria-hidden />
-              {openLots.length > 0
-                ? `Precomenzi deschise pentru loturile din ${openMonths(openLots.map((l) => l.startDate))}`
-                : "Înscrie-te pentru următorul lot"}
-            </p>
-            <h1 className="mt-6 text-5xl leading-[1.05] font-semibold sm:text-6xl lg:text-7xl">
-              Puii tăi, crescuți <span className="text-forest-500 italic">pentru tine.</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
-              Comanzi în avans, gospodăriile noastre partenere îi cresc pentru tine. Pui de carne crescuți fără grabă,
-              sacrificați tradițional în gospodărie și predați proaspăt.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="/precomanda" size="lg">
-                Vreau să comand <Icon name="arrow" className="h-5 w-5" />
-              </ButtonLink>
-              <ButtonLink href="/cum-functioneaza" size="lg" variant="secondary">
-                Cum funcționează?
-              </ButtonLink>
-            </div>
-            <dl className="mt-10 grid max-w-lg grid-cols-3 gap-3 border-t border-forest-900/10 pt-6 sm:gap-4">
-              <div className="flex flex-col justify-between">
-                <dt className="text-xs text-muted">Preț estimativ</dt>
-                <dd className="mt-1 whitespace-nowrap font-display text-xl font-semibold text-forest-900 sm:text-2xl">
-                  {pricing.pricePerKg} lei
-                  <span className="text-sm font-normal text-muted">/kg</span>
-                </dd>
-              </div>
-              <div className="flex flex-col justify-between">
-                <dt className="text-xs text-muted">Durata creșterii</dt>
-                <dd className="mt-1 whitespace-nowrap font-display text-xl font-semibold text-forest-900 sm:text-2xl">~8 săpt.</dd>
-              </div>
-              <div className="flex flex-col justify-between">
-                <dt className="text-xs text-muted">Gospodării partenere</dt>
-                <dd className="mt-1 whitespace-nowrap font-display text-xl font-semibold text-forest-900 sm:text-2xl">{farms.length}</dd>
-              </div>
-            </dl>
-          </div>
-          <div className="relative animate-fade-up [animation-delay:150ms]">
-            <Photo
-              src="/images/hero.jpg"
-              alt="Pui crescuți liber în curtea unei gospodării rurale"
-              priority
-              className="aspect-[4/3] rounded-[2rem] shadow-2xl shadow-forest-900/15 sm:aspect-[5/4] lg:aspect-[4/5]"
-            />
-            {growingLot && (
-              <div className="absolute -bottom-5 left-4 right-4 rounded-2xl bg-white/95 p-4 shadow-xl shadow-forest-900/10 backdrop-blur sm:left-auto sm:right-6 sm:w-72">
-                <p className="text-xs font-semibold uppercase tracking-wider text-grain-600">Lot în creștere</p>
-                <p className="mt-1 font-mono text-sm font-semibold text-forest-900">{growingLot.code}</p>
-                <p className="text-sm text-muted">{farmBySlug.get(growingLot.farmSlug)?.name}</p>
-              </div>
-            )}
-          </div>
-        </Container>
-      </section>
+      <Hero
+        openLabel={
+          openLots.length > 0
+            ? `Precomenzi deschise pentru loturile din ${openMonths(openLots.map((l) => l.startDate))}`
+            : "Înscrie-te pentru următorul lot"
+        }
+      />
 
-      {/* PROPUNERE DE VALOARE */}
-      <section className="py-20 sm:py-28">
-        <Container>
-          <SectionHeading
-            eyebrow="De ce Puii mei"
-            title="Nu un magazin de carne. Un mod diferit de a produce."
-            intro="Puii mei pune în legătură direct familiile care vor să știe ce mănâncă cu gospodăriile care vor să crească păsări corect. Tu comanzi astăzi, gospodăriile partenere cresc pentru tine, tu primești proaspăt."
-          />
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            {pillars.map((p) => (
-              <div key={p.title} className="rounded-3xl bg-cream-100 p-7">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-forest-700">
-                  <Icon name={p.icon} />
-                </span>
-                <h3 className="mt-5 text-xl font-semibold">{p.title}</h3>
-                <p className="mt-2 leading-relaxed text-muted">{p.text}</p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
+      <Story />
 
       {/* INTENȚIA */}
       <section className="pb-20 sm:pb-28">
@@ -155,21 +62,6 @@ export default async function HomePage() {
                 De ce am pornit Puii mei <Icon name="arrow" className="h-5 w-5" />
               </ButtonLink>
             </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* CUM FUNCȚIONEAZĂ */}
-      <section id="cum-functioneaza" className="bg-forest-50/60 py-20 sm:py-28">
-        <Container>
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <SectionHeading eyebrow="Cum funcționează" title="Cinci pași de la comandă la masa ta" />
-            <ButtonLink href="/cum-functioneaza" variant="secondary">
-              Detalii despre proces
-            </ButtonLink>
-          </div>
-          <div className="mt-12">
-            <Steps />
           </div>
         </Container>
       </section>

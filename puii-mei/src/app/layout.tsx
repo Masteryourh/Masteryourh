@@ -1,16 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Fredoka, Inter } from "next/font/google";
 import { JsonLd, organizationJsonLd } from "@/lib/seo";
 import { site } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"], display: "swap" });
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin", "latin-ext"],
-  display: "swap",
-  axes: ["opsz", "SOFT"],
-});
+const fredoka = Fredoka({ variable: "--font-fredoka", subsets: ["latin", "latin-ext"], display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -44,12 +39,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fdfbf6",
+  themeColor: "#fffbf3",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ro" className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang="ro" className={`${inter.variable} ${fredoka.variable}`}>
       <body className="flex min-h-dvh flex-col">
         {children}
         <JsonLd data={organizationJsonLd} />

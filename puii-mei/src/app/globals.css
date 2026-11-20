@@ -1,29 +1,49 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cream-50: #fdfbf6;
-  --color-cream-100: #f8f2e4;
-  --color-cream-200: #f0e5cc;
-  --color-cream-300: #e4d3ad;
+  /* Paleta „după-amiază în Bucovina”: cer, pajiște, soare, lemn. */
+  --color-cream-50: #fffbf3;
+  --color-cream-100: #fbf3e3;
+  --color-cream-200: #f3e6c9;
+  --color-cream-300: #e8d3a6;
 
-  --color-grain-300: #f1d38a;
-  --color-grain-400: #e8bd55;
-  --color-grain-500: #d9a226;
-  --color-grain-600: #b9841a;
+  --color-grain-300: #f8db8f;
+  --color-grain-400: #f2c14e;
+  --color-grain-500: #e1a62a;
+  --color-grain-600: #b9801a;
 
-  --color-forest-50: #eef4ef;
-  --color-forest-100: #d5e4d8;
-  --color-forest-300: #8fb39a;
-  --color-forest-500: #3f6b4d;
-  --color-forest-700: #24432f;
-  --color-forest-800: #1b3424;
-  --color-forest-900: #12251a;
+  --color-forest-50: #eef5ea;
+  --color-forest-100: #d9e9cf;
+  --color-forest-300: #9fc28a;
+  --color-forest-500: #5b875c;
+  --color-forest-700: #3d6440;
+  --color-forest-800: #2c4a30;
+  --color-forest-900: #1d3321;
 
-  --color-ink: #1d231e;
-  --color-muted: #5b625a;
+  --color-sky-100: #e7f1fa;
+  --color-sky-300: #a9cbe8;
+  --color-sky-500: #5f95c7;
+  --color-sky-700: #2f5d8a;
+  --color-sky-900: #1c3a57;
+
+  --color-wood-500: #8a6240;
+  --color-wood-700: #5d3f26;
+
+  --color-ink: #1f2a22;
+  --color-muted: #5b6a5e;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-display: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
+
+  /* Ierarhia textelor: câteva trepte clare, bine separate. */
+  --text-display: clamp(3.2rem, 9vw, 8.5rem);
+  --text-display--line-height: 0.92;
+  --text-title: clamp(2.3rem, 4.6vw, 4rem);
+  --text-title--line-height: 1.02;
+  --text-subtitle: clamp(1.45rem, 2.2vw, 1.9rem);
+  --text-subtitle--line-height: 1.2;
+  --text-lead: clamp(1.08rem, 1.4vw, 1.28rem);
+  --text-lead--line-height: 1.55;
 
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 
@@ -50,8 +70,8 @@
   h1,
   h2,
   h3 {
-    @apply font-display text-forest-900;
-    letter-spacing: -0.015em;
+    @apply font-display font-semibold text-forest-900;
+    letter-spacing: -0.01em;
     text-wrap: balance;
   }
   p {
@@ -93,4 +113,101 @@
     font-size: 1.5rem;
     line-height: 2rem;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero „pictură vie”                                                  */
+/* ------------------------------------------------------------------ */
+.hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 55% 62%;
+}
+.hero-sky {
+  mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 47%);
+  transform: scale(1.06);
+  animation: hero-clouds 38s ease-in-out infinite alternate;
+}
+.hero-grass {
+  mask-image: linear-gradient(180deg, transparent 68%, #000 80%);
+  filter: url(#vant);
+}
+.hero-sun {
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 70%;
+  height: 80%;
+  background: radial-gradient(closest-side, rgba(255, 236, 180, 0.45), transparent);
+  animation: hero-sun 7s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.hero-seed {
+  position: absolute;
+  bottom: -2%;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #fff 0 35%, rgba(255, 255, 255, 0.35) 36% 100%);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+  opacity: 0;
+  animation: hero-seed linear infinite;
+}
+@keyframes hero-clouds {
+  from { transform: scale(1.06) translateX(-2.2%); }
+  to { transform: scale(1.06) translateX(2.2%); }
+}
+@keyframes hero-sun {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+@keyframes hero-seed {
+  0% { transform: translate(0, 0); opacity: 0; }
+  10% { opacity: 0.9; }
+  50% { transform: translate(6vw, -45vh); }
+  90% { opacity: 0.8; }
+  100% { transform: translate(-3vw, -95vh); opacity: 0; }
+}
+
+/* Intrarea textelor din hero */
+.hero-in { animation-fill-mode: both; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+.hero-blur { animation-name: hero-blur; animation-duration: 0.9s; }
+.hero-spring { animation-name: hero-spring; animation-duration: 1s; animation-timing-function: cubic-bezier(0.34, 1.45, 0.5, 1); }
+.hero-rise { animation-name: hero-rise; animation-duration: 0.8s; }
+@keyframes hero-blur {
+  from { opacity: 0; filter: blur(10px); }
+  to { opacity: 1; filter: blur(0); }
+}
+@keyframes hero-spring {
+  from { opacity: 0; transform: translateY(60px) scale(0.96); filter: blur(12px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes hero-rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Povestea pe scroll */
+.story-frame { transition: opacity 0.7s ease, transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.story-frame[data-active="true"] img { animation: story-kenburns 14s ease-out both; }
+@keyframes story-kenburns {
+  from { transform: scale(1.12) translate(1.5%, 1%); }
+  to { transform: scale(1) translate(0, 0); }
+}
+.story-badge { animation: story-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes story-pop {
+  from { opacity: 0; transform: translateY(16px) scale(0.8) rotate(-4deg); }
+  to { opacity: 1; transform: none; }
+}
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.reveal[data-visible="true"] { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-sky, .hero-sun, .hero-seed, .hero-in, .story-frame img, .story-badge { animation: none !important; }
+  .hero-seed { display: none; }
+  .hero-grass { filter: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
 }
