@@ -26,7 +26,7 @@ export default async function FarmDocumentsPage({ searchParams }: PageProps<"/co
       </Container>
     );
   }
-  const [lots, docs, expenses] = await Promise.all([lotRepository.byFarm(farm.slug), documentRepository.byFarm(farm.slug), expenseRepository.byFarm(farm.slug)]);
+  const [lots, docs, expenses] = await Promise.all([lotRepository.byFarm(farm.slug, { all: true }), documentRepository.byFarm(farm.slug), expenseRepository.byFarm(farm.slug)]);
   const visibleDocs = docs.filter((d) => !d.investmentId);
   const totals = expenseTotals(expenses);
   const docById = new Map(docs.map((d) => [d.id, d]));

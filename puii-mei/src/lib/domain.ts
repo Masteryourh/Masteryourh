@@ -72,6 +72,11 @@ export interface Lot {
   notes?: string;
   /** Lot închis manual pentru precomenzi (rămâne vizibil la trasabilitate). */
   closed?: boolean;
+  /**
+   * Aprobarea adminului pentru loturile propuse de gospodari. Lipsă = aprobat
+   * (loturile demonstrative și cele create de admin). Până la aprobare, lotul nu e public.
+   */
+  approval?: { status: "asteapta" | "aprobat" | "respins"; by?: string; at?: string; reason?: string };
   /** Pentru loturile create din panou. */
   createdAt?: string;
   createdBy?: string;

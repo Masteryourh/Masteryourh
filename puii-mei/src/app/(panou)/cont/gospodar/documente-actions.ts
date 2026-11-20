@@ -19,7 +19,7 @@ function backUrl(user: User, farmSlug: string, params: string) {
 
 async function checkLot(farmSlug: string, lotCode: string) {
   if (!lotCode) return undefined;
-  const lot = await lotRepository.byCode(lotCode);
+  const lot = await lotRepository.byCode(lotCode, { all: true });
   if (!lot || lot.farmSlug !== farmSlug) throw new Error("Lot invalid");
   return lot.code;
 }

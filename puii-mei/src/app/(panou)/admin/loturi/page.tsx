@@ -8,8 +8,9 @@ export const metadata: Metadata = { title: "Loturi", robots: { index: false, fol
 
 export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/loturi">) {
   const sp = await searchParams;
-  const [lots, farms] = await Promise.all([lotRepository.list(), farmRepository.listAll()]);
+  const [lots, farms] = await Promise.all([lotRepository.list({ all: true }), farmRepository.listAll()]);
   const farmName = new Map(farms.map((f) => [f.slug, f.name]));
+  const pending = lots.filter((l) => l.approval?.status === "asteapta");
   const farm = typeof sp.gospodarie === "string" && farmName.has(sp.gospodarie) ? sp.gospodarie : farms[0]?.slug;
 
   return (
@@ -23,9 +24,21 @@ export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/
       {typeof sp.lotNou === "string" && <p className="mt-4 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Lotul {sp.lotNou} a fost creat.</p>}
       {typeof sp.lotSalvat === "string" && <p className="mt-4 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Lotul {sp.lotSalvat} a fost salvat.</p>}
 
+      {pending.length > 0 && (
+        <>
+          <h2 className="mt-6 text-lg">De aprobat ({pending.length})</h2>
+          <p className="text-sm text-slate-600">Loturi propuse de gospodari. Apar la precomandă doar după aprobare.</p>
+          <div className="mt-2 space-y-2">
+            {pending.map((l) => (
+              <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove />
+            ))}
+          </div>
+          <h2 className="mt-8 text-lg">Toate loturile</h2>
+        </>
+      )}
       <div id="loturi" className="mt-6 space-y-2">
-        {lots.map((l) => (
-          <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" />
+        {lots.filter((l) => l.approval?.status !== "asteapta").map((l) => (
+          <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove />
         ))}
       </div>
 

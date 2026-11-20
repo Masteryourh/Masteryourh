@@ -10,7 +10,8 @@ _Ultima actualizare: 21 noiembrie 2026_
 - [x] **Etapa 3 – gospodar:** registrul de cheltuieli pe lot + documente (SHA-256, verificare admin). Fișierele stau
       deocamdată în baza de date (max. 3,5 MB); pentru volum mare → Vercel Blob.
 - [x] **Etapa 4 – investitor:** investiții, cronologie, contracte descărcabile, transparența gospodăriei susținute.
-- [x] **Loturi din panou** (admin + gospodar), locuri calculate din precomenzi, anularea precomenzii de către client.
+- [x] **Loturi din panou**: gospodarul propune, adminul aprobă (sau respinge cu motiv); locuri calculate din precomenzi;
+      anularea precomenzii de către client.
 - [x] **Notificări pe email** (client, gospodar, admin) – pleacă doar după configurarea Resend.
 - [ ] **WhatsApp Business API** pentru mesaje automate (acum: linkuri WhatsApp manuale).
 - [ ] **Designul site-ului** – de reluat (utilizatorul nu e mulțumit de varianta actuală; lucrăm împreună).
@@ -41,12 +42,16 @@ _Ultima actualizare: 21 noiembrie 2026_
 - [ ] **Datele de plată ale fiecărei gospodării** (titular, IBAN, bancă, preț furaj): Contul meu → Vedere gospodar →
       „Contul pentru avansul de hrană”. Fără ele, clienții nu pot plăti avansul.
 - [ ] **Prețul implicit al furajului:** 3,50 lei/kg e orientativ (`src/lib/pricing.ts`); de confirmat valoarea reală.
-- [ ] **Date reale ale companiei** în `src/lib/site.ts`: telefonul e încă `+40 700 000 000`, firma „în curs de
-      înființare”.
+
 - [ ] **Fotografii reale** ale gospodăriilor în `public/images/gospodarii/` (acum se afișează imagini de rezervă).
 - [ ] **Datele gospodăriilor și loturilor** sunt demonstrative (pilot); de înlocuit cu cele reale.
 - [ ] **Conturile de test**: Admin → Utilizatori → „Creează conturile de test” (parolele apar o singură dată).
 - [ ] **Conturile reale** ale gospodarilor și investitorilor, create din Admin → Utilizatori și trimise pe WhatsApp.
+
+## La înființarea firmei (amânat de utilizator)
+
+- [ ] **Datele companiei** în `src/lib/site.ts`: denumire, CUI, nr. Reg. Com., adresă, telefon (acum `+40 700 000 000`).
+- [ ] **Modelele de contract** și chitanța pentru avansul de hrană, cu datele firmei.
 
 ## De verificat juridic
 

@@ -2,7 +2,7 @@ import type { DeliveryZone, Farm, FarmRecord, Lot } from "@/lib/domain";
 import { farms as demoFarms } from "@/data/farms";
 import { lots } from "@/data/lots";
 import { deliveryZones } from "@/data/zones";
-import { isOpenForPreorder, normalizeLotCode } from "@/lib/lots";
+import { isApproved, isOpenForPreorder, normalizeLotCode } from "@/lib/lots";
 import { slugify } from "@/lib/slug";
 import { store } from "@/server/db/store";
 
@@ -116,16 +116,20 @@ function lotCodeFor(farmSlug: string, startDate: string, existing: Set<string>) 
 
 export type NewLot = Pick<Lot, "farmSlug" | "species" | "breed" | "startDate" | "growthDays" | "totalBirds" | "feed" | "processor" | "notes">;
 
+/** Implicit doar loturile aprobate (publice); `{ all: true }` în panouri. */
+type LotScope = { all?: boolean };
+const scoped = async ({ all = false }: LotScope = {}) => (await allLots()).filter((l) => all || isApproved(l));
+
 export const lotRepository = {
-  async list(): Promise<Lot[]> {
-    return (await allLots()).sort((a, b) => b.startDate.localeCompare(a.startDate));
+  async list(scope?: LotScope): Promise<Lot[]> {
+    return (await scoped(scope)).sort((a, b) => b.startDate.localeCompare(a.startDate));
   },
-  async byCode(code: string): Promise<Lot | null> {
+  async byCode(code: string, scope?: LotScope): Promise<Lot | null> {
     const c = normalizeLotCode(code);
-    return (await allLots()).find((l) => l.code === c) ?? null;
+    return (await scoped(scope)).find((l) => l.code === c) ?? null;
   },
-  async byFarm(slug: string): Promise<Lot[]> {
-    return (await allLots()).filter((l) => l.farmSlug === slug).sort((a, b) => b.startDate.localeCompare(a.startDate));
+  async byFarm(slug: string, scope?: LotScope): Promise<Lot[]> {
+    return (await scoped(scope)).filter((l) => l.farmSlug === slug).sort((a, b) => b.startDate.localeCompare(a.startDate));
   },
   /** Loturi deschise pentru precomenzi – doar din gospodăriile active. */
   async openForPreorder(now = new Date()): Promise<Lot[]> {
@@ -134,15 +138,24 @@ export const lotRepository = {
       .filter((l) => active.has(l.farmSlug) && isOpenForPreorder(l, now))
       .sort((a, b) => a.startDate.localeCompare(b.startDate));
   },
-  async create(data: NewLot, createdBy: string): Promise<Lot> {
+  /** `needsApproval`: lot propus de gospodar, devine public după aprobarea adminului. */
+  async create(data: NewLot, createdBy: string, needsApproval = false): Promise<Lot> {
     const existing = new Set((await allLots()).map((l) => l.code));
     const code = lotCodeFor(data.farmSlug, data.startDate, existing);
-    const lot: StoredLot = { ...data, id: code, code, reservedBirds: 0, createdAt: new Date().toISOString(), createdBy };
+    const lot: StoredLot = {
+      ...data,
+      id: code,
+      code,
+      reservedBirds: 0,
+      createdAt: new Date().toISOString(),
+      createdBy,
+      ...(needsApproval ? { approval: { status: "asteapta" as const } } : {}),
+    };
     await store.append(LOTS, lot);
     return lot;
   },
   /** Modifică un lot; pentru loturile demonstrative se salvează o copie în baza de date. */
-  async update(code: string, patch: Partial<Pick<Lot, "totalBirds" | "startDate" | "growthDays" | "breed" | "feed" | "processor" | "notes" | "closed">>) {
+  async update(code: string, patch: Partial<Pick<Lot, "totalBirds" | "startDate" | "growthDays" | "breed" | "feed" | "processor" | "notes" | "closed" | "approval">>) {
     const stored = await store.get<StoredLot>(LOTS, code);
     if (stored) return store.update<StoredLot>(LOTS, code, patch);
     const demo = lots.find((l) => l.code === code);

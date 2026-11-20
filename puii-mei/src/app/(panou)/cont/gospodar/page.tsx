@@ -51,7 +51,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
   }
 
   const [lots, preorders, zones] = await Promise.all([
-    lotRepository.byFarm(farm.slug),
+    lotRepository.byFarm(farm.slug, { all: true }),
     preorderRepository.list(),
     zoneRepository.listActive(),
   ]);
@@ -109,6 +109,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
       <h2 id="loturi" className="mt-10 scroll-mt-6 text-2xl font-semibold">Loturi</h2>
       {typeof sp.eroareLot === "string" && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800">{sp.eroareLot}</p>}
       {typeof sp.lotNou === "string" && <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Lotul {sp.lotNou} a fost creat și apare la precomandă.</p>}
+      {typeof sp.lotPropus === "string" && <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm font-medium text-amber-900">Lotul {sp.lotPropus} a fost trimis spre aprobare. Apare la precomandă după ce îl aprobă Puii mei.</p>}
       {typeof sp.lotSalvat === "string" && <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Lotul {sp.lotSalvat} a fost salvat.</p>}
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {lots.length === 0 && <p className="text-muted">Niciun lot încă.</p>}
@@ -119,7 +120,13 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
             <div key={l.code} className="rounded-3xl bg-white p-5 ring-1 ring-forest-900/10">
               <div className="flex items-start justify-between gap-2">
                 <p className="font-mono font-semibold">{l.code}</p>
-                <LotStatusBadge status={status} />
+                {l.approval?.status === "asteapta" ? (
+                  <span className="rounded bg-amber-300 px-2 py-0.5 text-xs font-semibold">Așteaptă aprobarea</span>
+                ) : l.approval?.status === "respins" ? (
+                  <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-900">Respins</span>
+                ) : (
+                  <LotStatusBadge status={status} />
+                )}
               </div>
               <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
                 <div><dt className="text-muted">Început</dt><dd className="font-medium">{formatDate(l.startDate)}</dd></div>
@@ -141,11 +148,11 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         <summary className="cursor-pointer text-sm font-semibold">Administrează loturile: lot nou, modificare, închidere</summary>
         <div className="mt-4 space-y-2">
           {lots.map((l) => (
-            <LotAdminRow key={l.code} lot={l} returnTo={backTo} />
+            <LotAdminRow key={l.code} lot={l} returnTo={backTo} canApprove={user.role === "admin"} />
           ))}
         </div>
         <h3 className="mt-6 mb-2 font-sans text-base font-semibold">Lot nou</h3>
-        <NewLotForm farmSlug={farm.slug} returnTo={backTo} />
+        <NewLotForm farmSlug={farm.slug} returnTo={backTo} needsApproval={user.role !== "admin"} />
       </details>
 
       <h2 className="mt-10 text-2xl font-semibold">Precomenzi pe loturile tale</h2>

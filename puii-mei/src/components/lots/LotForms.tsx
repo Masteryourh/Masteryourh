@@ -1,7 +1,7 @@
 import type { Lot } from "@/lib/domain";
 import { speciesLabels } from "@/lib/products";
 import { availableBirds, lotStatus, statusLabels } from "@/lib/lots";
-import { createLotAction, updateLotAction } from "@/app/(panou)/cont/gospodar/loturi-actions";
+import { createLotAction, decideLotAction, updateLotAction } from "@/app/(panou)/cont/gospodar/loturi-actions";
 
 const input = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm";
 
@@ -51,22 +51,25 @@ function Fields({ lot }: { lot?: Lot }) {
 }
 
 /** Formular pentru un lot nou. */
-export function NewLotForm({ farmSlug, returnTo }: { farmSlug: string; returnTo: string }) {
+export function NewLotForm({ farmSlug, returnTo, needsApproval = false }: { farmSlug: string; returnTo: string; needsApproval?: boolean }) {
   return (
     <form action={createLotAction} className="grid gap-4 rounded-xl bg-white p-5 ring-1 ring-slate-200 sm:grid-cols-2">
       <input type="hidden" name="farmSlug" value={farmSlug} />
       <input type="hidden" name="inapoi" value={returnTo} />
       <Fields />
       <div className="sm:col-span-2">
-        <button className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">Creează lotul</button>
-        <span className="ml-3 text-xs text-slate-500">Codul lotului se generează automat. Lotul apare imediat la precomandă.</span>
+        <button className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">{needsApproval ? "Trimite lotul spre aprobare" : "Creează lotul"}</button>
+        <span className="ml-3 text-xs text-slate-500">
+          Codul lotului se generează automat.{" "}
+          {needsApproval ? "Lotul apare la precomandă după aprobarea Puii mei." : "Lotul apare imediat la precomandă."}
+        </span>
       </div>
     </form>
   );
 }
 
 /** Rândul unui lot, cu editare și închidere / redeschidere pentru precomenzi. */
-export function LotAdminRow({ lot, farmName, returnTo }: { lot: Lot; farmName?: string; returnTo: string }) {
+export function LotAdminRow({ lot, farmName, returnTo, canApprove = false }: { lot: Lot; farmName?: string; returnTo: string; canApprove?: boolean }) {
   const status = lotStatus(lot);
   return (
     <details className="rounded-xl bg-white ring-1 ring-slate-200">
@@ -81,8 +84,33 @@ export function LotAdminRow({ lot, farmName, returnTo }: { lot: Lot; farmName?: 
             {lot.reservedBirds} / {lot.totalBirds} rezervați · {availableBirds(lot)} liberi
           </span>
           {lot.closed && <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">închis la precomenzi</span>}
+          {lot.approval?.status === "asteapta" && <span className="rounded bg-amber-300 px-2 py-0.5 text-xs font-semibold text-slate-900">așteaptă aprobarea</span>}
+          {lot.approval?.status === "respins" && <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-900">respins</span>}
         </span>
       </summary>
+      {lot.approval?.status === "respins" && lot.approval.reason && (
+        <p className="border-t border-slate-200 bg-red-50 px-4 py-2 text-sm text-red-900">
+          Motivul respingerii: {lot.approval.reason}. Corectează și salvează; lotul intră din nou la aprobare.
+        </p>
+      )}
+      {canApprove && lot.approval?.status === "asteapta" && (
+        <div className="flex flex-wrap items-end gap-3 border-t border-slate-200 bg-amber-50 px-4 py-3">
+          <p className="w-full text-xs text-slate-600">Propus de {lot.createdBy}. Verifică datele, apoi decide.</p>
+          <form action={decideLotAction}>
+            <input type="hidden" name="code" value={lot.code} />
+            <input type="hidden" name="inapoi" value={returnTo} />
+            <input type="hidden" name="decision" value="aproba" />
+            <button className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">Aprobă lotul</button>
+          </form>
+          <form action={decideLotAction} className="flex items-end gap-2">
+            <input type="hidden" name="code" value={lot.code} />
+            <input type="hidden" name="inapoi" value={returnTo} />
+            <input type="hidden" name="decision" value="respinge" />
+            <label className="text-xs font-semibold">Motiv<input name="reason" className="mt-1 block rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm" /></label>
+            <button className="rounded-lg bg-red-700 px-3 py-2 text-sm font-semibold text-white">Respinge</button>
+          </form>
+        </div>
+      )}
       <form action={updateLotAction} className="grid gap-4 border-t border-slate-200 p-4 sm:grid-cols-2">
         <input type="hidden" name="code" value={lot.code} />
         <input type="hidden" name="inapoi" value={returnTo} />
