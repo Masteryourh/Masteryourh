@@ -32,8 +32,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Autentificarea și activarea conturilor rămân accesibile și în modul „în construcție”.
-  if (matches(pathname, "/cont")) return NextResponse.next();
+  // Conturile, livrările (curier, client) și fotografiile rămân accesibile și în modul „în construcție”.
+  if (["/cont", "/livrare", "/confirmare", "/evaluare", "/foto"].some((p) => matches(pathname, p))) {
+    return NextResponse.next();
+  }
 
   // Modul „în construcție”.
   if (!maintenanceEnabled() || OPEN_PATHS.has(pathname)) return NextResponse.next();

@@ -7,7 +7,7 @@ import { farmRepository, lotRepository, zoneRepository } from "@/server/reposito
 import { availableBirds, lotStatus } from "@/lib/lots";
 import { formatDate, formatLei } from "@/lib/format";
 import type { PreorderStatus } from "@/lib/domain";
-import { updatePreorderStatus } from "./actions";
+import { updatePreorderLot, updatePreorderStatus } from "./actions";
 import { storageKind } from "@/server/db/store";
 
 export const dynamic = "force-dynamic";
@@ -58,7 +58,7 @@ export default async function AdminPage() {
 
       <h2 className="mt-12 text-2xl font-semibold">Precomenzi</h2>
       <div className="mt-4 overflow-x-auto rounded-2xl border border-forest-900/10 bg-white">
-        <table className="w-full min-w-[900px] text-left text-sm">
+        <table className="w-full min-w-[1100px] text-left text-sm">
           <thead className="bg-cream-100 text-xs uppercase tracking-wider text-muted">
             <tr>
               {["Nr.", "Data", "Client", "Pui", "Lot", "Zonă", "Valoare", "Status"].map((h) => (
@@ -81,7 +81,23 @@ export default async function AdminPage() {
                   {p.notes && <div className="mt-1 text-xs italic text-muted">„{p.notes}”</div>}
                 </td>
                 <td className="px-4 py-3">{p.birds}</td>
-                <td className="px-4 py-3 font-mono text-xs">{p.lotCode ?? "primul disponibil"}</td>
+                <td className="px-4 py-3">
+                  <form action={updatePreorderLot} className="flex flex-col gap-1.5">
+                    <input type="hidden" name="id" value={p.id} />
+                    <select name="lotCode" defaultValue={p.lotCode ?? ""} className="rounded-lg border border-forest-900/15 px-2 py-1 font-mono text-xs">
+                      <option value="">primul disponibil</option>
+                      {lots.map((l) => (
+                        <option key={l.code} value={l.code}>{l.code} · {farmName.get(l.farmSlug)}</option>
+                      ))}
+                    </select>
+                    <button className="self-start rounded-lg px-2 py-0.5 text-xs font-semibold text-forest-800 ring-1 ring-forest-900/15">Alocă lotul</button>
+                  </form>
+                  {p.location ? (
+                    <a href={`https://www.google.com/maps?q=${p.location.lat},${p.location.lng}`} target="_blank" rel="noopener noreferrer" className="mt-1 block text-xs font-semibold text-forest-700 underline">Pin pe hartă</a>
+                  ) : (
+                    !["ridicare-personala", "alta-zona"].includes(p.zoneId) && <span className="mt-1 block text-xs text-red-700">fără pin</span>
+                  )}
+                </td>
                 <td className="px-4 py-3">{zoneName.get(p.zoneId) ?? p.zoneId}</td>
                 <td className="px-4 py-3">{formatLei(p.estimate.total)}</td>
                 <td className="px-4 py-3">

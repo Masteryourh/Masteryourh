@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
     },
   },
   poweredByHeader: false,
+  experimental: {
+    // Încărcarea la ridicare și confirmarea clientului trimit câte 4 fotografii (comprimate în browser).
+    serverActions: { bodySizeLimit: "4mb" },
+  },
 };
 
 export default nextConfig;

@@ -6,6 +6,8 @@ import { cn } from "@/lib/cn";
 
 const items = [
   { href: "/admin", label: "Precomenzi" },
+  { href: "/admin/livrari", label: "Livrări live" },
+  { href: "/admin/calitate", label: "Calitate" },
   { href: "/admin/parteneri", label: "Solicitări parteneri" },
   { href: "/admin/gospodarii", label: "Gospodării" },
   { href: "/admin/interes", label: "Interes produse" },

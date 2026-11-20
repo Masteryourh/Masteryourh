@@ -29,7 +29,7 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
 - **Etapa 1 – conturi**: admin, gospodar, investitor; email + parolă; invitații cu link de activare (WhatsApp);
   dashboard gospodar și investitor.
 
-## 3. Etapa 2 – livrări (în lucru)
+## 3. Etapa 2 – livrări (implementată)
 
 ### Precomanda
 - La livrarea la adresă, clientul **pune sau corectează pinul pe hartă** (obligatoriu). Coordonatele se folosesc la
@@ -83,6 +83,9 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
 - Investiții (sumă, dată, obiect, status), contracte și acte descărcabile, cronologie, rapoarte.
 
 ## 6. De configurat / de verificat
+- Implementat fără servicii externe: hartă OpenStreetMap, traseu calculat local, navigație prin link Google Maps,
+  poze în baza de date. De adăugat ulterior: notificări automate (email/WhatsApp Business API), Google pentru
+  geocodare și distanțe reale pe drum.
 - Vercel: `SESSION_SECRET`; **Vercel Blob** (fișiere – documente; pozele pornesc în baza de date);
   **cheie Google Maps** (opțional: geocodare și trasee mai precise; fără ea se folosesc OpenStreetMap și un calcul
   propriu al traseului); **Resend** (emailuri automate); WhatsApp Business API (opțional, mesaje automate).

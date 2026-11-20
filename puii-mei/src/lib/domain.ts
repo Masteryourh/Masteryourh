@@ -80,6 +80,13 @@ export interface DeliveryZone {
   fee: number;
   deliveryDay: string;
   active: boolean;
+  /** Centrul aproximativ al zonei (pentru hartă). */
+  center?: GeoPoint;
+}
+
+export interface GeoPoint {
+  lat: number;
+  lng: number;
 }
 
 export type PreorderStatus =
@@ -108,6 +115,172 @@ export interface Preorder {
   notes: string;
   estimate: PriceEstimate;
   marketingConsent: boolean;
+  /** Pinul pus de client pe hartă (livrare la adresă). */
+  location?: GeoPoint;
+  /** Repere pentru curier (ex. „poarta verde, după pod”). */
+  addressNote?: string;
+  /** Când a fost predată clientului. */
+  deliveredAt?: string;
+}
+
+/* ------------------------------------------------------------------ */
+/* Livrări (etapa 2)                                                   */
+/* ------------------------------------------------------------------ */
+
+export interface CheckAnswers {
+  birdsReceived: number;
+  packagingOk: boolean;
+  coldOk: boolean;
+  appearanceOk: boolean;
+  /** true = toate verificările sunt în regulă. */
+  conditionOk: boolean;
+  problem: string;
+  /** id-urile celor 4 fotografii ale coletului. */
+  photoIds: string[];
+}
+
+/**
+ * Coletul unei precomenzi (eticheta generată de gospodar), cu două coduri QR:
+ * „Curier” (courierToken) și „Client” (clientToken). Un colet pe precomandă.
+ */
+export interface Parcel {
+  /** = id-ul precomenzii. */
+  id: string;
+  preorderNumber: string;
+  farmSlug: string;
+  lotCode: string | null;
+  birds: number;
+  /** Versiunea etichetei; regenerarea o crește și invalidează codurile vechi. */
+  version: number;
+  clientToken: string;
+  courierToken: string;
+  replacedTokens: { clientToken: string; courierToken: string; replacedAt: string }[];
+  createdAt: string;
+  createdBy: string;
+  /** Data limită de consum, tipărită pe etichetă (YYYY-MM-DD). */
+  expiresOn: string;
+  tourId?: string;
+  /** Încărcarea la ridicare (curierul scanează QR-ul „Curier”). */
+  loaded?: { at: string; temp: number; photoIds: string[]; lat?: number; lng?: number };
+  /** Predarea la client. */
+  delivered?: {
+    at: string;
+    temp: number;
+    tempPhotoId: string;
+    signaturePhotoId: string;
+    lat?: number;
+    lng?: number;
+    accuracy?: number;
+  };
+  /** Confirmarea primirii de către client. */
+  confirmationDeadline?: string;
+  submittedAt?: string;
+  answers?: CheckAnswers;
+  ratingToken?: string;
+  ratingExpiresAt?: string;
+  ratingSubmittedAt?: string;
+  ratings?: { farm: number; courier: number; platform: number; comment: string };
+}
+
+export type TourStatus = "planificata" | "in-curs" | "incheiata" | "anulata";
+
+export interface TourExtension {
+  id: string;
+  at: string;
+  reason: string;
+  description: string;
+  photoId: string;
+  lat?: number;
+  lng?: number;
+  status: "asteapta" | "aprobata" | "respinsa";
+  hours?: number;
+  decidedAt?: string;
+  decidedBy?: string;
+  comment?: string;
+}
+
+/** Tura de livrare: ridicarea din gospodărie și opririle la clienți, în ordine. */
+export interface Tour {
+  id: string;
+  code: string;
+  farmSlug: string;
+  date: string;
+  createdBy: string;
+  createdAt: string;
+  status: TourStatus;
+  /** Ordinea opririlor (id-uri de colete). */
+  parcelIds: string[];
+  /** Câte ore are curierul de la ridicare până la ultima livrare. */
+  durationHours: number;
+  /** Linkul turei pentru curier (fără cont). */
+  token: string;
+  /** PIN-ul de ridicare, afișat în contul gospodarului. Se folosește o singură dată. */
+  pickupPin: string;
+  pickupPinUsed?: boolean;
+  deadlineAt?: string;
+  startedAt?: string;
+  finishedAt?: string;
+  courier?: {
+    name: string;
+    phone: string;
+    plate: string;
+    vehicleType: string;
+    atp: string;
+    pairedAt: string;
+    pairedBy: "pin" | "confirmare";
+    personalPinHash?: string;
+    /** Crește la resetarea accesului: invalidează sesiunile vechi ale curierului. */
+    sessionVersion: number;
+  };
+  /** Cererea curierului către gospodar (când nu are PIN-ul de ridicare). */
+  pinRequest?: {
+    id: string;
+    at: string;
+    status: "asteapta" | "aprobata" | "respinsa";
+    name: string;
+    phone: string;
+    plate: string;
+    vehicleType: string;
+    atp: string;
+  };
+  failedPins: number;
+  locked: boolean;
+  start?: {
+    at: string;
+    odometer: number;
+    odometerPhotoId: string;
+    platePhotoId: string;
+    compartmentTemp: number;
+    tempPhotoId: string;
+    hygieneOk: boolean;
+    lat?: number;
+    lng?: number;
+  };
+  finish?: { at: string; odometer: number; odometerPhotoId: string; note: string };
+  extensions: TourExtension[];
+}
+
+/** Intrare în jurnalul nemodificabil al turei. */
+export interface TourEvent {
+  id: string;
+  tourId: string;
+  at: string;
+  type: string;
+  actor: string;
+  message: string;
+  lat?: number;
+  lng?: number;
+  alert?: boolean;
+}
+
+/** Fotografie (JPEG/PNG comprimat), stocată ca base64. */
+export interface StoredPhoto {
+  id: string;
+  mime: string;
+  data: string;
+  at: string;
+  /** Contextul: „parcel:<id>”, „tour:<id>” etc. – pentru controlul accesului. */
+  owner: string;
 }
 
 export interface ContactMessage {

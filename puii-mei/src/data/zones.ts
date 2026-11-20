@@ -8,6 +8,7 @@ export const deliveryZones: DeliveryZone[] = [
     localities: "Câmpulung Moldovenesc, Pojorâta, Vama, Fundu Moldovei",
     fee: 15,
     deliveryDay: "Sâmbătă",
+    center: { lat: 47.5303, lng: 25.5512 },
     active: true,
   },
   {
@@ -16,6 +17,7 @@ export const deliveryZones: DeliveryZone[] = [
     localities: "Vatra Dornei, Dorna Candrenilor, Iacobeni, Șaru Dornei",
     fee: 20,
     deliveryDay: "Sâmbătă",
+    center: { lat: 47.3456, lng: 25.3592 },
     active: true,
   },
   {
@@ -24,6 +26,7 @@ export const deliveryZones: DeliveryZone[] = [
     localities: "Gura Humorului, Mănăstirea Humorului, Frasin, Vatra Moldoviței",
     fee: 20,
     deliveryDay: "Vineri",
+    center: { lat: 47.5537, lng: 25.8896 },
     active: true,
   },
   {
@@ -32,6 +35,7 @@ export const deliveryZones: DeliveryZone[] = [
     localities: "Municipiul Suceava, Ipotești, Șcheia",
     fee: 25,
     deliveryDay: "Vineri",
+    center: { lat: 47.6514, lng: 26.2556 },
     active: true,
   },
   {
@@ -40,6 +44,7 @@ export const deliveryZones: DeliveryZone[] = [
     localities: "Rădăuți, Marginea, Sucevița",
     fee: 25,
     deliveryDay: "Vineri",
+    center: { lat: 47.8424, lng: 25.9192 },
     active: true,
   },
   {
@@ -48,6 +53,7 @@ export const deliveryZones: DeliveryZone[] = [
     localities: "Punct de ridicare în Câmpulung Moldovenesc (adresa se comunică la confirmare)",
     fee: 0,
     deliveryDay: "Vineri sau sâmbătă",
+    center: { lat: 47.5303, lng: 25.5512 },
     active: true,
   },
   {

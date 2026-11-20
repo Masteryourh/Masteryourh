@@ -30,6 +30,10 @@ npm run build && npm start   # producție
 | `/cont/activare/[cod]` | Setarea parolei din linkul de invitație / resetare (valabil 7 zile, o singură folosire) |
 | `/cont/gospodar` | Dashboard gospodar: loturile, precomenzile pe loturile lui |
 | `/cont/investitor` | Dashboard investitor (investiții, contracte, cronologie – în etapa 4) |
+| `/cont/gospodar/etichete`, `/cont/gospodar/ture/[id]` | Etichete QR (tipărire), ture de livrare: traseu, PIN, cereri curier, jurnal |
+| `/livrare/[cod]`, `/livrare/c/[cod]` | Curierul (acces temporar, fără cont): tura și pagina coletului (QR „CURIER”) |
+| `/confirmare/[cod]`, `/evaluare/[cod]` | Clientul (QR „CLIENT”): progresul turei, confirmarea cu 4 fotografii, satisfacția |
+| `/admin/livrari`, `/admin/calitate` | Livrări live (toate turele, alerte, prelungiri, etichete) și calitatea pe verigi |
 | `/admin` | Precomenzi (schimbare status), loturi, mesaje – doar pentru administratori |
 | `/admin/utilizatori` | Conturi: creare, link de activare (copiere / WhatsApp), resetare parolă, dezactivare |
 | `/admin/parteneri` | Solicitări de la gospodării și investitori: status, note interne; gospodăriile aprobate devin profiluri publice |
@@ -38,6 +42,27 @@ npm run build && npm start   # producție
 | `/api/loturi/[cod]` | API JSON de trasabilitate |
 
 Parametri utili: `/precomanda?lot=PM-2612-A03&pui=12`, `/contact?subiect=partener`.
+
+## Livrări
+
+1. **Precomanda**: la livrarea la adresă, clientul pune obligatoriu pinul pe hartă (OpenStreetMap; căutare adresă,
+   „Folosește locația mea”) și poate adăuga repere pentru curier.
+2. **Adminul** alocă lotul precomenzii (dacă clientul a ales „primul disponibil”).
+3. **Gospodarul** generează eticheta (QR „CURIER” + QR „CLIENT”, lot, data limită de consum); regenerarea
+   invalidează codurile vechi. Etichetele apar automat în admin.
+4. **Tura**: gospodarul alege coletele, data și termenul (ore); traseul se calculează automat (cel mai apropiat vecin
+   + 2-opt, pornind de la gospodărie) și se poate ajusta. PIN-ul de ridicare se trimite șoferului pe WhatsApp.
+5. **Curierul** (fără cont) deschide linkul turei: datele lui și ale mașinii (ATP), apoi PIN-ul de ridicare sau
+   „cere confirmarea gospodarului”; își alege PIN-ul personal (reintrare). Pornire: plăcuță, kilometraj, temperatură
+   (foto), igienă. Încărcare: scanează QR „CURIER” pe fiecare colet, 4 fotografii, temperatură. Predare: QR, temperatură
+   (foto), semnătura clientului, GPS. Final: kilometraj. Prelungirea se cere cu motiv + dovadă și o aprobă adminul.
+6. **Clientul** urmărește progresul (la fiecare livrare încheiată), confirmă primirea cu căsuțe + 4 fotografii
+   (comparate cu cele de la ridicare), apoi notează gospodăria, curierul și Puii mei.
+7. **Jurnalul** fiecărei ture (`tour-events`) se completează doar prin adăugare. Fotografiile se servesc prin
+   `/foto/[id]` doar celor îndreptățiți (admin, gospodar, curierul turei, clientul cu codul lui).
+
+Setări în `src/lib/delivery.ts` (prag 0–4 °C, ore de confirmare, încercări PIN etc.). Fotografiile sunt comprimate în
+browser și stocate deocamdată în baza de date; pentru volum mare se mută pe Vercel Blob.
 
 ## Mod „în construcție”
 
