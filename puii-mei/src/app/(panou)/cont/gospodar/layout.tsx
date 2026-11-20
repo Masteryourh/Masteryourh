@@ -8,6 +8,7 @@ export default async function FarmerLayout({ children }: LayoutProps<"/cont/gosp
   const user = await requireUser(["gospodar"], "/cont/gospodar");
   const items: PanelNavItem[] = [
     { href: "/cont/gospodar", label: "Gospodăria mea", exact: true },
+    { href: "/cont/gospodar/documente", label: "Documente și cheltuieli" },
   ];
   if (user.role === "admin") items.push({ href: "/admin", label: "← Panou admin" });
   return (

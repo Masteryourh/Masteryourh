@@ -111,7 +111,7 @@ export function growthProgress(lot: Lot, now = new Date()) {
 }
 
 export function isOpenForPreorder(lot: Lot, now = new Date()) {
-  return lotStatus(lot, now) === "precomenzi-deschise" && availableBirds(lot) > 0;
+  return !lot.closed && lotStatus(lot, now) === "precomenzi-deschise" && availableBirds(lot) > 0;
 }
 
 /** Normalizează codul introdus de client (spații, litere mici). */

@@ -10,6 +10,7 @@ import { farmRepository, lotRepository } from "./repositories/catalog";
 import { preorderRepository } from "./repositories/preorders";
 import { eventRepository, newPin, newToken, parcelRepository, tourRepository } from "./repositories/delivery";
 import { sendEmail } from "./email";
+import { notifyOrderEvent } from "./notifications";
 
 /* ------------------------------------------------------------------ */
 /* Utilitare                                                          */
@@ -130,7 +131,10 @@ export async function createTour(
     durationHours: input.durationHours,
   });
   for (const p of parcels) await parcelRepository.update(p!.id, { tourId: tour.id });
-  for (const p of parcels) await preorderRepository.updateStatus(p!.id, "in-livrare");
+  for (const p of parcels) {
+    const updated = await preorderRepository.updateStatus(p!.id, "in-livrare");
+    if (updated) await notifyOrderEvent(updated, "livrare-programata", input.date.split("-").reverse().join("."));
+  }
   await log(tour, "creare", actorOf(user), `Tură creată pentru ${input.date}, ${parcels.length} colete, traseu optimizat automat.`);
   return tour;
 }

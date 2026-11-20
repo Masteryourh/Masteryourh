@@ -34,6 +34,11 @@ npm run build && npm start   # producție
 | `/cont/gospodar/etichete`, `/cont/gospodar/ture/[id]` | Etichete QR (tipărire), ture de livrare: traseu, PIN, cereri curier, jurnal |
 | `/livrare/[cod]`, `/livrare/c/[cod]` | Curierul (acces temporar, fără cont): tura și pagina coletului (QR „CURIER”) |
 | `/confirmare/[cod]`, `/evaluare/[cod]` | Clientul (QR „CLIENT”): progresul turei, confirmarea cu 4 fotografii, satisfacția |
+| `/admin/loturi` | Loturi: creare, modificare, închidere la precomenzi; locurile rezervate se calculează din precomenzi |
+| `/cont/gospodar/documente` | Registrul de cheltuieli pe lot (cost / pasăre) și documentele (facturi, avize, DSV, contracte), cu SHA-256 |
+| `/admin/documente`, `/admin/investitii` | Verificarea documentelor; investiții: creare, status, cronologie, contracte |
+| `/cont/investitor/[id]` | Investiția: cronologie, contracte, transparența gospodăriei susținute (loturi, cheltuieli, documente) |
+| `/fisiere/[id]` | Descărcarea documentelor, doar pentru cei îndreptățiți |
 | `/admin/livrari`, `/admin/calitate` | Livrări live (toate turele, alerte, prelungiri, etichete) și calitatea pe verigi |
 | `/admin` | Precomenzi (schimbare status), loturi, mesaje – doar pentru administratori |
 | `/admin/utilizatori` | Conturi: creare, link de activare (copiere / WhatsApp), resetare parolă, dezactivare |

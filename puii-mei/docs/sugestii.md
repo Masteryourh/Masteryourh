@@ -7,12 +7,18 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 ## De construit (etapele următoare)
 
-- [ ] **Etapa 3 – gospodar:** registrul de cheltuieli pe lot, cu documente justificative descărcabile și verificabile
-      (facturi, avize, documente contabile, înregistrări DSV, contracte; cine și când a încărcat). Necesită Vercel Blob.
-- [ ] **Etapa 4 – investitor:** investiții (sumă, dată, obiect, status), contracte și acte descărcabile, cronologie,
-      rapoarte.
-- [ ] **Notificări automate** către client, gospodar și admin (email, eventual WhatsApp Business API): precomandă
-      nouă, plată anunțată, plată confirmată, livrare programată.
+- [x] **Etapa 3 – gospodar:** registrul de cheltuieli pe lot + documente (SHA-256, verificare admin). Fișierele stau
+      deocamdată în baza de date (max. 3,5 MB); pentru volum mare → Vercel Blob.
+- [x] **Etapa 4 – investitor:** investiții, cronologie, contracte descărcabile, transparența gospodăriei susținute.
+- [x] **Loturi din panou** (admin + gospodar), locuri calculate din precomenzi, anularea precomenzii de către client.
+- [x] **Notificări pe email** (client, gospodar, admin) – pleacă doar după configurarea Resend.
+- [ ] **WhatsApp Business API** pentru mesaje automate (acum: linkuri WhatsApp manuale).
+- [ ] **Designul site-ului** – de reluat (utilizatorul nu e mulțumit de varianta actuală; lucrăm împreună).
+- [ ] **Zonele de livrare și prețurile** editabile din admin (acum sunt în cod: `src/data/zones.ts`, `src/lib/pricing.ts`).
+- [ ] **Editarea gospodăriilor demonstrative** din admin (acum se pot edita doar cele create din admin).
+- [ ] **Modele de documente**: contract de consultanță pentru gospodari, contract de investiție, chitanță pentru avansul
+      de hrană – de redactat cu juristul și încărcat în platformă.
+- [ ] **Backup** periodic al bazei de date (Neon are istoric; de verificat planul).
 - [ ] **Pozele de la livrări** mutate pe Vercel Blob când crește volumul (acum stau în baza de date).
 - [ ] **Google Maps** (opțional): geocodare și distanțe reale pe drum pentru trasee (acum OpenStreetMap + calcul propriu).
 - [ ] **Bază de date relațională completă** (schema Prisma) când crește volumul de date.
@@ -26,7 +32,8 @@ _Ultima actualizare: 21 noiembrie 2026_
 - [ ] **SESSION_SECRET** în Vercel → Environment Variables (o valoare lungă, aleatorie), apoi Redeploy.
 - [ ] **Resend** (`RESEND_API_KEY`, `EMAIL_FROM`, ex. „Puii mei <comenzi@puiimei.ro>”): emailul cu linkul
       „Comanda mea” și celelalte emailuri pleacă doar după configurare.
-- [ ] **Vercel Blob** pentru fișiere (necesar la etapa 3).
+- [ ] **Vercel Blob** pentru fișiere mari (opțional; documentele merg și fără, până la 3,5 MB).
+- [ ] **`ADMIN_NOTIFY_EMAIL`** în Vercel: adresa care primește alertele (precomenzi, solicitări, mesaje).
 - [x] **Conectorul Higgsfield** conectat (plan gratuit: doar modelul de imagini `z_image`, fără video).
 
 ## De completat pe site
@@ -38,7 +45,8 @@ _Ultima actualizare: 21 noiembrie 2026_
       înființare”.
 - [ ] **Fotografii reale** ale gospodăriilor în `public/images/gospodarii/` (acum se afișează imagini de rezervă).
 - [ ] **Datele gospodăriilor și loturilor** sunt demonstrative (pilot); de înlocuit cu cele reale.
-- [ ] **Conturile** gospodarilor și investitorilor, create din Admin → Utilizatori și trimise pe WhatsApp.
+- [ ] **Conturile de test**: Admin → Utilizatori → „Creează conturile de test” (parolele apar o singură dată).
+- [ ] **Conturile reale** ale gospodarilor și investitorilor, create din Admin → Utilizatori și trimise pe WhatsApp.
 
 ## De verificat juridic
 

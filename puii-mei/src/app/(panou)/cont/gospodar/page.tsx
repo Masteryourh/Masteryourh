@@ -17,6 +17,7 @@ import { FeedCell } from "@/components/orders/FeedCell";
 import { feedAdvance, pricing } from "@/lib/pricing";
 import { farmPaymentRepository } from "@/server/repositories/farm-payments";
 import { saveFarmPaymentAction } from "./plati-actions";
+import { LotAdminRow, NewLotForm } from "@/components/lots/LotForms";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Contul gospodarului", robots: { index: false, follow: false } };
@@ -55,6 +56,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
     zoneRepository.listActive(),
   ]);
   const lotCodes = new Set(lots.map((l) => l.code));
+  const backTo = user.role === "admin" ? `/cont/gospodar?gospodarie=${farm.slug}` : "/cont/gospodar";
   const farmPreorders = preorders.filter((p) => p.lotCode && lotCodes.has(p.lotCode) && p.status !== "anulata");
   const zoneName = new Map(zones.map((z) => [z.id, z.name]));
   const activeLots = lots.filter((l) => lotStatus(l) !== "livrat");
@@ -104,7 +106,10 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         <Stat label="Valoare estimativă" value={formatLei(farmPreorders.reduce((s, p) => s + p.estimate.productValue, 0))} />
       </div>
 
-      <h2 className="mt-10 text-2xl font-semibold">Loturi</h2>
+      <h2 id="loturi" className="mt-10 scroll-mt-6 text-2xl font-semibold">Loturi</h2>
+      {typeof sp.eroareLot === "string" && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800">{sp.eroareLot}</p>}
+      {typeof sp.lotNou === "string" && <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Lotul {sp.lotNou} a fost creat și apare la precomandă.</p>}
+      {typeof sp.lotSalvat === "string" && <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Lotul {sp.lotSalvat} a fost salvat.</p>}
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {lots.length === 0 && <p className="text-muted">Niciun lot încă.</p>}
         {lots.map((l) => {
@@ -131,6 +136,17 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
           );
         })}
       </div>
+
+      <details className="mt-4 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
+        <summary className="cursor-pointer text-sm font-semibold">Administrează loturile: lot nou, modificare, închidere</summary>
+        <div className="mt-4 space-y-2">
+          {lots.map((l) => (
+            <LotAdminRow key={l.code} lot={l} returnTo={backTo} />
+          ))}
+        </div>
+        <h3 className="mt-6 mb-2 font-sans text-base font-semibold">Lot nou</h3>
+        <NewLotForm farmSlug={farm.slug} returnTo={backTo} />
+      </details>
 
       <h2 className="mt-10 text-2xl font-semibold">Precomenzi pe loturile tale</h2>
       <div className="mt-4 overflow-x-auto rounded-2xl border border-forest-900/10 bg-white">
@@ -250,10 +266,11 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         </div>
       </div>
 
-      <h2 className="mt-10 text-2xl font-semibold">În curând în contul tău</h2>
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <Soon title="Cheltuieli și documente" text="Registrul de cheltuieli pe lot, facturi, avize, documente contabile și înregistrări, toate descărcabile." />
-      </div>
+      <h2 className="mt-10 text-2xl font-semibold">Documente și cheltuieli</h2>
+      <Link href={`/cont/gospodar/documente${user.role === "admin" ? `?gospodarie=${farm.slug}` : ""}`} className="mt-3 block max-w-xl rounded-xl bg-white p-5 ring-1 ring-slate-200 hover:ring-slate-400">
+        <p className="font-semibold">Registrul de cheltuieli și documentele gospodăriei →</p>
+        <p className="mt-1 text-sm text-slate-600">Facturi, avize, documente contabile, înregistrări DSV, contracte; costul pe lot și pe pasăre.</p>
+      </Link>
     </Container>
   );
 }
@@ -296,16 +313,6 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div className="rounded-2xl bg-white p-5 ring-1 ring-forest-900/10">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-forest-900">{value}</p>
-    </div>
-  );
-}
-
-function Soon({ title, text }: { title: string; text: string }) {
-  return (
-    <div className="rounded-3xl border border-dashed border-forest-900/20 p-5">
-      <span className="rounded-full bg-grain-300/60 px-2.5 py-0.5 text-xs font-semibold">În curând</span>
-      <p className="mt-3 font-semibold text-forest-900">{title}</p>
-      <p className="mt-1 text-sm text-muted">{text}</p>
     </div>
   );
 }

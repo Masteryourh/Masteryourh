@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { estimatePrice, feedAdvance } from "@/lib/pricing";
 import { farmPaymentRepository } from "@/server/repositories/farm-payments";
 import { availableBirds, availabilityDate, isOpenForPreorder, normalizeLotCode } from "@/lib/lots";
@@ -70,6 +71,7 @@ export async function submitPreorder(
       marketingConsent: data.marketingConsent,
     });
     await notifyNewPreorder(preorder);
+    revalidatePath("/", "layout");
     const payment = farmSlug ? await farmPaymentRepository.bySlug(farmSlug) : null;
     const feed = feedAdvance(preorder.birds, payment?.feedPricePerKg);
 
