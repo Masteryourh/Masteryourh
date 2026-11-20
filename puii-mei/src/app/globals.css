@@ -77,3 +77,20 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Panoul de control (admin, gospodar, investitor): aspect simplu, funcțional. */
+@layer base {
+  .panou h1,
+  .panou h2,
+  .panou h3 {
+    @apply font-sans text-slate-900;
+    letter-spacing: 0;
+  }
+  .panou .font-display {
+    @apply font-sans;
+  }
+  .panou h1 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+}

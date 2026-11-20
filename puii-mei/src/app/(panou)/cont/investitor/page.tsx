@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
-import { AccountBar } from "@/components/account/AccountBar";
 import { site } from "@/lib/site";
 import { requireUser } from "@/server/session";
 
@@ -17,7 +16,6 @@ export default async function InvestorDashboard() {
   const user = await requireUser(["investitor"], "/cont/investitor");
   return (
     <Container className="max-w-4xl py-8">
-      <AccountBar user={user} title="Contul investitorului" />
       <h1 className="mt-6 text-3xl font-semibold sm:text-4xl">Bun venit, {user.name.split(" ")[0]}!</h1>
       <p className="mt-2 max-w-2xl text-muted">
         Aici vei urmări investițiile tale în rețeaua Puii mei, cu documentele și evoluția fiecăreia. Le adăugăm pe măsură

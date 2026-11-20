@@ -11,7 +11,7 @@ import {
   extensionDecisionAction,
   pinRequestAction,
   routeAction,
-} from "@/app/(site)/cont/gospodar/livrari-actions";
+} from "@/app/(panou)/cont/gospodar/livrari-actions";
 import { courierTourUrl, requestOrigin } from "@/server/delivery";
 import { eventRepository } from "@/server/repositories/delivery";
 import { loadTourView } from "@/server/tour-view";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { createTourAction, type TourFormState } from "@/app/(site)/cont/gospodar/livrari-actions";
+import { createTourAction, type TourFormState } from "@/app/(panou)/cont/gospodar/livrari-actions";
 import { inputClasses } from "@/components/forms/Field";
 import { SubmitButton } from "@/components/forms/SubmitButton";
 
