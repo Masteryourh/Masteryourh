@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 200" role="img" aria-label="ECORATED">
+  <title>ECORATE</title>
+  <defs>
+    <linearGradient id="frunza" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8cc63f"/>
+      <stop offset="1" stop-color="#3d8b3d"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="#2b2b2b" stroke-width="9" stroke-linecap="butt">
+    <!-- E -->
+    <path d="M40 52H118M40 100H118M40 148H118"/>
+    <!-- C -->
+    <path d="M253 64A52 52 0 1 0 253 136"/>
+    <!-- O -->
+    <circle cx="335" cy="100" r="50"/>
+    <!-- R -->
+    <path d="M425 152V52H468A24 24 0 0 1 468 100H425M462 100 500 152"/>
+    <!-- A fără bară -->
+    <path d="M520 152 566 50 612 152"/>
+    <!-- T -->
+    <path d="M630 52H722M676 52V152"/>
+    <!-- E -->
+    <path d="M752 52H830M752 100H830M752 148H830"/>
+  </g>
+  <!-- Frunza verde, în formă de „D”: latura dreaptă e tulpina, rotunjimea e bucla literei -->
+  <g transform="translate(866 0)">
+    <path d="M6 46C78 40 110 92 96 128C86 152 52 158 6 154Z" fill="url(#frunza)"/>
+    <path d="M6 46V154" stroke="#2f6f30" stroke-width="9"/>
+    <path d="M8 150C36 126 60 98 78 64" fill="none" stroke="#d9f2b4" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M30 129 50 128M44 112 66 108M57 94 78 88" fill="none" stroke="#d9f2b4" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M6 154 0 172" stroke="#2f6f30" stroke-width="6" stroke-linecap="round"/>
+  </g>
+</svg>

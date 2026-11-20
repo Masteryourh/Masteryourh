@@ -10,6 +10,9 @@ export function Footer() {
         <div className="sm:col-span-2 lg:col-span-1">
           <Logo light />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-cream-100/70">{site.tagline}</p>
+          <p className="mt-6 text-xs text-cream-100/60">Un proiect</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={site.company.logo.light} alt="ECORATE" width={160} height={32} className="mt-1 h-8 w-auto" />
         </div>
         <div>
           <h2 className="font-sans text-sm font-semibold uppercase tracking-wider text-grain-300">Explorează</h2>

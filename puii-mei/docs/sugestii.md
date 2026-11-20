@@ -50,7 +50,8 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 ## La înființarea firmei (amânat de utilizator)
 
-- [ ] **Datele companiei** în `src/lib/site.ts`: denumire, CUI, nr. Reg. Com., adresă, telefon (acum `+40 700 000 000`).
+- [x] **Denumirea**: ECORATE S.R.L. (logo în `public/brand/`, frunza = „D” → ECORATED).
+- [ ] **Datele companiei** în `src/lib/site.ts`: CUI, nr. Reg. Com., adresă, telefon (acum `+40 700 000 000`).
 - [ ] **Modelele de contract** și chitanța pentru avansul de hrană, cu datele firmei.
 
 ## De verificat juridic
