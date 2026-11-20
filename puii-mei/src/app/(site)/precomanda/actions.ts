@@ -1,6 +1,7 @@
 "use server";
 
-import { estimatePrice } from "@/lib/pricing";
+import { estimatePrice, feedAdvance } from "@/lib/pricing";
+import { farmPaymentRepository } from "@/server/repositories/farm-payments";
 import { availableBirds, availabilityDate, isOpenForPreorder, normalizeLotCode } from "@/lib/lots";
 import { flattenErrors } from "@/lib/validation/common";
 import { parseLocation, preorderSchema } from "@/lib/validation/preorder";
@@ -34,6 +35,7 @@ export async function submitPreorder(
   }
 
   let lotCode: string | null = null;
+  let farmSlug: string | null = null;
   let availableFrom: string | null = null;
   if (data.lotCode) {
     const code = normalizeLotCode(data.lotCode);
@@ -49,6 +51,7 @@ export async function submitPreorder(
       };
     }
     lotCode = lot.code;
+    farmSlug = lot.farmSlug;
     availableFrom = availabilityDate(lot).toISOString();
   }
 
@@ -67,6 +70,8 @@ export async function submitPreorder(
       marketingConsent: data.marketingConsent,
     });
     await notifyNewPreorder(preorder);
+    const payment = farmSlug ? await farmPaymentRepository.bySlug(farmSlug) : null;
+    const feed = feedAdvance(preorder.birds, payment?.feedPricePerKg);
 
     return {
       status: "success",
@@ -79,6 +84,9 @@ export async function submitPreorder(
         total: preorder.estimate.total,
         estimatedKg: preorder.estimate.estimatedKg,
         email: preorder.customer.email,
+        trackingToken: preorder.trackingToken!,
+        feedKg: feed.kg,
+        feedAmount: feed.amount,
       },
     };
   } catch (err) {

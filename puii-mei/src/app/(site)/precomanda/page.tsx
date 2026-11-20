@@ -5,6 +5,7 @@ import { PreorderForm, type LotOption } from "@/components/forms/PreorderForm";
 import { farmRepository, lotRepository, zoneRepository } from "@/server/repositories/catalog";
 import { availabilityDate, availableBirds } from "@/lib/lots";
 import { pageMetadata } from "@/lib/seo";
+import { farmPaymentRepository } from "@/server/repositories/farm-payments";
 
 export const metadata: Metadata = pageMetadata({
   title: "Precomandă pui crescuți la comandă",
@@ -21,12 +22,16 @@ export default async function PreorderPage({ searchParams }: PageProps<"/precoma
     farmRepository.list(),
   ]);
   const farmBySlug = new Map(farms.map((f) => [f.slug, f]));
+  const feedPrice = new Map(
+    (await Promise.all(farms.map((f) => farmPaymentRepository.bySlug(f.slug)))).filter((x) => x !== null).map((x) => [x.id, x.feedPricePerKg]),
+  );
   const lots: LotOption[] = openLots.map((l) => ({
     code: l.code,
     farmName: farmBySlug.get(l.farmSlug)?.name ?? "",
     village: farmBySlug.get(l.farmSlug)?.village ?? "",
     availableFrom: availabilityDate(l).toISOString(),
     free: availableBirds(l),
+    feedPricePerKg: feedPrice.get(l.farmSlug),
   }));
   const lot = typeof sp.lot === "string" ? sp.lot.toUpperCase() : undefined;
   const birdsParam = typeof sp.pui === "string" ? Number.parseInt(sp.pui, 10) : NaN;

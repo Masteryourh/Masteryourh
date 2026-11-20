@@ -54,8 +54,13 @@ export function Footer() {
           <ul className="mt-4 space-y-2 text-sm text-cream-100/80">
             <li>{site.company.legalName}</li>
             <li>
+              <Link href="/comanda" className="hover:text-white">
+                Comanda mea
+              </Link>
+            </li>
+            <li>
               <Link href="/cont" className="hover:text-white">
-                Intră în cont
+                Intră în cont (gospodari, investitori, admin)
               </Link>
             </li>
             <li>

@@ -121,6 +121,35 @@ export interface Preorder {
   addressNote?: string;
   /** Când a fost predată clientului. */
   deliveredAt?: string;
+  /** Codul secret al linkului „Comanda mea” (/comanda/<cod>), fără cont. */
+  trackingToken?: string;
+  /** Avansul pentru hrană, plătit de client direct în contul gospodăriei. */
+  feedPayment?: FeedPayment;
+}
+
+export type FeedPaymentStatus = "de-platit" | "declarata" | "primita";
+
+export interface FeedPayment {
+  status: FeedPaymentStatus;
+  /** Suma la momentul declarării plății de către client (lei). */
+  amount?: number;
+  declaredAt?: string;
+  /** Confirmarea primirii, de gospodar sau admin. */
+  confirmedAt?: string;
+  confirmedBy?: string;
+}
+
+/** Datele de plată ale gospodăriei (contul în care clienții plătesc avansul pentru hrană). */
+export interface FarmPaymentDetails {
+  /** Slug-ul gospodăriei. */
+  id: string;
+  holder: string;
+  iban: string;
+  bank: string;
+  /** Prețul furajului (lei / kg) folosit la calculul avansului. */
+  feedPricePerKg: number;
+  updatedAt: string;
+  updatedBy: string;
 }
 
 /* ------------------------------------------------------------------ */

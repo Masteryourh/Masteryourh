@@ -9,6 +9,8 @@ export const pricing = {
   avgWeightKg: 2.2, // greutate medie carcasă
   /** Hrana plătită în avans: aproximativ 6 kg de furaj pentru fiecare pui. */
   feedKgPerBird: 6,
+  /** Preț orientativ al furajului (lei / kg); fiecare gospodărie își poate seta prețul ei. */
+  feedPricePerKg: 3.5,
   minBirds: 2,
   maxBirds: 100,
   presets: [4, 8, 12, 20],
@@ -32,6 +34,18 @@ export function estimatePrice(birds: number, zone?: DeliveryZone | null): PriceE
     total: round(productValue + deliveryFee, 2),
   };
 }
+
+/** Avansul pentru hrană: cantitatea de furaj și suma (lei). */
+export function feedAdvance(birds: number, pricePerKg: number = pricing.feedPricePerKg) {
+  const kg = Math.max(0, Math.floor(birds)) * pricing.feedKgPerBird;
+  return { kg, pricePerKg, amount: round(kg * pricePerKg, 2) };
+}
+
+export const feedPaymentLabels = {
+  "de-platit": "De plătit",
+  declarata: "Plătită de client (de verificat)",
+  primita: "Primită",
+} as const;
 
 function round(n: number, decimals: number) {
   const f = 10 ** decimals;

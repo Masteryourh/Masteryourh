@@ -12,6 +12,11 @@ import { generateLabelAction } from "./livrari-actions";
 import { farmRepository, lotRepository, zoneRepository } from "@/server/repositories/catalog";
 import { preorderRepository } from "@/server/repositories/preorders";
 import { requireUser } from "@/server/session";
+import { inputClasses } from "@/components/forms/Field";
+import { FeedCell } from "@/components/orders/FeedCell";
+import { feedAdvance, pricing } from "@/lib/pricing";
+import { farmPaymentRepository } from "@/server/repositories/farm-payments";
+import { saveFarmPaymentAction } from "./plati-actions";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Contul gospodarului", robots: { index: false, follow: false } };
@@ -27,7 +32,8 @@ const preorderLabels: Record<PreorderStatus, string> = {
 
 export default async function FarmerDashboard({ searchParams }: PageProps<"/cont/gospodar">) {
   const user = await requireUser(["gospodar"], "/cont/gospodar");
-  const { gospodarie } = await searchParams;
+  const sp = await searchParams;
+  const { gospodarie } = sp;
   const farms = await farmRepository.listAll();
   // Gospodarul își vede doar gospodăria; adminul poate alege oricare (previzualizare).
   const slug = user.role === "admin" ? (typeof gospodarie === "string" ? gospodarie : farms[0]?.slug) : user.farmSlug;
@@ -52,7 +58,11 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
   const farmPreorders = preorders.filter((p) => p.lotCode && lotCodes.has(p.lotCode) && p.status !== "anulata");
   const zoneName = new Map(zones.map((z) => [z.id, z.name]));
   const activeLots = lots.filter((l) => lotStatus(l) !== "livrat");
-  const [allParcels, allTours] = await Promise.all([parcelRepository.list(), tourRepository.list()]);
+  const [allParcels, allTours, payment] = await Promise.all([
+    parcelRepository.list(),
+    tourRepository.list(),
+    farmPaymentRepository.bySlug(farm.slug),
+  ]);
   const parcels = allParcels.filter((x) => x.farmSlug === farm.slug);
   const parcelById = new Map(parcels.map((x) => [x.id, x]));
   const preorderById = new Map(farmPreorders.map((x) => [x.id, x]));
@@ -124,17 +134,17 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
 
       <h2 className="mt-10 text-2xl font-semibold">Precomenzi pe loturile tale</h2>
       <div className="mt-4 overflow-x-auto rounded-2xl border border-forest-900/10 bg-white">
-        <table className="w-full min-w-[720px] text-left text-sm">
+        <table className="w-full min-w-[860px] text-left text-sm">
           <thead className="bg-cream-100 text-xs uppercase tracking-wider text-muted">
             <tr>
-              {["Nr.", "Client", "Pui", "Lot", "Livrare", "Status", "Etichetă"].map((h) => (
+              {["Nr.", "Client", "Pui", "Lot", "Livrare", "Status", "Avans hrană", "Etichetă"].map((h) => (
                 <th key={h} className="px-4 py-3 font-semibold">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-forest-900/5">
             {farmPreorders.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-muted">Nicio precomandă alocată încă pe loturile tale.</td></tr>
+              <tr><td colSpan={8} className="px-4 py-6 text-center text-muted">Nicio precomandă alocată încă pe loturile tale.</td></tr>
             )}
             {farmPreorders.map((p) => (
               <tr key={p.id}>
@@ -153,6 +163,9 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
                   )}
                 </td>
                 <td className="px-4 py-3">
+                  <FeedCell preorder={p} amount={feedAdvance(p.birds, payment?.feedPricePerKg).amount} canConfirm />
+                </td>
+                <td className="px-4 py-3">
                   <LabelCell preorderId={p.id} parcel={parcelById.get(p.id)} delivered={p.status === "livrata"} />
                 </td>
               </tr>
@@ -160,6 +173,42 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
           </tbody>
         </table>
       </div>
+
+      <h2 id="plata-hrana" className="mt-10 scroll-mt-6 text-2xl font-semibold">Contul pentru avansul de hrană</h2>
+      <p className="mt-1 max-w-2xl text-sm text-muted">
+        Clienții văd aceste date pe pagina comenzii și plătesc avansul prin transfer, direct în contul tău, cu numărul comenzii
+        în detalii. Tu confirmi primirea banilor în tabelul de mai sus.
+      </p>
+      {typeof sp.eroarePlata === "string" && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800">{sp.eroarePlata}</p>}
+      {sp.salvatPlata && <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Datele de plată au fost salvate.</p>}
+      {!payment && (
+        <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+          Completează datele, altfel clienții nu pot plăti avansul.
+        </p>
+      )}
+      <form action={saveFarmPaymentAction} className="mt-4 grid max-w-3xl gap-4 rounded-2xl bg-white p-5 ring-1 ring-forest-900/10 sm:grid-cols-2">
+        <input type="hidden" name="farmSlug" value={farm.slug} />
+        <label className="text-sm font-semibold sm:col-span-2">
+          Titularul contului
+          <input name="holder" defaultValue={payment?.holder ?? farm.owner} required className={`${inputClasses} mt-1`} />
+        </label>
+        <label className="text-sm font-semibold sm:col-span-2">
+          IBAN
+          <input name="iban" defaultValue={payment?.iban ?? ""} required placeholder="RO49 AAAA 1B31 0075 9384 0000" className={`${inputClasses} mt-1 font-mono uppercase`} />
+        </label>
+        <label className="text-sm font-semibold">
+          Banca
+          <input name="bank" defaultValue={payment?.bank ?? ""} placeholder="Ex. Banca Transilvania" className={`${inputClasses} mt-1`} />
+        </label>
+        <label className="text-sm font-semibold">
+          Prețul furajului (lei / kg)
+          <input name="feedPricePerKg" type="number" step="0.01" min="0.1" max="50" defaultValue={payment?.feedPricePerKg ?? pricing.feedPricePerKg} required className={`${inputClasses} mt-1`} />
+        </label>
+        <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+          <button className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">Salvează datele de plată</button>
+          {payment && <span className="text-xs text-muted">Actualizat {formatDate(payment.updatedAt)} de {payment.updatedBy}</span>}
+        </div>
+      </form>
 
       <h2 className="mt-10 text-2xl font-semibold">Ture de livrare</h2>
       <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:items-start">

@@ -12,6 +12,9 @@ export type PreorderFormState =
         total: number;
         estimatedKg: number;
         email: string;
+        trackingToken: string;
+        feedKg: number;
+        feedAmount: number;
       };
     };
 

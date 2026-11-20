@@ -33,7 +33,7 @@ export function proxy(request: NextRequest) {
   }
 
   // Conturile, livrările (curier, client) și fotografiile rămân accesibile și în modul „în construcție”.
-  if (["/cont", "/livrare", "/confirmare", "/evaluare", "/foto"].some((p) => matches(pathname, p))) {
+  if (["/cont", "/comanda", "/livrare", "/confirmare", "/evaluare", "/foto"].some((p) => matches(pathname, p))) {
     return NextResponse.next();
   }
 
