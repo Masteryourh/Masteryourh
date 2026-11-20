@@ -18,12 +18,12 @@ export function SectionHeading({
   return (
     <div className={cn("max-w-2xl", align === "center" && "mx-auto text-center", className)}>
       {eyebrow && (
-        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-grain-600">{eyebrow}</p>
+        <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-forest-500">{eyebrow}</p>
       )}
-      <Tag className={cn(Tag === "h1" ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl", "font-semibold")}>
+      <Tag className={cn(Tag === "h1" ? "text-title" : "text-[clamp(2rem,3.6vw,3.2rem)] leading-[1.05]", "font-semibold")}>
         {title}
       </Tag>
-      {intro && <div className="mt-4 text-lg leading-relaxed text-muted">{intro}</div>}
+      {intro && <div className="mt-5 text-lead text-muted">{intro}</div>}
     </div>
   );
 }

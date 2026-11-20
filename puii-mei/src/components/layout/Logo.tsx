@@ -1,46 +1,53 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
-/** Pui rotisat, văzut din lateral, cu copanele în sus. Desen original. */
+/**
+ * Semnul Puii mei: o găină pe o pajiște de munte, într-un soare rotund.
+ * Desen original, simplu, lizibil și la dimensiuni mici.
+ */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 64 44" aria-hidden className={cn("h-10 w-[58px] shrink-0 sm:h-11 sm:w-16", className)}>
-      <g strokeLinejoin="round" strokeLinecap="round">
-      <path d="M51.60 11.40 54.91 8.81" stroke="#3b230f" strokeWidth="5" strokeLinecap="round"/>
-      <circle cx="56.34" cy="9.67" r="2.35" fill="#3b230f"/>
-      <circle cx="54.43" cy="7.22" r="2.35" fill="#3b230f"/>
-      <path d="M51.60 11.40 54.91 8.81" stroke="#f6ead2" strokeWidth="2.4" strokeLinecap="round"/>
-      <circle cx="56.34" cy="9.67" r="1.5" fill="#f6ead2"/>
-      <circle cx="54.43" cy="7.22" r="1.5" fill="#f6ead2"/>
-      <path d="M35.5 22.5C34 16.5 39 12.2 44.5 12.6c3 .2 5.2-1 7.2-2.6l1.6 2.2c-1.8 1.6-2.8 3.8-3.8 6.6-1.8 4.8-6.4 7.6-9.8 7-2-.4-3.6-1.6-4.2-3.3z" fill="#a95d1f" stroke="#3b230f" strokeWidth="1.8"/>
-      <path d="M8.2 34.2C3.4 26.2 8.2 13.6 20.2 9.6 30.6 6.2 43 9.4 47.6 17.6c3.4 6 3.2 13.6-1.4 18.2-2.6 2.6-6.4 3.4-11.4 3.4H15.4c-3.4 0-5.8-1.6-7.2-5z" fill="#c4702a" stroke="#3b230f" strokeWidth="1.8"/>
-      <path d="M10.4 22.6c3-7.4 10.6-11 19.2-11 6.4 0 11.8 2.2 14.6 6-4.4-2.4-9.8-3.4-15.4-3-7.4.6-13.6 3.4-18.4 8z" fill="#dc8d3e"/>
-      <ellipse cx="22" cy="13.4" rx="5" ry="1.6" transform="rotate(-12 22 13.4)" fill="#f3bb6c"/>
-      <ellipse cx="12.6" cy="20.4" rx="1.9" ry="0.9" transform="rotate(-48 12.6 20.4)" fill="#f3bb6c"/>
-      <ellipse cx="36.8" cy="13.2" rx="2.2" ry="0.9" transform="rotate(14 36.8 13.2)" fill="#f3bb6c"/>
-      <path d="M14.6 28.4c3.8-5.4 12.2-6.4 18.2-2.2-3 5.2-10.8 7.6-17 5.6-1.6-.6-2.2-2-1.2-3.4z" fill="#a95d1f" stroke="#3b230f" strokeWidth="1.8"/>
-      <path d="M19.4 28.6c3.2-1.8 7.4-2 10.6-.8" stroke="#dc8d3e" strokeWidth="1" fill="none"/>
-      <path d="M12.6 35.4c4.6 1.6 11.4 1.8 17.6.8" stroke="#3b230f" strokeWidth="1.1" fill="none" opacity={0.55}/>
-      <path d="M55.80 18.80 59.28 16.45" stroke="#3b230f" strokeWidth="5" strokeLinecap="round"/>
-      <circle cx="60.65" cy="17.40" r="2.35" fill="#3b230f"/>
-      <circle cx="58.91" cy="14.83" r="2.35" fill="#3b230f"/>
-      <path d="M55.80 18.80 59.28 16.45" stroke="#f6ead2" strokeWidth="2.4" strokeLinecap="round"/>
-      <circle cx="60.65" cy="17.40" r="1.5" fill="#f6ead2"/>
-      <circle cx="58.91" cy="14.83" r="1.5" fill="#f6ead2"/>
-      <path d="M39.6 30C38.4 23.6 44 19.6 49.4 20.2c2.8.2 5.2-1 7-2.4l1.4 2.2c-1.8 1.6-2.8 4-3.6 6.6-1.6 5-6.2 7.8-9.8 7.2-2.4-.4-4.2-1.8-4.8-3.8z" fill="#b8661f" stroke="#3b230f" strokeWidth="1.8"/>
-      <ellipse cx="45.2" cy="23.6" rx="3.4" ry="1.2" transform="rotate(-24 45.2 23.6)" fill="#e09a4a"/>
-      <ellipse cx="41.4" cy="16.4" rx="2.6" ry="1" transform="rotate(-30 41.4 16.4)" fill="#d1863a"/>
+    <svg viewBox="0 0 64 64" aria-hidden className={cn("h-11 w-11 shrink-0 sm:h-12 sm:w-12", className)}>
+      <defs>
+        <clipPath id="pm-sun">
+          <circle cx="32" cy="32" r="30" />
+        </clipPath>
+      </defs>
+      <circle cx="32" cy="32" r="30" fill="#f2c14e" />
+      <g clipPath="url(#pm-sun)">
+        <circle cx="46" cy="17" r="6" fill="#f8db8f" />
+        <path d="M-2 46 15 31l9 7 13-15 29 25v20H-2Z" fill="#3d6440" />
+        <path d="M-2 52c14-8 30-9 44-5 9 2 16 1 24-2v23H-2Z" fill="#5b875c" />
       </g>
+      <g stroke="#1d3321" strokeWidth="1.7" strokeLinejoin="round" strokeLinecap="round">
+        <path d="M30.5 50.5v4.2M35.5 50.5v4.2M28.8 54.8h3.4M33.8 54.8h3.4" fill="none" stroke="#c9731d" strokeWidth="2" />
+        <path d="M17.5 38.5c-3.6-4.6-3.5-10 .3-12.8 1.8 3.8 4.2 6.6 7.4 8.6Z" fill="#fffaf0" />
+        <path d="M19 41.6c0-8.4 7.4-13.2 15.2-11.6 1.6-6.4 6.6-9.4 11.4-7.4 3.4 1.4 4.6 5.4 3.2 8.6-.9 2-2.4 3.2-2.6 5.2.4 9.2-5.6 15-14.2 15-7.6 0-13-3.4-13-9.8Z" fill="#fffaf0" />
+        <path d="M41.6 22.6c-.4-2.8 1.8-4.6 3.6-3.6.6-2 3.4-2.2 4 0 1.8-.4 3 1.6 1.8 3.4" fill="#d9483b" />
+        <path d="M49.4 27.6 54 29.4l-4.4 1.8" fill="#f0a63a" />
+        <path d="M48.4 32.4c.8 2 .2 3.6-1.2 4.2-.8-1.4-.8-2.8.2-4.2Z" fill="#d9483b" />
+        <path d="M24.6 41.8c2.6-5 9.4-5.8 13-1.6-2.4 5.4-9.2 7-13 1.6Z" fill="#f3e6c9" />
+      </g>
+      <circle cx="45.6" cy="27.4" r="1.3" fill="#1d3321" />
     </svg>
   );
 }
 
-export function Logo({ light = false }: { light?: boolean }) {
+export function Logo({ light = false, className }: { light?: boolean; className?: string }) {
   return (
-    <Link href="/" className="group inline-flex shrink-0 items-center gap-3 whitespace-nowrap" aria-label="Puii mei – prima pagină">
-      <LogoMark />
-      <span className={cn("font-display text-[1.65rem] font-semibold tracking-tight sm:text-3xl xl:text-[1.7rem]", light ? "text-cream-50" : "text-forest-900")}>
-        Puii <span className={light ? "text-grain-300" : "text-grain-600"}>mei</span>
+    <Link
+      href="/"
+      className={cn("group inline-flex shrink-0 items-center gap-2.5 whitespace-nowrap", className)}
+      aria-label="Puii mei – prima pagină"
+    >
+      <LogoMark className="transition-transform duration-300 group-hover:-rotate-6" />
+      <span
+        className={cn(
+          "font-display text-[1.7rem] leading-none font-semibold tracking-tight sm:text-[1.85rem]",
+          light ? "text-white" : "text-forest-900",
+        )}
+      >
+        Puii <span className={light ? "text-grain-300" : "text-forest-500"}>mei</span>
       </span>
     </Link>
   );

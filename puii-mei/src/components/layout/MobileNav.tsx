@@ -8,7 +8,7 @@ import { buttonClasses } from "@/components/ui/Button";
 import Link from "next/link";
 import { NavLink } from "./NavLink";
 
-export function MobileNav() {
+export function MobileNav({ light = false }: { light?: boolean }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const [lastPath, setLastPath] = useState(pathname);
@@ -37,7 +37,11 @@ export function MobileNav() {
         aria-expanded={open}
         aria-controls="meniu-mobil"
         aria-label={open ? "Închide meniul" : "Deschide meniul"}
-        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-forest-900/10 bg-white text-forest-800"
+        className={
+          light
+            ? "inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/15 text-white backdrop-blur"
+            : "inline-flex h-11 w-11 items-center justify-center rounded-full border border-forest-900/10 bg-white text-forest-800"
+        }
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
           {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
