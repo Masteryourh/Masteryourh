@@ -18,6 +18,27 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
 - **Extindere**: curcani, rațe, fazani, legume din seră, în funcție de regiune (deocamdată „În curând” + măsurarea
   cererii pe județe).
 
+## 1b. Modelul de creștere (stabilit pe 22 nov. 2026)
+
+- **Sistem**: pui pășunați în **cușcă mobilă de 4 × 3 m**, mutată zilnic pe suprafață nouă; suprafața se reface în
+  **14 zile** ⇒ o cușcă are nevoie de ~14 × 12 m² = **~168 m² de pășune** (+ rezervă). **40 de pui / cușcă.**
+- **Etape**: 0–21 zile la interior (becuri roșii, pat de rumeguș) → de la **21 de zile** în cușca de pe pășune →
+  **60 de zile** sacrificare (tradițional, în gospodărie). Ciclu complet 60–70 de zile.
+- **Capacitatea gospodăriei** = numărul de cuști pe care le permite terenul × 40 (ex. Mureșan: 5 cuști ⇒ 200 pui / lot).
+- **Un lot pe rând** în fiecare gospodărie; lotul următor începe după încheierea celui curent (60–70 zile).
+  Mai multe loturi simultane doar dacă legea permite (de verificat).
+- **Cuștile ca subloturi**: precomenzile se strâng până la **cel puțin 40 de pui** (o cușcă plină) și pornește
+  creșterea acelei cuști; a doua cușcă pornește când se adună încă 40 etc. Pornirile din același lot să nu fie prea
+  distanțate (pui de vârste apropiate).
+- **Greutate medie**: ~4,8 kg / pui. **Conversia hranei**: ~70% (de clarificat cantitatea de furaj / pui).
+- **Preț la client**: cu 20–30% peste prețul pieței.
+- **Investiția în gospodărie** (o dată, amortizată în timp): spațiul pentru 1–21 zile, cuștile, echipamentele pentru
+  toate etapele și pentru sacrificare (opăritor, deplumator, conuri, masă inox, ladă frigorifică pentru păstrare
+  scurtă). **Gospodarul plătește investiția în tranșe.**
+- **Clienți**: comenzi mici pentru consum imediat și comenzi mari pentru congelator (consum ulterior).
+- **Scop**: venit mai mare în gospodăria țărănească și acces la produse de calitate.
+- **Pe viitor**: orice se produce în gospodărie poate fi precomandat (borcane, afumături, păstrăvi etc.).
+
 ## 2. Implementat (site public + administrare)
 
 - Site: homepage, cum funcționează (cine ce face), gospodării, trasabilitate pe lot, despre noi (intenția și programul
