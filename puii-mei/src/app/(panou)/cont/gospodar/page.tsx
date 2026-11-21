@@ -162,7 +162,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
               />
               <Metric
                 delay={240}
-                label="Avans hrană primit"
+                label="Avansuri primite"
                 value={`${feedPaid}`}
                 unit={`/ ${farmPreorders.length}`}
                 pill={<Pill tone={feedPaid === farmPreorders.length ? "green" : "gold"}>{farmPreorders.length - feedPaid} de primit</Pill>}
@@ -274,7 +274,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         <table className="w-full min-w-[860px] text-left text-sm">
           <thead className="bg-cream-100 text-xs uppercase tracking-wider text-muted">
             <tr>
-              {["Nr.", "Client", "Pui", "Lot", "Livrare", "Status", "Avans hrană", "Etichetă"].map((h) => (
+              {["Nr.", "Client", "Pui", "Lot", "Livrare", "Status", "Avans", "Etichetă"].map((h) => (
                 <th key={h} className="px-4 py-3 font-semibold">{h}</th>
               ))}
             </tr>
@@ -300,7 +300,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <FeedCell preorder={p} amount={feedAdvance(p.birds, payment?.feedPricePerKg).amount} canConfirm />
+                  <FeedCell preorder={p} amount={feedAdvance(p.birds, payment?.feedPricePerKg, payment?.chickPricePerBird).amount} canConfirm />
                 </td>
                 <td className="px-4 py-3">
                   <LabelCell preorderId={p.id} parcel={parcelById.get(p.id)} delivered={p.status === "livrata"} />
@@ -311,7 +311,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         </table>
       </div>
 
-      <h2 id="plata-hrana" className="mt-10 scroll-mt-6 text-2xl font-semibold">Contul pentru avansul de hrană</h2>
+      <h2 id="plata-hrana" className="mt-10 scroll-mt-6 text-2xl font-semibold">Contul pentru avans (pui de o zi + furaj)</h2>
       <p className="mt-1 max-w-2xl text-sm text-muted">
         Clienții văd aceste date pe pagina comenzii și plătesc avansul prin transfer, direct în contul tău, cu numărul comenzii
         în detalii. Tu confirmi primirea banilor în tabelul de mai sus.
@@ -341,6 +341,13 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
           Prețul furajului (lei / kg)
           <input name="feedPricePerKg" type="number" step="0.01" min="0.1" max="50" defaultValue={payment?.feedPricePerKg ?? pricing.feedPricePerKg} required className={`${inputClasses} mt-1`} />
         </label>
+        <label className="text-sm font-semibold">
+          Prețul puiului de o zi (lei / pui)
+          <input name="chickPricePerBird" type="number" step="0.01" min="0.1" max="100" defaultValue={payment?.chickPricePerBird ?? pricing.chickPrice} required className={`${inputClasses} mt-1`} />
+        </label>
+        <p className="text-xs text-slate-500 sm:col-span-2">
+          Avansul plătit de client = puii de o zi + furajul (~{pricing.feedKgPerBird} kg / pui). Se scade din prețul total la livrare.
+        </p>
         <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
           <button className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">Salvează datele de plată</button>
           {payment && <span className="text-xs text-muted">Actualizat {formatDate(payment.updatedAt)} de {payment.updatedBy}</span>}

@@ -34,7 +34,7 @@ export async function orderFarm(p: Preorder) {
 
 /** Suma avansului: cea declarată de client sau calculată cu prețul furajului din gospodărie. */
 export function feedFor(p: Preorder, payment: FarmPaymentDetails | null) {
-  const advance = feedAdvance(p.birds, payment?.feedPricePerKg);
+  const advance = feedAdvance(p.birds, payment?.feedPricePerKg, payment?.chickPricePerBird);
   return { ...advance, amount: p.feedPayment?.amount ?? advance.amount };
 }
 
@@ -53,7 +53,7 @@ export async function declareFeedPayment(token: string) {
   await notifyFarm(
     lot.farmSlug,
     `Plată anunțată: ${p.number}`,
-    `${p.customer.name} a anunțat plata avansului pentru hrană: ${amount.toFixed(2)} lei, cu detaliile „Hrana ${p.number}”. Verifică în cont și confirmă primirea:\n${site.url}/cont/gospodar`,
+    `${p.customer.name} a anunțat plata avansului (pui de o zi + furaj): ${amount.toFixed(2)} lei, cu detaliile „Avans ${p.number}”. Verifică în cont și confirmă primirea:\n${site.url}/cont/gospodar`,
   );
   return updated;
 }

@@ -6,7 +6,7 @@ import { submitPreorder } from "@/app/(site)/precomanda/actions";
 import { initialPreorderState } from "@/app/(site)/precomanda/form-state";
 import type { DeliveryZone, GeoPoint } from "@/lib/domain";
 import { MapPicker } from "@/components/maps/MapPicker";
-import { estimatePrice, feedAdvance, pricing } from "@/lib/pricing";
+import { estimatePrice, feedAdvance, paymentSplit, pricing } from "@/lib/pricing";
 import { formatDate, formatLei, formatNumber } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { buttonClasses } from "@/components/ui/Button";
@@ -21,6 +21,8 @@ export interface LotOption {
   free: number;
   /** Prețul furajului setat de gospodărie (lei / kg), dacă există. */
   feedPricePerKg?: number;
+  /** Prețul puiului de o zi setat de gospodărie (lei / pui), dacă există. */
+  chickPricePerBird?: number;
 }
 
 const NO_ADDRESS_ZONES = ["ridicare-personala", "alta-zona"];
@@ -51,7 +53,8 @@ export function PreorderForm({
   const zone = zones.find((z) => z.id === zoneId) ?? null;
   const lot = lots.find((l) => l.code === lotCode) ?? null;
   const estimate = estimatePrice(birds, zone);
-  const feed = feedAdvance(Number.isNaN(birds) ? 0 : birds, lot?.feedPricePerKg);
+  const feed = feedAdvance(Number.isNaN(birds) ? 0 : birds, lot?.feedPricePerKg, lot?.chickPricePerBird);
+  const split = paymentSplit(estimate.total, feed.amount);
   const needsAddress = zoneId !== "" && !NO_ADDRESS_ZONES.includes(zoneId);
   const maxBirds = lot ? Math.min(lot.free, pricing.maxBirds) : pricing.maxBirds;
 
@@ -72,16 +75,16 @@ export function PreorderForm({
           <h2 className="mt-6 text-3xl font-semibold">Mulțumim! Precomanda ta a fost înregistrată.</h2>
           <p className="mx-auto mt-3 max-w-lg text-lg text-muted">
             Numărul precomenzii: <strong className="font-mono text-forest-900">{r.number}</strong>. Pe pagina comenzii tale găsești
-            datele pentru plata hranei, evoluția lotului și livrarea.
+            datele pentru plata avansului, evoluția lotului și livrarea.
           </p>
         </div>
 
         <div className="mx-auto mt-8 max-w-xl rounded-3xl bg-forest-900 p-6 text-cream-50 sm:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-grain-300">Pasul următor</p>
-          <p className="mt-2 font-display text-2xl font-semibold text-cream-50">Plătește avansul pentru hrană</p>
+          <p className="mt-2 font-display text-2xl font-semibold text-cream-50">Plătește avansul: puii de o zi + furajul</p>
           <p className="mt-2 text-sm text-cream-100/80">
-            ~{formatNumber(r.feedKg)} kg furaj, aproximativ <strong className="text-cream-50">{formatLei(r.feedAmount)}</strong>, prin transfer bancar
-            direct în contul gospodăriei. Suma exactă și IBAN-ul sunt pe pagina comenzii
+            Aproximativ <strong className="text-cream-50">{formatLei(r.feedAmount)}</strong>, prin transfer bancar direct în contul gospodăriei.
+            Avansul se scade din prețul total. Suma exactă și IBAN-ul sunt pe pagina comenzii
             {r.lotCode ? "" : " (apar după ce comanda e alocată unui lot)"}.
           </p>
           <Link href={`/comanda/${r.trackingToken}#plata`} className={buttonClasses("primary", "lg", "mt-5 w-full")}>
@@ -105,8 +108,9 @@ export function PreorderForm({
           <Summary label="Lot" value={r.lotCode ?? "Primul lot disponibil"} />
           <Summary label="Disponibil estimat" value={r.availableFrom ? formatDate(r.availableFrom) : "Se comunică la alocare"} />
           <Summary label="Livrare" value={r.zoneName} />
-          <Summary label="Acum: avans hrană" value={`~${formatLei(r.feedAmount)}`} />
-          <Summary label="La livrare: carne (estimativ)" value={formatLei(r.total)} />
+          <Summary label="Preț total estimat" value={formatLei(r.total)} />
+          <Summary label="Acum: avans (pui de o zi + furaj)" value={`~${formatLei(r.feedAmount)}`} />
+          <Summary label="La livrare: rest de plată (estimativ)" value={formatLei(Math.max(0, r.total - r.feedAmount))} />
         </dl>
       </div>
     );
@@ -290,32 +294,46 @@ export function PreorderForm({
           <div className="rounded-3xl bg-forest-900 p-6 text-cream-50 sm:p-8">
             <h2 className="font-display text-2xl font-semibold text-cream-50">Sumar precomandă</h2>
             <dl className="mt-6 space-y-3 text-sm" aria-live="polite">
-              <Row label="Cantitate" value={`${estimate.birds} pui`} />
-              <Row label="Greutate estimată" value={`~${formatNumber(estimate.estimatedKg)} kg`} />
-              <Row label="Preț estimativ" value={`${formatLei(estimate.pricePerKg)} / kg`} />
-              <Row label="Valoare produse" value={formatLei(estimate.productValue)} />
-              <Row
-                label="Livrare"
-                value={!zone ? "—" : estimate.deliveryFee === 0 ? "Gratuită" : formatLei(estimate.deliveryFee)}
-              />
+              <Row label="Cantitate" value={`${estimate.birds} pui · ~${formatNumber(estimate.estimatedKg)} kg`} />
               <Row label="Lot" value={lot ? lot.code : "Primul disponibil"} />
               {lot && <Row label="Disponibil estimat" value={formatDate(lot.availableFrom)} />}
             </dl>
-            <div className="mt-6 rounded-2xl bg-white/10 p-4">
+
+            {/* 1. Prețul total */}
+            <div className="mt-6 border-t border-white/15 pt-5">
               <div className="flex items-baseline justify-between gap-3">
-                <span className="text-sm font-semibold text-cream-50">Acum: avans hrană</span>
-                <span className="font-display text-2xl font-semibold text-grain-300">~{formatLei(feed.amount)}</span>
+                <span className="text-sm font-semibold text-cream-50">Preț total estimat</span>
+                <span className="font-display text-3xl font-semibold text-cream-50">{formatLei(split.total)}</span>
               </div>
               <p className="mt-1 text-xs text-cream-100/70">
-                ~{formatNumber(feed.kg)} kg furaj, prin transfer direct în contul gospodăriei. După trimitere primești IBAN-ul și
-                suma exactă.
+                ~{formatNumber(estimate.estimatedKg)} kg × {formatLei(estimate.pricePerKg)}/kg
+                {zone ? (estimate.deliveryFee ? ` + livrare ${formatLei(estimate.deliveryFee)}` : " · livrare gratuită") : ""}. Prețul final se
+                stabilește la cântărire.
               </p>
             </div>
-            <div className="mt-4 flex items-baseline justify-between gap-3 border-t border-white/15 pt-4">
-              <span className="text-sm text-cream-100/80">La livrare: carne (estimativ)</span>
-              <span className="font-display text-xl font-semibold text-cream-50">{formatLei(estimate.total)}</span>
+
+            {/* 2. Din care: avansul, acum */}
+            <div className="mt-4 rounded-2xl bg-white/10 p-4">
+              <p className="text-xs font-semibold tracking-[0.16em] text-grain-300 uppercase">Din care plătești acum (avans)</p>
+              <dl className="mt-2 space-y-1.5 text-sm">
+                <Row label={`Pui de o zi (${feed.birds} × ${formatLei(feed.chickPrice)})`} value={formatLei(feed.chickAmount)} />
+                <Row label={`Furaj (~${formatNumber(feed.kg)} kg × ${formatLei(feed.pricePerKg)})`} value={formatLei(feed.feedAmount)} />
+              </dl>
+              <div className="mt-2 flex items-baseline justify-between gap-3 border-t border-white/15 pt-2">
+                <span className="text-sm font-semibold text-cream-50">Avans</span>
+                <span className="font-display text-2xl font-semibold text-grain-300">{formatLei(split.advance)}</span>
+              </div>
+              <p className="mt-1 text-xs text-cream-100/70">Prin transfer, direct în contul gospodăriei. După trimitere primești IBAN-ul.</p>
             </div>
-            <p className="mt-1 text-xs text-cream-100/60">Se plătește la livrare, după greutatea reală.</p>
+
+            {/* 3. Restul, la livrare */}
+            <div className="mt-4 flex items-baseline justify-between gap-3">
+              <span className="text-sm text-cream-100/80">Rest de plată la livrare</span>
+              <span className="font-display text-xl font-semibold text-cream-50">{formatLei(split.atDelivery)}</span>
+            </div>
+            <p className="mt-1 text-xs text-cream-100/60">
+              Avansul se scade din prețul total: la livrare plătești doar diferența, după greutatea reală.
+            </p>
             {zone && zone.fee > 0 && estimate.deliveryFee > 0 && (
               <p className="mt-2 text-xs text-cream-100/60">
                 Livrare gratuită pentru comenzi de peste {formatLei(pricing.freeDeliveryFrom)}.

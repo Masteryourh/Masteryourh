@@ -42,7 +42,7 @@ export default async function FarmsPage() {
           <div>
             <h2 className="text-2xl font-semibold">Ai o gospodărie și vrei să devii partener?</h2>
             <p className="mt-2 max-w-xl text-muted">
-              Primești precomenzi cu hrana plătită în avans de clienți și consultanță pentru creștere. Tu crești și vinzi puii după protocolul Puii mei.
+              Primești precomenzi cu puii de o zi și furajul plătite în avans de clienți și consultanță pentru creștere. Tu crești și vinzi puii după protocolul Puii mei.
             </p>
           </div>
           <ButtonLink href="/devino-partener#gospodarie" variant="secondary" className="mt-6 shrink-0 sm:mt-0">

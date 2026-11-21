@@ -70,7 +70,7 @@ export default async function AdminPage() {
         <table className="w-full min-w-[1250px] text-left text-sm">
           <thead className="bg-cream-100 text-xs uppercase tracking-wider text-muted">
             <tr>
-              {["Nr.", "Data", "Client", "Pui", "Lot", "Zonă", "Valoare", "Avans hrană", "Status"].map((h) => (
+              {["Nr.", "Data", "Client", "Pui", "Lot", "Zonă", "Valoare", "Avans", "Status"].map((h) => (
                 <th key={h} className="px-4 py-3 font-semibold">{h}</th>
               ))}
             </tr>
@@ -120,7 +120,7 @@ export default async function AdminPage() {
                   {p.lotCode ? (
                     <FeedCell
                       preorder={p}
-                      amount={feedAdvance(p.birds, payments.get(lotFarm.get(p.lotCode) ?? "")?.feedPricePerKg).amount}
+                      amount={feedAdvance(p.birds, payments.get(lotFarm.get(p.lotCode) ?? "")?.feedPricePerKg, payments.get(lotFarm.get(p.lotCode) ?? "")?.chickPricePerBird).amount}
                       canConfirm
                     />
                   ) : (

@@ -15,8 +15,8 @@ export async function notifyNewPreorder(p: Preorder) {
   await sendEmail({
     to: p.customer.email,
     subject: `Precomanda ${p.number} – Puii mei`,
-    text: `Mulțumim, ${p.customer.name}! Precomanda ${p.number} (${p.birds} pui) a fost înregistrată.\n\nPe pagina comenzii găsești datele pentru plata avansului de hrană (direct în contul gospodăriei), evoluția lotului și livrarea:\n${link}\n\nPăstrează acest email.`,
-    html: `<p>Mulțumim, ${escapeHtml(p.customer.name)}! Precomanda <strong>${p.number}</strong> (${p.birds} pui) a fost înregistrată.</p><p>Pe pagina comenzii găsești datele pentru plata avansului de hrană (direct în contul gospodăriei), evoluția lotului și livrarea:</p><p><a href="${link}">Comanda mea</a></p><p>Păstrează acest email.</p>`,
+    text: `Mulțumim, ${p.customer.name}! Precomanda ${p.number} (${p.birds} pui) a fost înregistrată.\n\nPe pagina comenzii găsești datele pentru plata avansului: puii de o zi și furajul (direct în contul gospodăriei; se scade din prețul total), evoluția lotului și livrarea:\n${link}\n\nPăstrează acest email.`,
+    html: `<p>Mulțumim, ${escapeHtml(p.customer.name)}! Precomanda <strong>${p.number}</strong> (${p.birds} pui) a fost înregistrată.</p><p>Pe pagina comenzii găsești datele pentru plata avansului: puii de o zi și furajul (direct în contul gospodăriei; se scade din prețul total), evoluția lotului și livrarea:</p><p><a href="${link}">Comanda mea</a></p><p>Păstrează acest email.</p>`,
   });
   await notifyAdmins(`Precomandă nouă ${p.number}`, `${p.customer.name}, ${p.customer.phone}: ${p.birds} pui, lot ${p.lotCode ?? "primul disponibil"}.\n${site.url}/admin`);
 }
@@ -49,10 +49,10 @@ export type OrderEvent = "confirmata" | "alocata" | "plata-primita" | "livrare-p
 const orderMessages: Record<OrderEvent, (p: Preorder, extra?: string) => { subject: string; body: string }> = {
   confirmata: (p) => ({ subject: `Precomanda ${p.number} a fost confirmată`, body: "Precomanda ta a fost confirmată. Pe pagina comenzii vezi pasul următor." }),
   alocata: (p) => ({
-    subject: `Precomanda ${p.number}: datele pentru plata hranei`,
-    body: `Comanda ta a fost alocată lotului ${p.lotCode}. Pe pagina comenzii găsești contul gospodăriei și suma pentru avansul de hrană.`,
+    subject: `Precomanda ${p.number}: datele pentru plata avansului`,
+    body: `Comanda ta a fost alocată lotului ${p.lotCode}. Pe pagina comenzii găsești contul gospodăriei și suma avansului (pui de o zi + furaj).`,
   }),
-  "plata-primita": (p) => ({ subject: `Plata hranei pentru ${p.number} a fost primită`, body: "Gospodăria a confirmat primirea avansului pentru hrană. Mulțumim!" }),
+  "plata-primita": (p) => ({ subject: `Avansul pentru ${p.number} a fost primit`, body: "Gospodăria a confirmat primirea avansului (pui de o zi + furaj). Mulțumim!" }),
   "livrare-programata": (p, date) => ({
     subject: `Livrarea comenzii ${p.number} e programată`,
     body: `Livrarea e programată pe ${date ?? "data comunicată"}. Pe pagina comenzii poți urmări curierul.`,

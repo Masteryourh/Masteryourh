@@ -46,7 +46,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
     { label: "Confirmată de Puii mei", done: order.status !== "noua" },
     { label: "Alocată pe lot și gospodărie", done: Boolean(lot), note: lot ? `${lot.code} · ${farm?.name ?? ""}` : undefined },
     {
-      label: "Avansul pentru hrană",
+      label: "Avansul (pui de o zi + furaj)",
       done: feedStatus === "primita",
       note: feedStatus === "declarata" ? "plată anunțată, se verifică" : feedStatus === "primita" ? "primit" : undefined,
     },
@@ -86,9 +86,9 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
           <section id="plata" className="scroll-mt-28 rounded-3xl bg-white p-6 ring-1 ring-forest-900/10 sm:p-8">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-2xl font-semibold">Avansul pentru hrană</h2>
+                <h2 className="text-2xl font-semibold">Avansul: puii de o zi + furajul</h2>
                 <p className="mt-1 text-sm text-muted">
-                  ~{formatNumber(feed.kg)} kg furaj ({formatNumber(order.birds)} pui × 6 kg), plătit direct în contul gospodăriei.
+                  Plătit direct în contul gospodăriei. Nu e un cost în plus: se scade din prețul total, la livrare.
                 </p>
               </div>
               <FeedBadge status={feedStatus} />
@@ -112,14 +112,17 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
               <>
                 <p className="mt-6 text-sm text-muted">Suma de plătit</p>
                 <p className="font-display text-4xl font-semibold text-forest-900">{formatLei(feed.amount)}</p>
-                <p className="text-xs text-muted">{formatNumber(feed.kg)} kg × {formatLei(payment.feedPricePerKg)} / kg</p>
+                <dl className="mt-2 max-w-sm space-y-1 text-sm">
+                  <div className="flex justify-between gap-4"><dt className="text-muted">Pui de o zi: {order.birds} × {formatLei(feed.chickPrice)}</dt><dd className="font-semibold">{formatLei(feed.chickAmount)}</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-muted">Furaj: ~{formatNumber(feed.kg)} kg × {formatLei(feed.pricePerKg)}</dt><dd className="font-semibold">{formatLei(feed.feedAmount)}</dd></div>
+                </dl>
 
                 <dl className="mt-6 divide-y divide-forest-900/8 rounded-2xl ring-1 ring-forest-900/10">
                   <PayRow label="Titularul contului" value={payment.holder} />
                   <PayRow label="IBAN" value={<span className="font-mono">{payment.iban.replace(/(.{4})/g, "$1 ").trim()}</span>} copy={payment.iban} />
                   {payment.bank && <PayRow label="Banca" value={payment.bank} />}
                   <PayRow label="Suma" value={formatLei(feed.amount)} copy={feed.amount.toFixed(2)} />
-                  <PayRow label="Detalii plată (obligatoriu)" value={<span className="font-mono">Hrana {order.number}</span>} copy={`Hrana ${order.number}`} />
+                  <PayRow label="Detalii plată (obligatoriu)" value={<span className="font-mono">Avans {order.number}</span>} copy={`Avans ${order.number}`} />
                 </dl>
 
                 {feedStatus === "de-platit" && (
@@ -234,8 +237,10 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
               </>
             )}
             <dl className="mt-6 grid gap-2 border-t border-forest-900/8 pt-5 text-sm sm:grid-cols-2">
-              <div><dt className="text-muted">La livrare (carne, estimativ)</dt><dd className="font-semibold">{formatLei(order.estimate.total)}</dd></div>
-              <div><dt className="text-muted">Prețul final</dt><dd className="font-semibold">după greutatea reală, la livrare</dd></div>
+              <div><dt className="text-muted">Preț total estimat</dt><dd className="font-semibold">{formatLei(order.estimate.total)}</dd></div>
+              <div><dt className="text-muted">Minus avansul</dt><dd className="font-semibold">− {formatLei(feed.amount)}</dd></div>
+              <div><dt className="text-muted">Rest de plată la livrare (estimativ)</dt><dd className="font-semibold">{formatLei(Math.max(0, order.estimate.total - feed.amount))}</dd></div>
+              <div><dt className="text-muted">Prețul final</dt><dd className="font-semibold">după greutatea reală, la cântărire</dd></div>
             </dl>
           </section>
         )}

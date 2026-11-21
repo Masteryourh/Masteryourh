@@ -17,8 +17,8 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
 
 - Puii mei e **platformă și consultant**, nu producător și nu intermediar. Nu „noi creștem”.
 - Gospodăriile cresc, **sacrifică tradițional în gospodărie** și vând **direct** clientului.
-- Clientul plătește **în avans hrana** (~6 kg furaj / pui) **direct în contul gospodăriei**; carnea la livrare,
-  după greutate.
+- Clientul plătește **un avans = puii de o zi + furajul** (~6 kg / pui), **direct în contul gospodăriei**. Avansul se
+  scade din prețul total; la livrare plătește diferența, după greutatea reală (5 kg / pui estimat, 34 lei/kg).
 - Intenția: munca din gospodărie → venit stabil și legal, prin contracte de consultanță (fără „la negru”,
   „forță de muncă”).
 

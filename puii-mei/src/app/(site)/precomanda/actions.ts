@@ -73,7 +73,7 @@ export async function submitPreorder(
     await notifyNewPreorder(preorder);
     revalidatePath("/", "layout");
     const payment = farmSlug ? await farmPaymentRepository.bySlug(farmSlug) : null;
-    const feed = feedAdvance(preorder.birds, payment?.feedPricePerKg);
+    const feed = feedAdvance(preorder.birds, payment?.feedPricePerKg, payment?.chickPricePerBird);
 
     return {
       status: "success",

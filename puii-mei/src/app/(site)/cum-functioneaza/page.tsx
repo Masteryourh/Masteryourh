@@ -22,7 +22,7 @@ const roles: { who: string; subtitle: string; items: { icon: IconName; title: st
     items: [
       { icon: "sprout", title: "Creșterea puilor", text: "Adăpost, hrană și îngrijire zilnică, după protocolul comun de creștere." },
       { icon: "shield", title: "Sacrificare tradițională", text: "Fiecare lot este sacrificat în gospodăria în care a crescut, cu respectarea normelor sanitar-veterinare și etichetarea lotului." },
-      { icon: "truck", title: "Vânzarea", text: "Vinde direct clientului: încasează avansul pentru hrană și plata la final, apoi predă puii proaspeți în ziua stabilită." },
+      { icon: "truck", title: "Vânzarea", text: "Vinde direct clientului: încasează avansul (pui de o zi + furaj) și diferența la final, apoi predă puii proaspeți în ziua stabilită." },
     ],
   },
   {

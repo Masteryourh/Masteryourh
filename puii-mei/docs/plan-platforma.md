@@ -6,8 +6,9 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
 
 - **Puii mei este platformă și consultant**, nu producător și nu intermediar. Gospodăriile partenere cresc,
   sacrifică și vând **direct clientului**; Puii mei preia precomenzile, oferă consultanță și publică trasabilitatea.
-- **Plata**: clientul plătește **în avans hrana** (aprox. 6 kg furaj / pui), **direct în contul gospodăriei**;
-  carnea se plătește la livrare, după greutatea reală.
+- **Plata**: clientul plătește **un avans = puii de o zi + furajul** (aprox. 6 kg / pui), **direct în contul
+  gospodăriei**. Avansul **se scade din prețul total** (greutate × preț/kg); la livrare plătește doar diferența,
+  după greutatea reală.
 - **Sacrificare tradițională**, în gospodăria în care au crescut puii (nu se mută între gospodării).
 - **Intenția proiectului**: munca din gospodărie să devină un venit stabil și legal, fără ca gospodarul să plece de
   acasă. Fiecare gospodar are un **contract de consultanță**: intrarea în legalitate (producător local, atestat, DSV),
