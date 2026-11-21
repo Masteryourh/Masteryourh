@@ -1,5 +1,6 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { ConstructionFrame } from "@/components/layout/ConstructionFrame";
 
 /** Layout-ul paginilor publice: meniu, conținut, footer. */
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -16,6 +17,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         {children}
       </main>
       <Footer />
+      <ConstructionFrame />
     </>
   );
 }

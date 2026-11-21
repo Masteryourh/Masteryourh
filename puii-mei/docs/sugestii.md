@@ -64,4 +64,6 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 ## La lansare
 
-- [ ] Oprirea modului „în construcție”: `MAINTENANCE_MODE` șters (sau `0`) în Vercel, apoi Redeploy.
+- [ ] Scoaterea ramei „UNDER CONSTRUCTION” (bandă negru-galben + text transparent): în Vercel `UNDER_CONSTRUCTION=0`,
+      apoi Redeploy. Site-ul e live între timp („under construction live”).
+- [ ] `MAINTENANCE_MODE` să rămână șters / `0` (altfel vizitatorii văd doar pagina „Site în construcție”).
