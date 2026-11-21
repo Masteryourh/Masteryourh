@@ -5,6 +5,9 @@ import { revalidatePath } from "next/cache";
 import { legalKindLabels, type LegalKind } from "@/lib/legal";
 import { requireAdmin } from "@/server/auth";
 import { legalRepository } from "@/server/repositories/legal";
+import { userRepository } from "@/server/repositories/users";
+import { sendEmail } from "@/server/email";
+import { site } from "@/lib/site";
 
 const t = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 
@@ -22,7 +25,8 @@ function read(formData: FormData) {
 
 const done = (q: string) => {
   revalidatePath("/admin/legislatie");
-  revalidatePath("/cont/gospodar/legislatie");
+  revalidatePath("/cont/gospodar", "layout");
+  revalidatePath("/legislatie");
   redirect(`/admin/legislatie?${q}`);
 };
 
@@ -32,6 +36,12 @@ export async function createLegalAction(formData: FormData) {
   if ("error" in d) done(`eroare=${encodeURIComponent(d.error!)}`);
   else {
     await legalRepository.create({ ...d, createdBy: `${admin.name} (admin)` });
+    if (formData.get("notify") === "on") {
+      // Gospodarii activi sunt anunțați pe email (dacă emailul e configurat).
+      const farmers = (await userRepository.list()).filter((u) => u.role === "gospodar" && u.status === "activ");
+      const text = `${legalKindLabels[d.kind]}: ${d.title}\n\n${d.summary}\n\nSursa: ${d.url}\nToate regulile: ${site.url}/cont/gospodar/legislatie`;
+      await Promise.all(farmers.map((u) => sendEmail({ to: u.email, subject: `Puii mei · ${legalKindLabels[d.kind]}: ${d.title}`, text, html: `<p>${text.replace(/\n/g, "<br>")}</p>` })));
+    }
     done("salvat=1");
   }
 }

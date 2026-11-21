@@ -23,6 +23,8 @@ import { expenseCategoryLabels } from "@/lib/documents";
 import { lotDay, statusLabels } from "@/lib/lots";
 import { expenseRepository, expenseTotals } from "@/server/repositories/documents";
 import { governanceRepository } from "@/server/repositories/governance";
+import { legalRepository } from "@/server/repositories/legal";
+import { legalKindLabels } from "@/lib/legal";
 import { birdsInYear, effectiveLimits, standingLabels } from "@/lib/governance";
 
 export const dynamic = "force-dynamic";
@@ -73,6 +75,8 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
     expenseRepository.byFarm(farm.slug),
     governanceRepository.bySlug(farm.slug),
   ]);
+  const legalNews = (await legalRepository.list()).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3);
+  const recentSince = recentCutoff();
   const limits = effectiveLimits(gov);
   const thisYear = new Date().getFullYear();
   const usedThisYear = birdsInYear(lots, thisYear);
@@ -234,6 +238,26 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
           </Glass>
         </div>
       </section>
+
+      <Glass className="mt-4" delay={480}>
+        <GlassTitle
+          title="Legislație și reguli"
+          hint="ultimele noutăți: creștere, sacrificare în gospodărie, vânzare directă"
+          right={<Link href="/cont/gospodar/legislatie" className="text-xs text-[var(--pd-green)]">toate ↗</Link>}
+        />
+        <ul className="mt-3 divide-y divide-white/10">
+          {legalNews.map((e) => (
+            <li key={e.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
+              {e.createdAt > recentSince && <Pill>nou</Pill>}
+              <span className="text-[var(--pd-muted)]">{legalKindLabels[e.kind]}</span>
+              <a href={e.url} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 truncate text-[var(--pd-text)] hover:underline">
+                {e.title}
+              </a>
+              {!e.verified && <Pill tone="muted">de verificat</Pill>}
+            </li>
+          ))}
+        </ul>
+      </Glass>
 
       <h2 id="loturi" className="mt-10 scroll-mt-6 text-2xl font-semibold">Loturi</h2>
       {typeof sp.eroareLot === "string" && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800">{sp.eroareLot}</p>}
@@ -460,3 +484,7 @@ function LabelCell({ preorderId, parcel, delivered }: { preorderId: string; parc
   );
 }
 
+/** Ce s-a adăugat în ultimele 30 de zile e marcat „nou”. */
+function recentCutoff() {
+  return new Date(Date.now() - 30 * 86400000).toISOString();
+}
