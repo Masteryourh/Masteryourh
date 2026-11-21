@@ -10,9 +10,6 @@ export function Footer() {
         <div className="sm:col-span-2 lg:col-span-1">
           <Logo light />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-cream-100/70">{site.tagline}</p>
-          <p className="mt-6 text-xs text-cream-100/60">Un proiect</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={site.company.logo.light} alt="ECORATE" width={160} height={32} className="mt-1 h-8 w-auto" />
         </div>
         <div>
           <h2 className="font-sans text-sm font-semibold uppercase tracking-wider text-grain-300">Explorează</h2>
@@ -82,7 +79,11 @@ export function Footer() {
       <div className="border-t border-white/10">
         <Container className="flex flex-col gap-2 py-6 text-xs text-cream-100/60 sm:flex-row sm:justify-between">
           <p>© {new Date().getFullYear()} Puii mei. Toate drepturile rezervate.</p>
-          <p>Pui crescuți la comandă în gospodării locale partenere.</p>
+          <p className="flex items-center gap-2.5">
+            <span className="text-xs tracking-wide text-cream-100/70">Powered by</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={site.company.logo.light} alt="ECORATE" width={150} height={35} className="h-7 w-auto" />
+          </p>
         </Container>
       </div>
     </footer>
