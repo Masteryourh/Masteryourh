@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 import { Logo } from "./Logo";
 import { MobileNav } from "./MobileNav";
 import { NavLink } from "./NavLink";
+import { ThemeToggle } from "./ThemeToggle";
 
 /**
  * Pe prima pagină, meniul plutește transparent peste scena din hero (text alb, pastilă
@@ -63,6 +64,12 @@ export function Header() {
           <IconLink href="/comanda" label="Comanda mea" light={light} className="hidden xl:inline-flex">
             <path d="M21 8l-9-5-9 5v8l9 5 9-5V8zM3 8l9 5 9-5M12 13v8" />
           </IconLink>
+          <ThemeToggle
+            className={cn(
+              "hidden h-11 w-11 rounded-full border transition sm:inline-flex",
+              light ? "border-white/40 bg-white/15 text-white backdrop-blur hover:bg-white/25" : "border-forest-900/10 bg-white text-forest-800 hover:bg-forest-50",
+            )}
+          />
           <IconLink href="/cont" label="Contul meu (admin, gospodar, investitor)" light={light}>
             <path d="M20 21v-1a5 5 0 00-5-5H9a5 5 0 00-5 5v1M12 11a4 4 0 100-8 4 4 0 000 8z" />
           </IconLink>

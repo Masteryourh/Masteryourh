@@ -32,7 +32,7 @@ export function Pill({ children, tone = "gold" }: { children: React.ReactNode; t
         "rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap",
         tone === "gold" && "bg-[rgba(230,192,104,0.16)] text-[var(--pd-gold)]",
         tone === "green" && "bg-[rgba(143,194,122,0.16)] text-[var(--pd-green)]",
-        tone === "muted" && "bg-white/10 text-[var(--pd-muted)]",
+        tone === "muted" && "bg-[var(--pd-track)] text-[var(--pd-muted)]",
       )}
     >
       {children}
@@ -103,10 +103,10 @@ export function Gauge({ percent, label, sub }: { percent: number; label: string;
         {Array.from({ length: 29 }, (_, i) => {
           const a = Math.PI * (1 - i / 28);
           return (
-            <line key={i} x1={65 + 60 * Math.cos(a)} y1={68 - 60 * Math.sin(a)} x2={65 + 64 * Math.cos(a)} y2={68 - 64 * Math.sin(a)} stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+            <line key={i} x1={65 + 60 * Math.cos(a)} y1={68 - 60 * Math.sin(a)} x2={65 + 64 * Math.cos(a)} y2={68 - 64 * Math.sin(a)} stroke="var(--pd-tick)" strokeWidth="1" />
           );
         })}
-        <path d={`M13 68A${r} ${r} 0 0 1 117 68`} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="9" strokeLinecap="round" />
+        <path d={`M13 68A${r} ${r} 0 0 1 117 68`} fill="none" stroke="var(--pd-track)" strokeWidth="9" strokeLinecap="round" />
         <path
           d={`M13 68A${r} ${r} 0 0 1 117 68`}
           fill="none"
@@ -134,9 +134,9 @@ export function Bars({ data, max, unit = "" }: { data: { label: string; value: n
     <div className="flex h-40 items-end gap-2 sm:gap-3">
       {data.map((d, i) => (
         <div key={d.label + i} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2" title={d.title ?? `${d.value}${unit}`}>
-          <div className="relative flex h-full w-full max-w-7 items-end overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="relative flex h-full w-full max-w-7 items-end overflow-hidden rounded-full bg-[var(--pd-track)]">
             <div
-              className={cn("dash-bar w-full rounded-full", d.highlight ? "bg-[var(--pd-gold)]" : "bg-gradient-to-t from-white/40 to-white/90")}
+              className={cn("dash-bar w-full rounded-full", d.highlight ? "bg-[var(--pd-gold)]" : "bg-[linear-gradient(to_top,var(--pd-bar-from),var(--pd-bar-to))]")}
               style={{ height: `${Math.max(4, (d.value / top) * 100)}%`, animationDelay: `${150 + i * 70}ms` }}
             />
           </div>
@@ -159,7 +159,7 @@ export function Ring({ data, center, sub }: { data: { label: string; value: numb
     <div className="flex items-center gap-5">
       <div className="relative h-32 w-32 shrink-0">
         <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90" aria-hidden>
-          <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10" />
+          <circle cx="50" cy="50" r={r} fill="none" stroke="var(--pd-track)" strokeWidth="10" />
           {total > 0 &&
             data.map((d, i) => {
               const part = (d.value / total) * c;

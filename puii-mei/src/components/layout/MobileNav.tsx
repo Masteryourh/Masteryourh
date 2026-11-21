@@ -7,6 +7,7 @@ import { mainNav } from "@/lib/site";
 import { buttonClasses } from "@/components/ui/Button";
 import Link from "next/link";
 import { NavLink } from "./NavLink";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function MobileNav({ light = false }: { light?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -63,6 +64,7 @@ export function MobileNav({ light = false }: { light?: boolean }) {
               <Link href="/comanda" className={buttonClasses("secondary", "md")}>Comanda mea</Link>
               <Link href="/cont" className={buttonClasses("secondary", "md")}>Contul meu</Link>
             </div>
+            <ThemeToggle label className={buttonClasses("ghost", "md", "mt-2")} />
           </nav>
         </div>,
           document.body,

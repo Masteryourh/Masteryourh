@@ -13,7 +13,7 @@ export default async function FarmerLayout({ children }: LayoutProps<"/cont/gosp
   ];
   if (user.role === "admin") items.push({ href: "/admin", label: "← Panou admin" });
   return (
-    <PanelShell theme="dark" user={user} title="Contul gospodarului" home="/cont/gospodar" items={items}>
+    <PanelShell user={user} title="Contul gospodarului" home="/cont/gospodar" items={items}>
       {children}
     </PanelShell>
   );

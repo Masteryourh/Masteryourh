@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { User } from "@/lib/domain";
 import { roleLabels } from "@/lib/roles";
 import { PanelNav, type PanelNavItem } from "./PanelNav";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 /**
  * Cadrul panoului de control: fără meniul și footer-ul site-ului.
@@ -12,19 +13,16 @@ export function PanelShell({
   title,
   home,
   items,
-  theme = "light",
   children,
 }: {
   user: User;
   title: string;
   home: string;
   items: PanelNavItem[];
-  /** „dark”: dashboard-ul de prezentare (gospodar, investitor); adminul rămâne „light”. */
-  theme?: "light" | "dark";
   children: React.ReactNode;
 }) {
   return (
-    <div className={`panou ${theme === "dark" ? "panou-dark" : ""} flex min-h-dvh flex-1 flex-col bg-slate-100 text-slate-900 lg:flex-row`}>
+    <div className={`panou flex min-h-dvh flex-1 flex-col bg-slate-100 text-slate-900 lg:flex-row`}>
       <aside className="border-b border-slate-200 bg-slate-50 print:hidden lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-60 lg:shrink-0 lg:flex-col lg:border-r lg:border-b-0">
         <div className="flex items-center justify-between gap-3 px-4 py-3 lg:block lg:py-5">
           <Link href={home} className="block">
@@ -32,6 +30,7 @@ export function PanelShell({
             <span className="block text-xs text-slate-500">{title}</span>
           </Link>
           <div className="flex items-center gap-2 lg:hidden">
+            <ThemeToggle className="h-7 w-7 rounded-md border border-slate-300 bg-white" />
             <form action="/cont/iesire" method="post">
               <button className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold">Ieșire</button>
             </form>
@@ -44,6 +43,7 @@ export function PanelShell({
           <p className="font-semibold">{user.name}</p>
           <p className="text-xs text-slate-500">{roleLabels[user.role]}</p>
           <div className="mt-3 flex items-center gap-3">
+            <ThemeToggle className="h-8 w-8 rounded-md border border-slate-300 bg-white hover:bg-slate-100" />
             <form action="/cont/iesire" method="post">
               <button className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-slate-100">Ieșire</button>
             </form>
