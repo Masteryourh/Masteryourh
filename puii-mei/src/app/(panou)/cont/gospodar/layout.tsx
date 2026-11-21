@@ -9,6 +9,7 @@ export default async function FarmerLayout({ children }: LayoutProps<"/cont/gosp
   const items: PanelNavItem[] = [
     { href: "/cont/gospodar", label: "Gospodăria mea", exact: true },
     { href: "/cont/gospodar/documente", label: "Documente și cheltuieli" },
+    { href: "/cont/gospodar/legislatie", label: "Legislație și reguli" },
   ];
   if (user.role === "admin") items.push({ href: "/admin", label: "← Panou admin" });
   return (

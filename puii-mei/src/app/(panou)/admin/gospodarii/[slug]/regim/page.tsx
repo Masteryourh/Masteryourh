@@ -63,7 +63,7 @@ export default async function FarmRegimePage({ params, searchParams }: PageProps
         <h2 className="text-lg">Limite de creștere</h2>
         <p className="mt-1 text-sm text-slate-600">
           Implicit: {DEFAULT_LIMITS.birdsPerYear.toLocaleString("ro-RO")} păsări / an (Ordinul ANSVSA 6/2024, vânzare directă) și{" "}
-          {DEFAULT_LIMITS.birdsPerLot} păsări / lot. Pune o limită mai mică pentru situații punctuale (suprafață insuficientă,
+          {DEFAULT_LIMITS.birdsPerLot} păsări / lot (vezi <Link href="/admin/legislatie" className="underline">Legislație și surse</Link>). Pune o limită mai mică pentru situații punctuale (suprafață insuficientă,
           adăpost mic, recomandarea DSV etc.). Lasă gol pentru limita implicită.
         </p>
         <form action={saveLimitsAction} className="mt-4 grid gap-4 sm:grid-cols-2">
