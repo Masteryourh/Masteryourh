@@ -122,7 +122,7 @@ src/
   lib/
     domain.ts          modelul de domeniu (Farm, Lot, Preorder, DeliveryZone…)
     lots.ts            logica loturilor: etape, status, disponibilitate
-    pricing.ts         estimarea prețului (34 lei/kg, 2,2 kg/pui – configurabil)
+    pricing.ts         estimarea prețului (34 lei/kg, 5 kg/pui – configurabil)
     validation/        scheme Zod (validare server + mesaje în română)
     seo.ts, site.ts    metadate, JSON-LD, date companie
   server/
