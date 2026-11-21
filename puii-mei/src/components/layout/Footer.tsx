@@ -64,6 +64,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/legislatie" className="hover:text-white">
+                Legislație și reguli
+              </Link>
+            </li>
+            <li>
               <Link href="/confidentialitate" className="hover:text-white">
                 Politica de confidențialitate
               </Link>
