@@ -14,6 +14,8 @@ _Ultima actualizare: 21 noiembrie 2026_
       anularea precomenzii de către client.
 - [x] **Notificări pe email** (client, gospodar, admin) – pleacă doar după configurarea Resend.
 - [ ] **WhatsApp Business API** pentru mesaje automate (acum: linkuri WhatsApp manuale).
+- [ ] **Mesaj pe pagina de precomandă** cât timp site-ul e „under construction live”: „Comenzile se confirmă după
+      lansare” (propus pe 21 nov. 2026, fără răspuns).
 - [ ] **Designul site-ului** – de reluat (utilizatorul nu e mulțumit de varianta actuală; lucrăm împreună).
 - [ ] **Zonele de livrare și prețurile** editabile din admin (acum sunt în cod: `src/data/zones.ts`, `src/lib/pricing.ts`).
 - [ ] **Editarea gospodăriilor demonstrative** din admin (acum se pot edita doar cele create din admin).
