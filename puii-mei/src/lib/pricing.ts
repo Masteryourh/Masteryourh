@@ -6,7 +6,7 @@ import type { DeliveryZone, PriceEstimate } from "./domain";
  */
 export const pricing = {
   pricePerKg: 34, // lei / kg carcasă, TVA inclus (estimativ)
-  avgWeightKg: 2.2, // greutate medie carcasă
+  avgWeightKg: 5, // greutate medie per pui (kg)
   /** Hrana plătită în avans: aproximativ 6 kg de furaj pentru fiecare pui. */
   feedKgPerBird: 6,
   /** Preț orientativ al furajului (lei / kg); fiecare gospodărie își poate seta prețul ei. */
