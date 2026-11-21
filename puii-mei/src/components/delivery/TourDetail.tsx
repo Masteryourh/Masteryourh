@@ -131,7 +131,7 @@ export async function TourDetail({ tour, user, highlightRequest }: { tour: Tour;
 
       {/* Prelungiri */}
       {tour.extensions.length > 0 && (
-        <section>
+        <section id="prelungiri" className="scroll-mt-6">
           <h2 className="text-xl font-semibold">Cereri de prelungire</h2>
           <ul className="mt-3 space-y-3">
             {tour.extensions.map((e) => (
