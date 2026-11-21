@@ -110,8 +110,11 @@ export function growthProgress(lot: Lot, now = new Date()) {
   return Math.min(100, Math.max(0, Math.round((day / lot.growthDays) * 100)));
 }
 
+/** Lotul e public (aprobat de admin sau creat de admin). */
+export const isApproved = (lot: Lot) => !lot.approval || lot.approval.status === "aprobat";
+
 export function isOpenForPreorder(lot: Lot, now = new Date()) {
-  return lotStatus(lot, now) === "precomenzi-deschise" && availableBirds(lot) > 0;
+  return isApproved(lot) && !lot.closed && lotStatus(lot, now) === "precomenzi-deschise" && availableBirds(lot) > 0;
 }
 
 /** Normalizează codul introdus de client (spații, litere mici). */

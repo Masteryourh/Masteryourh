@@ -7,7 +7,14 @@ export const site = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.puiimei.ro",
   locale: "ro_RO",
   company: {
-    legalName: "Puii mei S.R.L. (în curs de înființare)",
+    legalName: "ECORATE S.R.L. (în curs de înființare)",
+    /** Logoul companiei (frunza verde se citește ca „D”: ECORATED). */
+    logo: {
+      light: "/brand/ecorate-deschis.svg",
+      dark: "/brand/ecorate-inchis.svg",
+      markLight: "/brand/ecorate-semn-deschis.svg",
+      markDark: "/brand/ecorate-semn-inchis.svg",
+    },
     cui: "—",
     regCom: "—",
     address: "România",

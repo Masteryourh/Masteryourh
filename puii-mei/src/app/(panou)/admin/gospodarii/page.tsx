@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Gospodării", robots: { index: false, follow: false } };
 
 export default async function AdminFarmsPage() {
-  const [farms, lots] = await Promise.all([farmRepository.listAll(), lotRepository.list()]);
+  const [farms, lots] = await Promise.all([farmRepository.listAll(), lotRepository.list({ all: true })]);
   return (
     <Container className="py-8">
       <h1 className="text-3xl font-semibold">Gospodării partenere</h1>

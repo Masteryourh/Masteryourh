@@ -7,6 +7,8 @@ import { preorderRepository } from "@/server/repositories/preorders";
 import { lotRepository } from "@/server/repositories/catalog";
 import { parcelRepository } from "@/server/repositories/delivery";
 import { normalizeLotCode } from "@/lib/lots";
+import { site } from "@/lib/site";
+import { notifyFarm, notifyOrderEvent } from "@/server/notifications";
 
 const allowed: PreorderStatus[] = ["noua", "confirmata", "alocata-lot", "in-livrare", "livrata", "anulata"];
 
@@ -15,8 +17,12 @@ export async function updatePreorderStatus(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "") as PreorderStatus;
   if (!id || !allowed.includes(status)) throw new Error("Date invalide");
-  await preorderRepository.updateStatus(id, status);
-  revalidatePath("/admin");
+  const before = await preorderRepository.byId(id);
+  const updated = await preorderRepository.updateStatus(id, status);
+  if (updated && before?.status !== status && (status === "confirmata" || status === "livrata" || status === "anulata")) {
+    await notifyOrderEvent(updated, status);
+  }
+  revalidatePath("/", "layout");
 }
 
 /** Alocă lotul unei precomenzi (necesar ca gospodarul s-o vadă și să-i genereze eticheta). */
@@ -28,8 +34,12 @@ export async function updatePreorderLot(formData: FormData) {
   if (!id || (raw && !lot)) throw new Error("Lot invalid");
   const parcel = await parcelRepository.byId(id);
   if (parcel?.loaded) throw new Error("Coletul a fost deja încărcat; lotul nu se mai poate schimba");
-  await preorderRepository.update(id, { lotCode: lot?.code ?? null, ...(lot ? { status: "alocata-lot" as const } : {}) });
+  const before = await preorderRepository.byId(id);
+  const updated = await preorderRepository.update(id, { lotCode: lot?.code ?? null, ...(lot ? { status: "alocata-lot" as const } : {}) });
+  if (updated && lot && before?.lotCode !== lot.code) {
+    await notifyOrderEvent(updated, "alocata");
+    await notifyFarm(lot.farmSlug, `Comandă nouă pe lotul ${lot.code}`, `Precomanda ${updated.number} (${updated.birds} pui, ${updated.customer.name}) a fost alocată lotului ${lot.code}.\n${site.url}/cont/gospodar`);
+  }
   if (parcel && lot) await parcelRepository.update(id, { lotCode: lot.code, farmSlug: lot.farmSlug });
-  revalidatePath("/admin", "layout");
-  revalidatePath("/cont/gospodar", "layout");
+  revalidatePath("/", "layout");
 }

@@ -70,6 +70,16 @@ export interface Lot {
   feed: string;
   processor: string;
   notes?: string;
+  /** Lot închis manual pentru precomenzi (rămâne vizibil la trasabilitate). */
+  closed?: boolean;
+  /**
+   * Aprobarea adminului pentru loturile propuse de gospodari. Lipsă = aprobat
+   * (loturile demonstrative și cele create de admin). Până la aprobare, lotul nu e public.
+   */
+  approval?: { status: "asteapta" | "aprobat" | "respins"; by?: string; at?: string; reason?: string };
+  /** Pentru loturile create din panou. */
+  createdAt?: string;
+  createdBy?: string;
 }
 
 export interface DeliveryZone {
@@ -433,4 +443,93 @@ export interface User {
   setupExpiresAt?: string;
   createdAt: string;
   lastLoginAt?: string;
+}
+
+/* ------------------------------------------------------------------ */
+/* Documente, cheltuieli, investiții (etapele 3–4)                     */
+/* ------------------------------------------------------------------ */
+
+/** Fișier încărcat (stocat în baza de date; pentru volum mare se mută pe Vercel Blob). */
+export interface StoredFile {
+  id: string;
+  name: string;
+  mime: string;
+  size: number;
+  /** Amprenta SHA-256 a conținutului: dovada că fișierul nu a fost modificat. */
+  sha256: string;
+  data: string;
+  uploadedAt: string;
+  uploadedBy: string;
+}
+
+export type DocumentCategory = "factura" | "aviz" | "contabil" | "dsv" | "contract" | "altele";
+
+/** Document justificativ (al unei gospodării sau al unei investiții). Nu se șterge; doar se verifică. */
+export interface FarmDocument {
+  id: string;
+  /** Gospodăria la care se referă (lipsă pentru actele exclusiv ale unei investiții). */
+  farmSlug?: string;
+  lotCode?: string;
+  /** Investiția la care e atașat (contracte, rapoarte). */
+  investmentId?: string;
+  category: DocumentCategory;
+  title: string;
+  /** Numărul documentului (factură, aviz etc.). */
+  number?: string;
+  /** Data documentului. */
+  date: string;
+  fileId: string;
+  fileName: string;
+  mime: string;
+  size: number;
+  sha256: string;
+  uploadedAt: string;
+  uploadedBy: string;
+  verifiedAt?: string;
+  verifiedBy?: string;
+}
+
+export type ExpenseCategory = "pui" | "furaj" | "sanatate" | "energie" | "asternut" | "ambalaje" | "transport" | "manopera" | "taxe" | "altele";
+
+/** Cheltuială în registrul gospodăriei. Nu se modifică; o greșeală se anulează cu motiv. */
+export interface Expense {
+  id: string;
+  farmSlug: string;
+  lotCode?: string;
+  date: string;
+  category: ExpenseCategory;
+  supplier: string;
+  description: string;
+  amount: number;
+  documentId?: string;
+  createdAt: string;
+  createdBy: string;
+  voided?: { at: string; by: string; reason: string };
+}
+
+export type InvestmentStatus = "propusa" | "semnata" | "activa" | "finalizata" | "anulata";
+
+export interface InvestmentEvent {
+  at: string;
+  date: string;
+  title: string;
+  text: string;
+  by: string;
+}
+
+/** Investiția unui investitor: obiect, sumă, gospodăria susținută, cronologie, acte. */
+export interface Investment {
+  id: string;
+  investorId: string;
+  title: string;
+  description: string;
+  amount: number;
+  date: string;
+  status: InvestmentStatus;
+  farmSlug?: string;
+  /** Randament / condiții, pe scurt (ex. „8% pe an, plătit trimestrial”). */
+  terms: string;
+  events: InvestmentEvent[];
+  createdAt: string;
+  createdBy: string;
 }

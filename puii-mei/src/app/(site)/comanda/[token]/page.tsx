@@ -15,7 +15,7 @@ import { feedFor, feedStatusOf, orderFarm } from "@/server/orders";
 import { preorderRepository } from "@/server/repositories/preorders";
 import { zoneRepository } from "@/server/repositories/catalog";
 import { parcelRepository, tourRepository } from "@/server/repositories/delivery";
-import { declarePaymentAction } from "../actions";
+import { cancelOrderAction, declarePaymentAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Comanda mea", robots: { index: false, follow: false } };
@@ -193,6 +193,14 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
               Vezi evoluția lotului, etapă cu etapă
             </Link>
           </section>
+        )}
+
+        {order.status === "noua" && feedStatus === "de-platit" && (
+          <form action={cancelOrderAction} className="rounded-3xl bg-cream-100 p-6 text-sm">
+            <input type="hidden" name="token" value={token} />
+            <p className="text-muted">Te-ai răzgândit? Poți anula gratuit precomanda până la confirmare.</p>
+            <button className="mt-3 font-semibold text-red-800 underline">Anulează precomanda</button>
+          </form>
         )}
 
         {/* Livrarea */}

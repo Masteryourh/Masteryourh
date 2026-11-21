@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { Container } from "@/components/ui/Container";
 import { CopyLink } from "@/components/admin/CopyLink";
 import { UserForm } from "@/components/admin/UserForm";
+import { DemoAccounts } from "@/components/admin/DemoAccounts";
 import type { User, UserStatus } from "@/lib/domain";
 import { roleLabels } from "@/lib/roles";
 import { formatDate } from "@/lib/format";
@@ -44,6 +45,10 @@ export default async function UsersPage() {
         Conturi pentru gospodari, investitori și administratori. Creezi contul, apoi trimiți persoanei linkul de activare;
         ea își alege parola. Curierii nu au cont: primesc acces temporar pe fiecare tură.
       </p>
+
+      <div className="mt-6 max-w-3xl">
+        <DemoAccounts />
+      </div>
 
       <h2 className="mt-8 text-xl font-semibold">Cont nou</h2>
       <div className="mt-3">
