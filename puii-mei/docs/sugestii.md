@@ -7,8 +7,8 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 ## De construit (etapele următoare)
 
-- [ ] **Modelul „un lot pe rând + cuști de 40”** (vezi `plan-platforma.md` §1b): capacitate din numărul de cuști,
-      subloturi pe cuști pornite la 40 de precomenzi, etapele 0–21–60 zile, greutate 4,8 kg (22 nov. 2026).
+- [ ] **Modelul „un lot pe rând + țarcuri de 40”** (vezi `plan-platforma.md` §1b): capacitate din numărul de țarcuri,
+      subloturi pe țarcuri pornite la 40 de precomenzi, etapele 0–21–60 zile, greutate 4,8 kg (22 nov. 2026).
 - [ ] **Investiții cu rambursare în tranșe** de către gospodar (echipamente de creștere și sacrificare).
 - [ ] **Comenzi pentru congelator** (cantități mari) pe lângă cele pentru consum imediat.
 - [ ] **Alte produse din gospodărie** la precomandă: borcane, afumături, păstrăvi etc.
@@ -69,7 +69,7 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 ## De verificat juridic
 
-- [ ] **Mai multe loturi simultane** în aceeași gospodărie (sau un singur lot pe rând, cu cuști pornite eșalonat) –
+- [ ] **Mai multe loturi simultane** în aceeași gospodărie (sau un singur lot pe rând, cu țarcuri pornite eșalonat) –
       ce permite legea pentru sacrificarea în gospodărie și vânzarea directă (22 nov. 2026).
 
 - [ ] **Limita de păsări** pentru sacrificarea în gospodărie și vânzarea directă: am pus 10.000 / an (Ordinul ANSVSA

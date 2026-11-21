@@ -20,19 +20,20 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
 
 ## 1b. Modelul de creștere (stabilit pe 22 nov. 2026)
 
-- **Sistem**: pui pășunați în **cușcă mobilă de 4 × 3 m**, mutată zilnic pe suprafață nouă; suprafața se reface în
-  **14 zile** ⇒ o cușcă are nevoie de ~14 × 12 m² = **~168 m² de pășune** (+ rezervă). **40 de pui / cușcă.**
-- **Etape**: 0–21 zile la interior (becuri roșii, pat de rumeguș) → de la **21 de zile** în cușca de pe pășune →
+- **Terminologie**: spunem **țarc** (nu „cușcă”) – în platformă, pe site și în comunicare.
+- **Sistem**: pui pășunați în **țarc mobil de 4 × 3 m**, mutat zilnic pe suprafață nouă; suprafața se reface în
+  **14 zile** ⇒ un țarc are nevoie de ~14 × 12 m² = **~168 m² de pășune** (+ rezervă). **40 de pui / țarc.**
+- **Etape**: 0–21 zile la interior (becuri roșii, pat de rumeguș) → de la **21 de zile** în țarcul de pe pășune →
   **60 de zile** sacrificare (tradițional, în gospodărie). Ciclu complet 60–70 de zile.
-- **Capacitatea gospodăriei** = numărul de cuști pe care le permite terenul × 40 (ex. Mureșan: 5 cuști ⇒ 200 pui / lot).
+- **Capacitatea gospodăriei** = numărul de țarcuri pe care le permite terenul × 40 (ex. Mureșan: 5 țarcuri ⇒ 200 pui / lot).
 - **Un lot pe rând** în fiecare gospodărie; lotul următor începe după încheierea celui curent (60–70 zile).
   Mai multe loturi simultane doar dacă legea permite (de verificat).
-- **Cuștile ca subloturi**: precomenzile se strâng până la **cel puțin 40 de pui** (o cușcă plină) și pornește
-  creșterea acelei cuști; a doua cușcă pornește când se adună încă 40 etc. Pornirile din același lot să nu fie prea
+- **Țarcurile ca subloturi**: precomenzile se strâng până la **cel puțin 40 de pui** (un țarc plin) și pornește
+  creșterea acelui țarc; al doilea țarc pornește când se adună încă 40 etc. Pornirile din același lot să nu fie prea
   distanțate (pui de vârste apropiate).
 - **Greutate medie**: ~4,8 kg / pui. **Conversia hranei**: ~70% (de clarificat cantitatea de furaj / pui).
 - **Preț la client**: cu 20–30% peste prețul pieței.
-- **Investiția în gospodărie** (o dată, amortizată în timp): spațiul pentru 1–21 zile, cuștile, echipamentele pentru
+- **Investiția în gospodărie** (o dată, amortizată în timp): spațiul pentru 1–21 zile, țarcurile, echipamentele pentru
   toate etapele și pentru sacrificare (opăritor, deplumator, conuri, masă inox, ladă frigorifică pentru păstrare
   scurtă). **Gospodarul plătește investiția în tranșe.**
 - **Clienți**: comenzi mici pentru consum imediat și comenzi mari pentru congelator (consum ulterior).
