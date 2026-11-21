@@ -80,6 +80,12 @@ Parametri utili: `/precomanda?lot=PM-2612-A03&pui=12`, `/contact?subiect=partene
 Setări în `src/lib/delivery.ts` (prag 0–4 °C, ore de confirmare, încercări PIN etc.). Fotografiile sunt comprimate în
 browser și stocate deocamdată în baza de date; pentru volum mare se mută pe Vercel Blob.
 
+## Ramă „UNDER CONSTRUCTION” (site live)
+
+Site-ul public are o bandă de construcție negru-galben pe margini, un text uriaș aproape transparent „UNDER
+CONSTRUCTION” și eticheta „Site în construcție · lansăm curând”. Nu blochează nimic. Se scoate la lansare cu
+`UNDER_CONSTRUCTION=0` (Vercel → Environment Variables), apoi Redeploy. Panourile (admin, conturi) nu au ramă.
+
 ## Mod „în construcție”
 
 Ascunde site-ul de public până la lansare. Se activează din variabilele de mediu (Vercel → Environment Variables), apoi Redeploy:
