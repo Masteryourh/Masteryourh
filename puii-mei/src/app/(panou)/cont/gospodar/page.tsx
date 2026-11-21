@@ -18,6 +18,10 @@ import { feedAdvance, pricing } from "@/lib/pricing";
 import { farmPaymentRepository } from "@/server/repositories/farm-payments";
 import { saveFarmPaymentAction } from "./plati-actions";
 import { LotAdminRow, NewLotForm } from "@/components/lots/LotForms";
+import { AerialMap, Bars, FARM_SPOTS, Gauge, Glass, GlassTitle, Metric, Pill, Ring } from "@/components/panel/Dash";
+import { expenseCategoryLabels } from "@/lib/documents";
+import { lotDay, statusLabels } from "@/lib/lots";
+import { expenseRepository, expenseTotals } from "@/server/repositories/documents";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Contul gospodarului", robots: { index: false, follow: false } };
@@ -60,10 +64,11 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
   const farmPreorders = preorders.filter((p) => p.lotCode && lotCodes.has(p.lotCode) && p.status !== "anulata");
   const zoneName = new Map(zones.map((z) => [z.id, z.name]));
   const activeLots = lots.filter((l) => lotStatus(l) !== "livrat");
-  const [allParcels, allTours, payment] = await Promise.all([
+  const [allParcels, allTours, payment, expenses] = await Promise.all([
     parcelRepository.list(),
     tourRepository.list(),
     farmPaymentRepository.bySlug(farm.slug),
+    expenseRepository.byFarm(farm.slug),
   ]);
   const parcels = allParcels.filter((x) => x.farmSlug === farm.slug);
   const parcelById = new Map(parcels.map((x) => [x.id, x]));
@@ -73,6 +78,20 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
   const readyParcels = parcels.filter(
     (x) => !x.delivered && (!x.tourId || !activeTourIds.has(x.tourId)) && preorderById.has(x.id),
   );
+
+  // Dashboard: lotul curent (în creștere, altfel următorul), avansuri, cheltuieli, livrări.
+  const approvedLots = lots.filter((l) => !l.approval || l.approval.status === "aprobat");
+  const growing = approvedLots.filter((l) => lotStatus(l) === "in-crestere");
+  const upcoming = approvedLots.filter((l) => lotStatus(l) === "precomenzi-deschise").sort((a, b) => a.startDate.localeCompare(b.startDate));
+  const currentLot = growing[0] ?? upcoming[0] ?? approvedLots[0];
+  const day = currentLot ? Math.max(0, Math.min(currentLot.growthDays, lotDay(currentLot))) : 0;
+  const progress = currentLot ? growthProgress(currentLot) : 0;
+  const totals = expenseTotals(expenses);
+  const feedPaid = farmPreorders.filter((p) => p.feedPayment?.status === "primita").length;
+  const nextTour = farmTours
+    .filter((t) => t.status === "planificata" || t.status === "in-curs")
+    .sort((a, b) => a.date.localeCompare(b.date))[0];
+  const mapLots = activeLots.filter((l) => !l.approval || l.approval.status !== "respins").slice(0, FARM_SPOTS.length);
 
   return (
     <Container className="py-8">
@@ -88,23 +107,118 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         </form>
       )}
 
-      <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold sm:text-4xl">{farm.name}</h1>
-          <p className="mt-1 text-muted">
-            {farm.owner} · {farm.village}, jud. {farm.county}
-          </p>
+      <section className="mt-2 space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs tracking-[0.25em] text-[var(--pd-muted)] uppercase">Puii mei · gospodăria mea</p>
+            <h1 className="mt-1 text-3xl font-light tracking-tight sm:text-4xl">{farm.name}</h1>
+            <p className="text-sm text-[var(--pd-muted)]">{farm.owner} · {farm.village}, jud. {farm.county}</p>
+          </div>
+          <Link href={`/gospodarii/${farm.slug}`} className="rounded-full border border-white/15 px-4 py-2 text-sm text-[var(--pd-text)] hover:bg-white/10">
+            Profilul public ↗
+          </Link>
         </div>
-        <Link href={`/gospodarii/${farm.slug}`} className="text-sm font-semibold text-forest-700 underline">
-          Vezi profilul public
-        </Link>
-      </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <Stat label="Loturi active" value={String(activeLots.length)} />
-        <Stat label="Pui precomandați" value={String(farmPreorders.reduce((s, p) => s + p.birds, 0))} />
-        <Stat label="Valoare estimativă" value={formatLei(farmPreorders.reduce((s, p) => s + p.estimate.productValue, 0))} />
-      </div>
+        <div className="grid gap-4 xl:grid-cols-[1.55fr_1fr]">
+          <AerialMap
+            src="/images/panou/gospodarie-aerian.webp"
+            className="min-h-[300px] sm:min-h-[380px] xl:min-h-[470px]"
+            pins={
+              mapLots.length
+                ? mapLots.map((l, i) => ({
+                    ...FARM_SPOTS[i],
+                    label: l.code,
+                    note: l.approval?.status === "asteapta" ? "de aprobat" : lotStatus(l) === "in-crestere" ? `ziua ${Math.max(0, lotDay(l))}` : statusLabels[lotStatus(l)],
+                    active: l.code === currentLot?.code,
+                  }))
+                : [{ ...FARM_SPOTS[2], label: farm.name, note: "fără loturi active" }]
+            }
+          >
+            <div className="absolute bottom-3 left-3 flex flex-wrap gap-2 text-xs">
+              <span className="rounded-full bg-black/45 px-3 py-1 text-white backdrop-blur-md">{farm.village}, {farm.county}</span>
+              <span className="rounded-full bg-black/45 px-3 py-1 text-white backdrop-blur-md">{activeLots.length} loturi active</span>
+            </div>
+          </AerialMap>
+
+          <div className="grid content-start gap-4">
+            <Glass delay={100}>
+              <GlassTitle
+                title="Lotul curent"
+                hint={currentLot ? `${currentLot.code} · ${currentLot.totalBirds} păsări` : "Niciun lot încă"}
+                right={currentLot ? <Pill>{statusLabels[lotStatus(currentLot)]}</Pill> : undefined}
+              />
+              <div className="mt-3">
+                <Gauge percent={progress} label={`${progress}%`} sub={currentLot ? `ziua ${day} din ${currentLot.growthDays}` : "creștere"} />
+              </div>
+              {currentLot && <p className="mt-2 text-center text-xs text-[var(--pd-muted)]">Disponibil estimat: {formatDate(availabilityDate(currentLot))}</p>}
+            </Glass>
+            <div className="grid grid-cols-2 gap-4">
+              <Metric
+                delay={180}
+                label="Pui rezervați"
+                value={String(currentLot?.reservedBirds ?? 0)}
+                unit={currentLot ? `/ ${currentLot.totalBirds}` : undefined}
+                pill={currentLot ? <Pill tone="green">{availableBirds(currentLot)} liberi</Pill> : undefined}
+              />
+              <Metric
+                delay={240}
+                label="Avans hrană primit"
+                value={`${feedPaid}`}
+                unit={`/ ${farmPreorders.length}`}
+                pill={<Pill tone={feedPaid === farmPreorders.length ? "green" : "gold"}>{farmPreorders.length - feedPaid} de primit</Pill>}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Glass delay={300}>
+            <GlassTitle title="Rezervări pe loturi" hint="păsări rezervate în fiecare lot" />
+            <div className="mt-4">
+              <Bars
+                data={[...approvedLots].reverse().slice(-8).map((l) => ({ label: l.code.slice(3), value: l.reservedBirds, highlight: l.code === currentLot?.code, title: `${l.code}: ${l.reservedBirds} / ${l.totalBirds}` }))}
+              />
+            </div>
+          </Glass>
+          <Glass delay={360}>
+            <GlassTitle
+              title="Cheltuieli"
+              hint="pe categorii, toate loturile"
+              right={<Link href={`/cont/gospodar/documente${user.role === "admin" ? `?gospodarie=${farm.slug}` : ""}`} className="text-xs text-[var(--pd-green)]">registrul ↗</Link>}
+            />
+            <div className="mt-4">
+              <Ring
+                center={totals.total >= 1000 ? `${Math.round(totals.total / 1000)}k` : String(Math.round(totals.total))}
+                sub="lei"
+                data={[...totals.byCategory].sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: expenseCategoryLabels[k as keyof typeof expenseCategoryLabels], value: v }))}
+              />
+            </div>
+          </Glass>
+          <Glass delay={420}>
+            <GlassTitle title="Următoarea livrare" hint="ture și colete" />
+            {nextTour ? (
+              <Link href={`/cont/gospodar/ture/${nextTour.id}`} className="mt-4 block">
+                <p className="text-3xl font-light">{formatDate(nextTour.date)}</p>
+                <p className="mt-1 text-sm text-[var(--pd-muted)]">
+                  Tura {nextTour.code} · {nextTour.parcelIds.length} colete · <span className="text-[var(--pd-gold)]">{tourStatusLabels[nextTour.status]}</span>
+                </p>
+              </Link>
+            ) : (
+              <p className="mt-4 text-sm text-[var(--pd-muted)]">Nicio tură planificată.</p>
+            )}
+            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-white/10 pt-4 text-sm">
+              <div>
+                <p className="text-[var(--pd-muted)]">Colete gata</p>
+                <p className="text-2xl font-light">{readyParcels.length}</p>
+              </div>
+              <div>
+                <p className="text-[var(--pd-muted)]">Valoare comenzi</p>
+                <p className="text-2xl font-light">{formatLei(farmPreorders.reduce((s, p) => s + p.estimate.productValue, 0)).replace(",00", "")}</p>
+              </div>
+            </div>
+          </Glass>
+        </div>
+      </section>
 
       <h2 id="loturi" className="mt-10 scroll-mt-6 text-2xl font-semibold">Loturi</h2>
       {typeof sp.eroareLot === "string" && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800">{sp.eroareLot}</p>}
@@ -315,11 +429,3 @@ function LabelCell({ preorderId, parcel, delivered }: { preorderId: string; parc
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl bg-white p-5 ring-1 ring-forest-900/10">
-      <p className="text-xs text-muted">{label}</p>
-      <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-forest-900">{value}</p>
-    </div>
-  );
-}

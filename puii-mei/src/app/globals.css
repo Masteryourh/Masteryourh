@@ -211,3 +211,63 @@
   .hero-grass { filter: none; }
   .reveal { opacity: 1; transform: none; transition: none; }
 }
+
+/* ------------------------------------------------------------------ */
+/* Panou închis (gospodar, investitor): verde foarte închis, sticlă,   */
+/* accent auriu. În afara straturilor Tailwind, ca să le suprascrie.    */
+/* ------------------------------------------------------------------ */
+.panou-dark {
+  --pd-bg: #0b140e;
+  --pd-glass: rgba(255, 255, 255, 0.055);
+  --pd-glass-2: rgba(255, 255, 255, 0.085);
+  --pd-line: rgba(255, 255, 255, 0.1);
+  --pd-text: #eef2ea;
+  --pd-muted: #a3b2a4;
+  --pd-gold: #e6c068;
+  --pd-green: #8fc27a;
+  background: radial-gradient(1200px 600px at 70% -10%, #1d3323 0%, transparent 60%), var(--pd-bg) !important;
+  color: var(--pd-text) !important;
+  color-scheme: dark;
+}
+.panou-dark aside { background: rgba(255, 255, 255, 0.03) !important; border-color: var(--pd-line) !important; backdrop-filter: blur(12px); }
+.panou-dark aside a[aria-current="page"] { background: var(--pd-gold) !important; color: #1b2a1d !important; }
+.panou-dark aside a:not([aria-current="page"]) { color: var(--pd-muted) !important; }
+.panou-dark aside a:not([aria-current="page"]):hover { background: var(--pd-glass-2) !important; color: var(--pd-text) !important; }
+.panou-dark h1, .panou-dark h2, .panou-dark h3 { color: var(--pd-text) !important; font-weight: 500; }
+
+.panou-dark .bg-white, .panou-dark .bg-slate-50, .panou-dark .bg-slate-100, .panou-dark .bg-cream-100, .panou-dark .bg-cream-200, .panou-dark .bg-white\/90 {
+  background-color: var(--pd-glass) !important;
+}
+.panou-dark .bg-slate-50, .panou-dark thead { background-color: rgba(255, 255, 255, 0.035) !important; }
+.panou-dark [class*="ring-"] { --tw-ring-color: var(--pd-line) !important; }
+.panou-dark [class*="border-"], .panou-dark [class*="divide-"] > * + * { border-color: var(--pd-line) !important; }
+.panou-dark .text-slate-900, .panou-dark .text-ink, .panou-dark .text-forest-900, .panou-dark .text-forest-800 { color: var(--pd-text) !important; }
+.panou-dark .text-slate-700, .panou-dark .text-slate-600, .panou-dark .text-slate-500, .panou-dark .text-slate-400, .panou-dark .text-muted { color: var(--pd-muted) !important; }
+.panou-dark .text-forest-700, .panou-dark a.underline { color: var(--pd-green) !important; }
+.panou-dark .bg-green-50, .panou-dark .bg-forest-50 { background-color: rgba(143, 194, 122, 0.14) !important; color: #cfe8c3 !important; }
+.panou-dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.14) !important; color: #fecaca !important; }
+.panou-dark .bg-amber-50 { background-color: rgba(230, 192, 104, 0.14) !important; color: #f3dfae !important; }
+.panou-dark .bg-forest-700, .panou-dark .bg-slate-800 { background-color: var(--pd-gold) !important; color: #1b2a1d !important; }
+.panou-dark input, .panou-dark select, .panou-dark textarea {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: var(--pd-text) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+.panou-dark option { background: #14201a; color: var(--pd-text); }
+.panou-dark details > summary { color: var(--pd-text); }
+
+/* Componente de dashboard */
+.dash-glass { background: rgba(14, 24, 17, 0.62); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(14px); border-radius: 1.25rem; }
+.dash-rise { animation: dash-rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.dash-bar { transform-origin: bottom; animation: dash-bar 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.dash-pin::after { content: ""; position: absolute; inset: -6px; border-radius: 9999px; border: 1px solid currentColor; animation: dash-ping 2.4s ease-out infinite; }
+.dash-arc { animation: dash-arc 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes dash-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes dash-bar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes dash-ping { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(1.8); opacity: 0; } }
+@keyframes dash-arc { from { stroke-dashoffset: var(--dash-len); } }
+.dash-aerial { animation: dash-drift 40s ease-in-out infinite alternate; }
+@keyframes dash-drift { from { transform: scale(1.06) translate(-1%, -1%); } to { transform: scale(1.1) translate(1%, 0.5%); } }
+@media (prefers-reduced-motion: reduce) {
+  .dash-rise, .dash-bar, .dash-arc, .dash-aerial, .dash-pin::after { animation: none !important; }
+}
