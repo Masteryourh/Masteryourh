@@ -45,6 +45,8 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 - [ ] **Datele de plată ale fiecărei gospodării** (titular, IBAN, bancă, preț furaj): Contul meu → Vedere gospodar →
       „Contul pentru avansul de hrană”. Fără ele, clienții nu pot plăti avansul.
+- [ ] **Prețul pe kg și pragul de livrare gratuită** după trecerea la 5 kg / pui (acum 34 lei/kg → ~170 lei/pui;
+      livrare gratuită peste 600 lei, adică de la 4 pui) – de confirmat (propus pe 21 nov. 2026, fără răspuns).
 - [ ] **Prețul implicit al furajului:** 3,50 lei/kg e orientativ (`src/lib/pricing.ts`); de confirmat valoarea reală.
 
 - [ ] **Fotografii reale** ale gospodăriilor în `public/images/gospodarii/` (acum se afișează imagini de rezervă).
