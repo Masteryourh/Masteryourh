@@ -27,7 +27,7 @@ export default async function AdminDocumentsPage({ searchParams }: PageProps<"/a
         {totals.map((t) => (
           <Link key={t.farm.slug} href={`/cont/gospodar/documente?gospodarie=${t.farm.slug}`} className="rounded-xl bg-white p-4 ring-1 ring-slate-200 hover:ring-slate-400">
             <p className="font-semibold">{t.farm.name}</p>
-            <p className="text-sm text-slate-600">{t.count} cheltuieli · {formatLei(t.total)}</p>
+            <p className="text-sm text-slate-600">Cheltuieli {formatLei(t.total)} · venituri {formatLei(t.income)}</p>
           </Link>
         ))}
       </div>

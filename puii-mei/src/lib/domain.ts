@@ -489,11 +489,21 @@ export interface FarmDocument {
   verifiedBy?: string;
 }
 
-export type ExpenseCategory = "pui" | "furaj" | "sanatate" | "energie" | "asternut" | "ambalaje" | "transport" | "manopera" | "taxe" | "altele";
+export type ExpenseCategory =
+  | "pui" | "furaj" | "sanatate" | "energie" | "asternut" | "ambalaje" | "transport" | "manopera" | "taxe" | "altele"
+  /* venituri */
+  | "vanzare-carne" | "avans-hrana" | "alte-venituri";
 
-/** Cheltuială în registrul gospodăriei. Nu se modifică; o greșeală se anulează cu motiv. */
+/**
+ * Înregistrare în registrul gospodăriei (cheltuială sau venit), fiscalizată: are mereu
+ * numărul documentului fiscal și documentul atașat. Nu se modifică; o greșeală se anulează cu motiv.
+ */
 export interface Expense {
   id: string;
+  /** Lipsă = cheltuială (înregistrările mai vechi). */
+  kind?: "cheltuiala" | "venit";
+  /** Numărul documentului fiscal: factură, bon fiscal, chitanță. */
+  invoiceNumber?: string;
   farmSlug: string;
   lotCode?: string;
   date: string;

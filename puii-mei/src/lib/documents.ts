@@ -19,8 +19,15 @@ export const expenseCategoryLabels: Record<ExpenseCategory, string> = {
   transport: "Transport",
   manopera: "Manoperă",
   taxe: "Taxe și avize",
-  altele: "Altele",
+  altele: "Alte cheltuieli",
+  "vanzare-carne": "Vânzare carne",
+  "avans-hrana": "Avans hrană încasat",
+  "alte-venituri": "Alte venituri",
 };
+
+/** Categoriile de venit; restul sunt cheltuieli. */
+export const INCOME_CATEGORIES: ExpenseCategory[] = ["vanzare-carne", "avans-hrana", "alte-venituri"];
+export const isIncomeCategory = (c: ExpenseCategory) => INCOME_CATEGORIES.includes(c);
 
 export const investmentStatusLabels: Record<InvestmentStatus, string> = {
   propusa: "Propusă",
