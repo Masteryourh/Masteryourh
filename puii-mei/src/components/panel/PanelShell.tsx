@@ -12,16 +12,19 @@ export function PanelShell({
   title,
   home,
   items,
+  theme = "light",
   children,
 }: {
   user: User;
   title: string;
   home: string;
   items: PanelNavItem[];
+  /** „dark”: dashboard-ul de prezentare (gospodar, investitor); adminul rămâne „light”. */
+  theme?: "light" | "dark";
   children: React.ReactNode;
 }) {
   return (
-    <div className="panou flex min-h-dvh flex-1 flex-col bg-slate-100 text-slate-900 lg:flex-row">
+    <div className={`panou ${theme === "dark" ? "panou-dark" : ""} flex min-h-dvh flex-1 flex-col bg-slate-100 text-slate-900 lg:flex-row`}>
       <aside className="border-b border-slate-200 bg-slate-50 print:hidden lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-60 lg:shrink-0 lg:flex-col lg:border-r lg:border-b-0">
         <div className="flex items-center justify-between gap-3 px-4 py-3 lg:block lg:py-5">
           <Link href={home} className="block">
