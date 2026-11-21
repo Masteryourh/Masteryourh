@@ -63,6 +63,10 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 ## De verificat juridic
 
+- [ ] **Limita de păsări** pentru sacrificarea în gospodărie și vânzarea directă: am pus 10.000 / an (Ordinul ANSVSA
+      6/2024, de verificat textul final) și 300 / lot (recomandare practică). De confirmat la DSVSA Suceava, plus
+      zona în care e permisă vânzarea (județ / județe limitrofe).
+
 - [ ] Rolul de consultant vs. intermediar; vânzarea directă și sacrificarea în gospodărie.
 - [ ] Plata avansului pentru hrană direct gospodăriei (contract, chitanță/factură).
 - [ ] Confirmarea primirii la livrare (să nu limiteze drepturile consumatorului).

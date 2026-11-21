@@ -131,9 +131,12 @@ export const lotRepository = {
   async byFarm(slug: string, scope?: LotScope): Promise<Lot[]> {
     return (await scoped(scope)).filter((l) => l.farmSlug === slug).sort((a, b) => b.startDate.localeCompare(a.startDate));
   },
-  /** Loturi deschise pentru precomenzi – doar din gospodăriile active. */
+  /** Loturi deschise pentru precomenzi – doar din gospodăriile active, nesuspendate. */
   async openForPreorder(now = new Date()): Promise<Lot[]> {
     const active = await activeFarmSlugs();
+    for (const g of await store.list<{ id: string; standing: string }>("farm-governance")) {
+      if (g.standing === "suspendata" || g.standing === "exclusa") active.delete(g.id);
+    }
     return (await allLots())
       .filter((l) => active.has(l.farmSlug) && isOpenForPreorder(l, now))
       .sort((a, b) => a.startDate.localeCompare(b.startDate));

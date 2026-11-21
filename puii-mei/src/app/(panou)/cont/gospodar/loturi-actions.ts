@@ -6,6 +6,8 @@ import type { Species } from "@/lib/products";
 import { requireRole } from "@/server/auth";
 import { canManageFarm } from "@/server/delivery";
 import { lotRepository } from "@/server/repositories/catalog";
+import { governanceRepository } from "@/server/repositories/governance";
+import { checkLotLimits } from "@/lib/governance";
 import { notifyAdmins, notifyFarm } from "@/server/notifications";
 import { site } from "@/lib/site";
 
@@ -52,7 +54,9 @@ export async function createLotAction(formData: FormData) {
   const farmSlug = String(formData.get("farmSlug") ?? "");
   if (!canManageFarm(user, farmSlug)) throw new Error("Neautorizat");
   const data = readLot(formData);
-  const error = validate(data);
+  const [farmLots, gov] = await Promise.all([lotRepository.byFarm(farmSlug, { all: true }), governanceRepository.bySlug(farmSlug)]);
+  const blocked = gov?.standing === "suspendata" || gov?.standing === "exclusa" ? `Gospodăria e ${gov.standing === "exclusa" ? "exclusă" : "suspendată"}: nu se pot crea loturi noi.` : "";
+  const error = blocked || validate(data) || checkLotLimits(farmLots, gov, data);
   if (error) redirect(back(formData, `eroareLot=${encodeURIComponent(error)}`));
   const needsApproval = user.role !== "admin";
   const lot = await lotRepository.create({ ...data, farmSlug }, `${user.name} (${user.role})`, needsApproval);
@@ -78,7 +82,11 @@ export async function updateLotAction(formData: FormData) {
     redirect(back(formData, `lotSalvat=${lot.code}`));
   }
   const data = readLot(formData);
-  const error = validate(data) || (data.totalBirds < lot.reservedBirds ? `Lotul are deja ${lot.reservedBirds} păsări rezervate.` : "");
+  const [farmLots, gov] = await Promise.all([lotRepository.byFarm(lot.farmSlug, { all: true }), governanceRepository.bySlug(lot.farmSlug)]);
+  const error =
+    validate(data) ||
+    (data.totalBirds < lot.reservedBirds ? `Lotul are deja ${lot.reservedBirds} păsări rezervate.` : "") ||
+    (data.totalBirds !== lot.totalBirds || data.startDate !== lot.startDate ? checkLotLimits(farmLots, gov, { ...data, code: lot.code }) : "");
   if (error) redirect(back(formData, `eroareLot=${encodeURIComponent(error)}`));
   await lotRepository.update(lot.code, {
     totalBirds: data.totalBirds,

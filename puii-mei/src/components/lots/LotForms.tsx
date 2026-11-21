@@ -5,7 +5,7 @@ import { createLotAction, decideLotAction, updateLotAction } from "@/app/(panou)
 
 const input = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm";
 
-function Fields({ lot }: { lot?: Lot }) {
+function Fields({ lot, maxPerLot = 10000 }: { lot?: Lot; maxPerLot?: number }) {
   return (
     <>
       {!lot && (
@@ -24,7 +24,7 @@ function Fields({ lot }: { lot?: Lot }) {
       </label>
       <label className="text-sm font-semibold">
         Număr de păsări în lot
-        <input name="totalBirds" type="number" min={5} max={10000} required defaultValue={lot?.totalBirds ?? 200} className={input} />
+        <input name="totalBirds" type="number" min={5} max={maxPerLot} required defaultValue={lot?.totalBirds ?? 200} className={input} />
       </label>
       <label className="text-sm font-semibold">
         Durata creșterii (zile)
@@ -51,12 +51,12 @@ function Fields({ lot }: { lot?: Lot }) {
 }
 
 /** Formular pentru un lot nou. */
-export function NewLotForm({ farmSlug, returnTo, needsApproval = false }: { farmSlug: string; returnTo: string; needsApproval?: boolean }) {
+export function NewLotForm({ farmSlug, returnTo, needsApproval = false, maxPerLot }: { farmSlug: string; returnTo: string; needsApproval?: boolean; maxPerLot?: number }) {
   return (
     <form action={createLotAction} className="grid gap-4 rounded-xl bg-white p-5 ring-1 ring-slate-200 sm:grid-cols-2">
       <input type="hidden" name="farmSlug" value={farmSlug} />
       <input type="hidden" name="inapoi" value={returnTo} />
-      <Fields />
+      <Fields maxPerLot={maxPerLot} />
       <div className="sm:col-span-2">
         <button className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">{needsApproval ? "Trimite lotul spre aprobare" : "Creează lotul"}</button>
         <span className="ml-3 text-xs text-slate-500">
