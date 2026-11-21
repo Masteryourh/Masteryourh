@@ -9,7 +9,12 @@ export const site = {
   company: {
     legalName: "ECORATE S.R.L. (în curs de înființare)",
     /** Logoul companiei (frunza verde se citește ca „D”: ECORATED). */
-    logo: { light: "/brand/ecorate-deschis.svg", dark: "/brand/ecorate-inchis.svg" },
+    logo: {
+      light: "/brand/ecorate-deschis.svg",
+      dark: "/brand/ecorate-inchis.svg",
+      markLight: "/brand/ecorate-semn-deschis.svg",
+      markDark: "/brand/ecorate-semn-inchis.svg",
+    },
     cui: "—",
     regCom: "—",
     address: "România",
