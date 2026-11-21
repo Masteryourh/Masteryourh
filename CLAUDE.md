@@ -2,6 +2,8 @@
 
 - Comunicarea cu utilizatorul se face în **română**; tot textul din site e în română.
 - Codul site-ului e în `puii-mei/` (vezi și `puii-mei/AGENTS.md` pentru regulile Next.js).
+- La începutul unei conversații noi citește `puii-mei/docs/istoric-conversatie.md` (ce s-a construit, decizii,
+  setări), `puii-mei/docs/plan-platforma.md` și `puii-mei/docs/sugestii.md`.
 
 ## Sugestii uitate
 
