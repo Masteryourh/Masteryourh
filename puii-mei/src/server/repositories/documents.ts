@@ -64,6 +64,7 @@ export const expenseRepository = {
   },
   get: (id: string) => store.get<Expense>(EXPENSES, id),
   void: (id: string, voided: Expense["voided"]) => store.update<Expense>(EXPENSES, id, { voided }),
+  update: (id: string, patch: Partial<Expense>) => store.update<Expense>(EXPENSES, id, { ...patch, updatedAt: new Date().toISOString() }),
 };
 
 export const investmentRepository = {
@@ -80,14 +81,25 @@ export const investmentRepository = {
   update: (id: string, patch: Partial<Investment>) => store.update<Investment>(INVESTMENTS, id, patch),
 };
 
-/** Totalurile registrului de cheltuieli (fără cele anulate), pe lot și pe categorie. */
-export function expenseTotals(expenses: Expense[]) {
-  const valid = expenses.filter((e) => !e.voided);
+/**
+ * Totalurile registrului (doar înregistrările confirmate, fără cele anulate): cheltuieli pe lot și pe categorie,
+ * venituri pe lot, rezultatul (venituri − cheltuieli).
+ */
+export function expenseTotals(entries: Expense[]) {
+  // Doar înregistrările confirmate intră în totaluri; ciornele se numără separat.
+  const valid = entries.filter((e) => !e.voided && e.confirmedAt);
+  const drafts = entries.filter((e) => !e.voided && !e.confirmedAt).length;
+  const costs = valid.filter((e) => e.kind !== "venit");
+  const incomes = valid.filter((e) => e.kind === "venit");
   const byLot = new Map<string, number>();
   const byCategory = new Map<string, number>();
-  for (const e of valid) {
+  const incomeByLot = new Map<string, number>();
+  for (const e of costs) {
     byLot.set(e.lotCode ?? "", (byLot.get(e.lotCode ?? "") ?? 0) + e.amount);
     byCategory.set(e.category, (byCategory.get(e.category) ?? 0) + e.amount);
   }
-  return { total: valid.reduce((s, e) => s + e.amount, 0), byLot, byCategory, count: valid.length };
+  for (const e of incomes) incomeByLot.set(e.lotCode ?? "", (incomeByLot.get(e.lotCode ?? "") ?? 0) + e.amount);
+  const total = costs.reduce((s, e) => s + e.amount, 0);
+  const income = incomes.reduce((s, e) => s + e.amount, 0);
+  return { total, income, result: income - total, byLot, byCategory, incomeByLot, count: costs.length, incomeCount: incomes.length, drafts };
 }

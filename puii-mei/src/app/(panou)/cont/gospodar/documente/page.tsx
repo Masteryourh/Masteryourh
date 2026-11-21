@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { DocumentTable } from "@/components/documents/DocumentTable";
-import { documentCategoryLabels, expenseCategoryLabels, FILE_LIMITS } from "@/lib/documents";
+import { documentCategoryLabels, expenseCategoryLabels, FILE_LIMITS, INCOME_CATEGORIES } from "@/lib/documents";
 import { formatDate, formatLei } from "@/lib/format";
 import { farmRepository, lotRepository } from "@/server/repositories/catalog";
 import { documentRepository, expenseRepository, expenseTotals } from "@/server/repositories/documents";
 import { requireUser } from "@/server/session";
-import { addExpenseAction, uploadDocumentAction, voidExpenseAction } from "../documente-actions";
+import { addExpenseAction, updateDraftExpenseAction, uploadDocumentAction, voidExpenseAction } from "../documente-actions";
+import type { Expense, Lot } from "@/lib/domain";
+import { Fragment } from "react";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Documente și cheltuieli", robots: { index: false, follow: false } };
@@ -50,7 +52,7 @@ export default async function FarmDocumentsPage({ searchParams }: PageProps<"/co
       )}
       <h1>Documente și cheltuieli · {farm.name}</h1>
       <p className="mt-1 max-w-3xl text-sm text-slate-600">
-        Registrul cheltuielilor pe lot și documentele justificative. Nimic nu se șterge: fiecare fișier are o amprentă
+        Registrul fiscal al gospodăriei: cheltuieli și venituri pe lot, fiecare cu documentul fiscal atașat (factură, bon, chitanță). Nimic nu se șterge: fiecare fișier are o amprentă
         (SHA-256) și apare cu cine și când l-a încărcat; o cheltuială greșită se anulează cu motiv și rămâne vizibilă.
       </p>
       {typeof sp.eroare === "string" && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800">{sp.eroare}</p>}
@@ -58,16 +60,17 @@ export default async function FarmDocumentsPage({ searchParams }: PageProps<"/co
 
       {/* Totaluri */}
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Total cheltuieli" value={formatLei(totals.total)} />
-        <Stat label="Înregistrări" value={String(totals.count)} />
-        <Stat label="Documente" value={String(visibleDocs.length)} />
+        <Stat label="Cheltuieli" value={formatLei(totals.total)} />
+        <Stat label="Venituri" value={formatLei(totals.income)} />
+        <Stat label="Rezultat (venituri − cheltuieli)" value={formatLei(totals.result)} />
+        {totals.drafts > 0 && <Stat label="Ciorne de confirmat" value={String(totals.drafts)} />}
         <Stat label="Verificate de Puii mei" value={`${visibleDocs.filter((d) => d.verifiedAt).length} / ${visibleDocs.length}`} />
       </div>
       {lots.length > 0 && (
         <div className="mt-4 overflow-x-auto rounded-xl bg-white ring-1 ring-slate-200">
           <table className="w-full min-w-[560px] text-left text-sm">
             <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
-              <tr>{["Lot", "Păsări", "Cheltuieli", "Cost / pasăre", ""].map((h) => <th key={h} className="px-3 py-2 font-semibold">{h}</th>)}</tr>
+              <tr>{["Lot", "Păsări", "Cheltuieli", "Venituri", "Rezultat", "Cost / pasăre", ""].map((h) => <th key={h} className="px-3 py-2 font-semibold">{h}</th>)}</tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {lots.map((l) => {
@@ -77,16 +80,20 @@ export default async function FarmDocumentsPage({ searchParams }: PageProps<"/co
                     <td className="px-3 py-2 font-mono text-xs">{l.code}</td>
                     <td className="px-3 py-2">{l.totalBirds}</td>
                     <td className="px-3 py-2">{formatLei(sum)}</td>
+                    <td className="px-3 py-2">{formatLei(totals.incomeByLot.get(l.code) ?? 0)}</td>
+                    <td className="px-3 py-2 font-semibold">{formatLei((totals.incomeByLot.get(l.code) ?? 0) - sum)}</td>
                     <td className="px-3 py-2">{sum ? formatLei(sum / l.totalBirds) : "—"}</td>
                     <td className="px-3 py-2 text-right"><a href={`?${qs}lot=${l.code}#cheltuieli`} className="text-forest-700 underline">vezi</a></td>
                   </tr>
                 );
               })}
-              {(totals.byLot.get("") ?? 0) > 0 && (
+              {((totals.byLot.get("") ?? 0) > 0 || (totals.incomeByLot.get("") ?? 0) > 0) && (
                 <tr>
                   <td className="px-3 py-2 text-slate-500">Generale (fără lot)</td>
                   <td />
                   <td className="px-3 py-2">{formatLei(totals.byLot.get("") ?? 0)}</td>
+                  <td className="px-3 py-2">{formatLei(totals.incomeByLot.get("") ?? 0)}</td>
+                  <td />
                   <td />
                   <td />
                 </tr>
@@ -97,45 +104,39 @@ export default async function FarmDocumentsPage({ searchParams }: PageProps<"/co
       )}
 
       {/* Cheltuieli */}
-      <h2 id="cheltuieli" className="mt-10 scroll-mt-6 text-xl">Registrul de cheltuieli {lotFilter && <span className="font-mono text-base">· {lotFilter}</span>}</h2>
+      <h2 id="cheltuieli" className="mt-10 scroll-mt-6 text-xl">Registrul fiscal: cheltuieli și venituri {lotFilter && <span className="font-mono text-base">· {lotFilter}</span>}</h2>
       {lotFilter && <a href={`?${qs}#cheltuieli`} className="text-sm text-forest-700 underline">toate loturile</a>}
       <details className="mt-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200" open={!expenses.length}>
-        <summary className="cursor-pointer text-sm font-semibold">+ Adaugă o cheltuială</summary>
+        <summary className="cursor-pointer text-sm font-semibold">+ Adaugă o cheltuială sau un venit</summary>
+        <p className="mt-2 text-xs text-slate-500">
+          Poți salva ca ciornă și adăuga documentul fiscal ulterior. La confirmare sunt obligatorii numărul documentului
+          și documentul atașat; după confirmare înregistrarea nu se mai modifică (o greșeală se anulează cu motiv și se
+          adaugă una nouă). Doar înregistrările confirmate intră în totaluri.
+        </p>
         <form action={addExpenseAction} className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <input type="hidden" name="farmSlug" value={farm.slug} />
-          <label className="text-sm font-semibold">Data<input name="date" type="date" required defaultValue={today} className={input} /></label>
-          <label className="text-sm font-semibold">Categoria
-            <select name="category" required className={input}>
-              {Object.entries(expenseCategoryLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
-          </label>
-          <label className="text-sm font-semibold">Lotul
-            <select name="lotCode" defaultValue={lotFilter} className={input}>
-              <option value="">General (fără lot)</option>
-              {lots.map((l) => <option key={l.code} value={l.code}>{l.code}</option>)}
-            </select>
-          </label>
-          <label className="text-sm font-semibold">Furnizor<input name="supplier" required placeholder="Ex. Agro Bucovina SRL" className={input} /></label>
-          <label className="text-sm font-semibold">Suma (lei, cu TVA)<input name="amount" required inputMode="decimal" placeholder="0,00" className={input} /></label>
-          <label className="text-sm font-semibold">Nr. factură (opțional)<input name="number" className={input} /></label>
-          <label className="text-sm font-semibold sm:col-span-2">Descriere<input name="description" placeholder="Ex. 500 kg furaj de creștere" className={input} /></label>
-          <label className="text-sm font-semibold">Factura (PDF / poză, opțional)<input name="file" type="file" accept={FILE_LIMITS.accept} className={input} /></label>
-          <div className="sm:col-span-2 lg:col-span-3"><button className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">Adaugă în registru</button></div>
+          <EntryFields lots={lots} today={today} defaultLot={lotFilter} />
+          <EntryButtons />
         </form>
       </details>
       <div className="mt-3 overflow-x-auto rounded-xl bg-white ring-1 ring-slate-200">
         <table className="w-full min-w-[820px] text-left text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
-            <tr>{["Data", "Categoria", "Lot", "Furnizor / descriere", "Suma", "Document", ""].map((h, i) => <th key={i} className="px-3 py-2 font-semibold">{h}</th>)}</tr>
+            <tr>{["Data", "Tip", "Lot", "Furnizor / client", "Suma", "Document", "Stare", ""].map((h, i) => <th key={i} className="px-3 py-2 font-semibold">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {!shownExpenses.length && <tr><td colSpan={7} className="px-3 py-4 text-center text-slate-500">Nicio cheltuială încă.</td></tr>}
+            {!shownExpenses.length && <tr><td colSpan={8} className="px-3 py-4 text-center text-slate-500">Nicio înregistrare încă.</td></tr>}
             {shownExpenses.map((e) => {
               const doc = e.documentId ? docById.get(e.documentId) : undefined;
+              const draft = !e.voided && !e.confirmedAt;
               return (
-                <tr key={e.id} className={e.voided ? "align-top text-slate-400" : "align-top"}>
+                <Fragment key={e.id}>
+                <tr className={e.voided ? "align-top text-slate-400" : "align-top"}>
                   <td className="px-3 py-2 whitespace-nowrap">{formatDate(e.date)}</td>
-                  <td className="px-3 py-2">{expenseCategoryLabels[e.category]}</td>
+                  <td className="px-3 py-2">
+                    <span className={e.kind === "venit" ? "font-semibold text-green-700" : ""}>{e.kind === "venit" ? "Venit" : "Cheltuială"}</span>
+                    <div className="text-xs text-slate-500">{expenseCategoryLabels[e.category]}</div>
+                  </td>
                   <td className="px-3 py-2 font-mono text-xs">{e.lotCode ?? "—"}</td>
                   <td className="px-3 py-2">
                     <div className={e.voided ? "line-through" : "font-medium"}>{e.supplier}</div>
@@ -143,8 +144,19 @@ export default async function FarmDocumentsPage({ searchParams }: PageProps<"/co
                     <div className="text-[11px] text-slate-400">adăugat de {e.createdBy}, {formatDate(e.createdAt)}</div>
                     {e.voided && <div className="text-xs text-red-700">Anulată de {e.voided.by}: {e.voided.reason}</div>}
                   </td>
-                  <td className={e.voided ? "px-3 py-2 line-through" : "px-3 py-2 font-semibold"}>{formatLei(e.amount)}</td>
-                  <td className="px-3 py-2">{doc ? <a href={`/fisiere/${doc.id}?vezi=1`} target="_blank" rel="noopener noreferrer" className="text-forest-700 underline">factura</a> : <span className="text-xs text-amber-700">fără document</span>}</td>
+                  <td className={e.voided ? "px-3 py-2 whitespace-nowrap line-through" : "px-3 py-2 font-semibold whitespace-nowrap"}>{e.kind === "venit" ? "+" : "−"}{formatLei(e.amount)}</td>
+                  <td className="px-3 py-2">{doc ? <a href={`/fisiere/${doc.id}?vezi=1`} target="_blank" rel="noopener noreferrer" className="text-forest-700 underline">{e.invoiceNumber ? `nr. ${e.invoiceNumber}` : "document"}</a> : <span className="text-xs text-amber-700">fără document</span>}</td>
+                  <td className="px-3 py-2 text-xs whitespace-nowrap">
+                    {e.voided ? (
+                      <span className="rounded bg-red-100 px-2 py-0.5 font-semibold text-red-900">Anulată</span>
+                    ) : e.confirmedAt ? (
+                      <span className="rounded bg-green-100 px-2 py-0.5 font-semibold text-green-900" title={`Confirmat de ${e.confirmedBy}, ${formatDate(e.confirmedAt)}`}>
+                        🔒 Confirmată
+                      </span>
+                    ) : (
+                      <span className="rounded bg-amber-100 px-2 py-0.5 font-semibold text-amber-900">Ciornă</span>
+                    )}
+                  </td>
                   <td className="px-3 py-2">
                     {!e.voided && (
                       <details>
@@ -158,6 +170,23 @@ export default async function FarmDocumentsPage({ searchParams }: PageProps<"/co
                     )}
                   </td>
                 </tr>
+                {draft && (
+                  <tr>
+                    <td colSpan={8} className="px-3 pb-3">
+                      <details className="rounded-lg bg-amber-50 p-3">
+                        <summary className="cursor-pointer text-sm font-semibold">
+                          Completează ciorna{!e.documentId || !e.invoiceNumber ? " (lipsește " + [!e.invoiceNumber && "nr. documentului", !e.documentId && "documentul"].filter(Boolean).join(" și ") + ")" : ""} și confirmă
+                        </summary>
+                        <form action={updateDraftExpenseAction} className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                          <input type="hidden" name="id" value={e.id} />
+                          <EntryFields lots={lots} today={today} entry={e} />
+                          <EntryButtons hasDocument={Boolean(e.documentId)} />
+                        </form>
+                      </details>
+                    </td>
+                  </tr>
+                )}
+                </Fragment>
               );
             })}
           </tbody>
@@ -194,6 +223,52 @@ export default async function FarmDocumentsPage({ searchParams }: PageProps<"/co
       </div>
       <p className="mt-4 text-xs text-slate-500">Ultima actualizare: {formatDate(new Date().toISOString())}.</p>
     </Container>
+  );
+}
+
+function EntryFields({ lots, today, defaultLot = "", entry }: { lots: Lot[]; today: string; defaultLot?: string; entry?: Expense }) {
+  return (
+    <>
+      <label className="text-sm font-semibold">Data documentului<input name="date" type="date" required defaultValue={entry?.date ?? today} className={input} /></label>
+      <label className="text-sm font-semibold">Tip și categorie
+        <select name="category" required defaultValue={entry?.category} className={input}>
+          <optgroup label="Cheltuieli">
+            {Object.entries(expenseCategoryLabels).filter(([k]) => !INCOME_CATEGORIES.includes(k as never)).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </optgroup>
+          <optgroup label="Venituri">
+            {INCOME_CATEGORIES.map((k) => <option key={k} value={k}>{expenseCategoryLabels[k]}</option>)}
+          </optgroup>
+        </select>
+      </label>
+      <label className="text-sm font-semibold">Lotul
+        <select name="lotCode" defaultValue={entry ? (entry.lotCode ?? "") : defaultLot} className={input}>
+          <option value="">General (fără lot)</option>
+          {lots.map((l) => <option key={l.code} value={l.code}>{l.code}</option>)}
+        </select>
+      </label>
+      <label className="text-sm font-semibold">Furnizor / client<input name="supplier" required defaultValue={entry?.supplier} placeholder="Ex. Agro Bucovina SRL" className={input} /></label>
+      <label className="text-sm font-semibold">Suma (lei, cu TVA)<input name="amount" required inputMode="decimal" defaultValue={entry ? String(entry.amount).replace(".", ",") : undefined} placeholder="0,00" className={input} /></label>
+      <label className="text-sm font-semibold">Nr. document fiscal<input name="number" defaultValue={entry?.invoiceNumber} placeholder="Factură / bon / chitanță" className={input} /></label>
+      <label className="text-sm font-semibold sm:col-span-2">Descriere<input name="description" defaultValue={entry?.description} placeholder="Ex. 500 kg furaj de creștere" className={input} /></label>
+      <label className="text-sm font-semibold">
+        Documentul fiscal (PDF / poză){entry?.documentId ? " – atașat; alege altul doar pentru înlocuire" : ""}
+        <input name="file" type="file" accept={FILE_LIMITS.accept} className={input} />
+      </label>
+    </>
+  );
+}
+
+function EntryButtons({ hasDocument }: { hasDocument?: boolean }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-3">
+      <button name="confirm" value="0" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold">Salvează ca ciornă</button>
+      <button name="confirm" value="1" className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">
+        Confirm corectitudinea datelor și trimit
+      </button>
+      <span className="text-xs text-slate-500">
+        {hasDocument ? "Documentul e atașat." : "Pentru confirmare: nr. documentului + documentul atașat."} După confirmare nu se mai modifică.
+      </span>
+    </div>
   );
 }
 

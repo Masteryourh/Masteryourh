@@ -59,13 +59,13 @@ export default async function InvestorInvestmentPage({ params }: PageProps<"/con
           <p className="text-sm text-slate-600">{farm.owner} · {farm.village}, jud. {farm.county}</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <Stat label="Loturi" value={String(lots.length)} />
-            <Stat label="Cheltuieli înregistrate" value={formatLei(totals.total)} />
+            <Stat label="Cheltuieli / venituri" value={`${formatLei(totals.total)} / ${formatLei(totals.income)}`} />
             <Stat label="Documente verificate" value={`${farmDocs.filter((d) => !d.investmentId && d.verifiedAt).length} / ${farmDocs.filter((d) => !d.investmentId).length}`} />
           </div>
           <div className="mt-4 overflow-x-auto rounded-xl bg-white ring-1 ring-slate-200">
-            <table className="w-full min-w-[560px] text-left text-sm">
+            <table className="w-full min-w-[680px] text-left text-sm">
               <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
-                <tr>{["Lot", "Start", "Stadiu", "Rezervați / total", "Cheltuieli", "Cost / pasăre"].map((h) => <th key={h} className="px-3 py-2 font-semibold">{h}</th>)}</tr>
+                <tr>{["Lot", "Start", "Stadiu", "Rezervați / total", "Cheltuieli", "Venituri", "Cost / pasăre"].map((h) => <th key={h} className="px-3 py-2 font-semibold">{h}</th>)}</tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {lots.map((l) => {
@@ -77,6 +77,7 @@ export default async function InvestorInvestmentPage({ params }: PageProps<"/con
                       <td className="px-3 py-2"><LotStatusBadge status={lotStatus(l)} /></td>
                       <td className="px-3 py-2">{l.reservedBirds} / {l.totalBirds}</td>
                       <td className="px-3 py-2">{formatLei(sum)}</td>
+                      <td className="px-3 py-2">{formatLei(totals.incomeByLot.get(l.code) ?? 0)}</td>
                       <td className="px-3 py-2">{sum ? formatLei(sum / l.totalBirds) : "—"}</td>
                     </tr>
                   );
