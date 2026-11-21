@@ -10,7 +10,8 @@ import { farmRepository, lotRepository } from "./repositories/catalog";
 import { preorderRepository } from "./repositories/preorders";
 import { eventRepository, newPin, newToken, parcelRepository, tourRepository } from "./repositories/delivery";
 import { sendEmail } from "./email";
-import { notifyOrderEvent } from "./notifications";
+import { notifyAdmins, notifyFarm, notifyOrderEvent } from "./notifications";
+import { site } from "@/lib/site";
 
 /* ------------------------------------------------------------------ */
 /* Utilitare                                                          */
@@ -344,6 +345,9 @@ export async function requestExtension(tour: Tour, data: { reason: string; descr
   const ext = { id: randomUUID(), at: new Date().toISOString(), status: "asteapta" as const, ...data };
   await tourRepository.update(tour.id, { extensions: [...tour.extensions, ext] });
   await log(tour, "prelungire", courierActor(tour), `Cerere de prelungire: ${data.reason} – ${data.description}`, { lat: data.lat, lng: data.lng, alert: true });
+  const text = `${tour.courier?.name ?? "Curierul"} cere prelungirea turei ${tour.code}: ${data.reason}${data.description ? ` – ${data.description}` : ""}.`;
+  await notifyAdmins(`Cerere de prelungire · tura ${tour.code}`, `${text}\nDecide aici: ${site.url}/admin/livrari/${tour.id}#prelungiri`);
+  await notifyFarm(tour.farmSlug, `Curierul cere prelungirea turei ${tour.code}`, `${text}\nDecizia o ia administratorul Puii mei.`);
 }
 
 /** Doar adminul aprobă sau respinge prelungirile. */
