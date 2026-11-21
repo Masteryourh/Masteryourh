@@ -64,6 +64,7 @@ export const expenseRepository = {
   },
   get: (id: string) => store.get<Expense>(EXPENSES, id),
   void: (id: string, voided: Expense["voided"]) => store.update<Expense>(EXPENSES, id, { voided }),
+  update: (id: string, patch: Partial<Expense>) => store.update<Expense>(EXPENSES, id, { ...patch, updatedAt: new Date().toISOString() }),
 };
 
 export const investmentRepository = {
@@ -81,11 +82,13 @@ export const investmentRepository = {
 };
 
 /**
- * Totalurile registrului (fără înregistrările anulate): cheltuieli pe lot și pe categorie,
+ * Totalurile registrului (doar înregistrările confirmate, fără cele anulate): cheltuieli pe lot și pe categorie,
  * venituri pe lot, rezultatul (venituri − cheltuieli).
  */
 export function expenseTotals(entries: Expense[]) {
-  const valid = entries.filter((e) => !e.voided);
+  // Doar înregistrările confirmate intră în totaluri; ciornele se numără separat.
+  const valid = entries.filter((e) => !e.voided && e.confirmedAt);
+  const drafts = entries.filter((e) => !e.voided && !e.confirmedAt).length;
   const costs = valid.filter((e) => e.kind !== "venit");
   const incomes = valid.filter((e) => e.kind === "venit");
   const byLot = new Map<string, number>();
@@ -98,5 +101,5 @@ export function expenseTotals(entries: Expense[]) {
   for (const e of incomes) incomeByLot.set(e.lotCode ?? "", (incomeByLot.get(e.lotCode ?? "") ?? 0) + e.amount);
   const total = costs.reduce((s, e) => s + e.amount, 0);
   const income = incomes.reduce((s, e) => s + e.amount, 0);
-  return { total, income, result: income - total, byLot, byCategory, incomeByLot, count: costs.length, incomeCount: incomes.length };
+  return { total, income, result: income - total, byLot, byCategory, incomeByLot, count: costs.length, incomeCount: incomes.length, drafts };
 }

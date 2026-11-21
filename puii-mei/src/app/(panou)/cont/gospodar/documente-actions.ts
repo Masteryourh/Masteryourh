@@ -65,64 +65,126 @@ export async function uploadDocumentAction(formData: FormData) {
   redirect(backUrl(user, farmSlug, error ? `eroare=${encodeURIComponent(error)}#documente` : "salvat=document#documente"));
 }
 
+function readEntry(formData: FormData) {
+  const category = t(formData, "category") as ExpenseCategory;
+  if (!(category in expenseCategoryLabels)) throw new Error("Alege categoria.");
+  const income = isIncomeCategory(category);
+  const date = t(formData, "date");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Alege data documentului.");
+  const amount = Math.round(Number(t(formData, "amount").replace(/\s/g, "").replace(",", ".")) * 100) / 100;
+  if (!(amount > 0 && amount < 1_000_000)) throw new Error("Suma trebuie să fie mai mare decât 0.");
+  const supplier = t(formData, "supplier");
+  if (supplier.length < 2) throw new Error(income ? "Scrie clientul." : "Scrie furnizorul.");
+  return { category, income, date, amount, supplier, invoiceNumber: t(formData, "number"), description: t(formData, "description") };
+}
+
+/** Atașează documentul fiscal (dacă s-a ales un fișier) și întoarce id-ul lui. */
+async function attachFiscalDocument(formData: FormData, user: User, farmSlug: string, e: { income: boolean; category: ExpenseCategory; supplier: string; invoiceNumber: string; date: string; lotCode?: string }) {
+  const upload = formData.get("file") as File | null;
+  if (!upload || upload.size === 0) return undefined;
+  const file = await saveUpload(upload, actor(user));
+  const doc = await documentRepository.create({
+    farmSlug,
+    lotCode: e.lotCode,
+    category: "factura",
+    title: `${e.income ? "Venit" : "Cheltuială"} · ${expenseCategoryLabels[e.category]} – ${e.supplier}`,
+    number: e.invoiceNumber || undefined,
+    date: e.date,
+    fileId: file.id,
+    fileName: file.name,
+    mime: file.mime,
+    size: file.size,
+    sha256: file.sha256,
+    uploadedBy: actor(user),
+  });
+  return doc.id;
+}
+
+const fiscalMissing = (invoiceNumber?: string, documentId?: string) =>
+  !invoiceNumber
+    ? "Pentru confirmare, completează numărul documentului fiscal (factură, bon, chitanță)."
+    : !documentId
+      ? "Pentru confirmare, atașează documentul fiscal (PDF sau poză)."
+      : "";
+
 /**
- * Adaugă o cheltuială sau un venit în registru. Totul e fiscalizat: numărul documentului
- * fiscal (factură, bon, chitanță) și documentul atașat sunt obligatorii.
+ * Adaugă o cheltuială sau un venit. Se poate salva ca ciornă (documentul se adaugă
+ * ulterior) sau direct confirmat, dacă are numărul și documentul fiscal.
  */
 export async function addExpenseAction(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const farmSlug = t(formData, "farmSlug");
   if (!canManageFarm(user, farmSlug)) throw new Error("Neautorizat");
   let error = "";
-  let income = false;
+  let done = "ciorna";
   try {
-    const category = t(formData, "category") as ExpenseCategory;
-    if (!(category in expenseCategoryLabels)) throw new Error("Alege categoria.");
-    income = isIncomeCategory(category);
-    const date = t(formData, "date");
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Alege data documentului.");
-    const amount = Math.round(Number(t(formData, "amount").replace(/\s/g, "").replace(",", ".")) * 100) / 100;
-    if (!(amount > 0 && amount < 1_000_000)) throw new Error("Suma trebuie să fie mai mare decât 0.");
-    const supplier = t(formData, "supplier");
-    if (supplier.length < 2) throw new Error(income ? "Scrie clientul." : "Scrie furnizorul.");
-    const invoiceNumber = t(formData, "number");
-    if (invoiceNumber.length < 1) throw new Error("Numărul documentului fiscal (factură, bon, chitanță) este obligatoriu.");
-    const upload = formData.get("file") as File | null;
-    if (!upload || upload.size === 0) throw new Error("Atașează documentul fiscal (PDF sau poză).");
+    const e = readEntry(formData);
     const lotCode = await checkLot(farmSlug, t(formData, "lotCode"));
-    const file = await saveUpload(upload, actor(user));
-    const doc = await documentRepository.create({
-      farmSlug,
-      lotCode,
-      category: "factura",
-      title: `${income ? "Venit" : "Cheltuială"} · ${expenseCategoryLabels[category]} – ${supplier}`,
-      number: invoiceNumber,
-      date,
-      fileId: file.id,
-      fileName: file.name,
-      mime: file.mime,
-      size: file.size,
-      sha256: file.sha256,
-      uploadedBy: actor(user),
-    });
+    const confirm = formData.get("confirm") === "1";
+    if (confirm) {
+      const hasFile = (formData.get("file") as File | null)?.size;
+      const missing = fiscalMissing(e.invoiceNumber, hasFile ? "x" : undefined);
+      if (missing) throw new Error(missing);
+    }
+    const documentId = await attachFiscalDocument(formData, user, farmSlug, { ...e, lotCode });
     await expenseRepository.create({
       farmSlug,
-      kind: income ? "venit" : "cheltuiala",
-      invoiceNumber,
+      kind: e.income ? "venit" : "cheltuiala",
+      invoiceNumber: e.invoiceNumber || undefined,
       lotCode,
-      date,
-      category,
-      supplier,
-      description: t(formData, "description"),
-      amount,
-      documentId: doc.id,
+      date: e.date,
+      category: e.category,
+      supplier: e.supplier,
+      description: e.description,
+      amount: e.amount,
+      documentId,
       createdBy: actor(user),
+      ...(confirm ? { confirmedAt: new Date().toISOString(), confirmedBy: actor(user) } : {}),
     });
+    done = confirm ? "confirmat" : "ciorna";
   } catch (err) {
     error = err instanceof Error ? err.message : "Nu s-a putut salva.";
   }
   refresh();
-  redirect(backUrl(user, farmSlug, error ? `eroare=${encodeURIComponent(error)}#cheltuieli` : `salvat=${income ? "venit" : "cheltuiala"}#cheltuieli`));
+  redirect(backUrl(user, farmSlug, error ? `eroare=${encodeURIComponent(error)}#cheltuieli` : `salvat=${done}#cheltuieli`));
+}
+
+/** Completează sau corectează o ciornă (inclusiv actul adăugat ulterior); opțional o și confirmă. */
+export async function updateDraftExpenseAction(formData: FormData) {
+  const user = await requireRole(["gospodar"]);
+  const existing = await expenseRepository.get(t(formData, "id"));
+  if (!existing || !canManageFarm(user, existing.farmSlug)) throw new Error("Neautorizat");
+  let error = "";
+  let done = "ciorna";
+  try {
+    if (existing.confirmedAt || existing.voided) throw new Error("Înregistrarea e confirmată sau anulată și nu se mai modifică.");
+    const e = readEntry(formData);
+    const lotCode = await checkLot(existing.farmSlug, t(formData, "lotCode"));
+    const documentId = (await attachFiscalDocument(formData, user, existing.farmSlug, { ...e, lotCode })) ?? existing.documentId;
+    const confirm = formData.get("confirm") === "1";
+    const invoiceNumber = e.invoiceNumber || undefined;
+    if (confirm) {
+      const missing = fiscalMissing(invoiceNumber, documentId);
+      if (missing) throw new Error(missing);
+    }
+    await expenseRepository.update(existing.id, {
+      kind: e.income ? "venit" : "cheltuiala",
+      invoiceNumber,
+      lotCode,
+      date: e.date,
+      category: e.category,
+      supplier: e.supplier,
+      description: e.description,
+      amount: e.amount,
+      documentId,
+      ...(confirm ? { confirmedAt: new Date().toISOString(), confirmedBy: actor(user) } : {}),
+    });
+    done = confirm ? "confirmat" : "ciorna";
+  } catch (err) {
+    error = err instanceof Error ? err.message : "Nu s-a putut salva.";
+  }
+  refresh();
+  redirect(backUrl(user, existing.farmSlug, error ? `eroare=${encodeURIComponent(error)}#cheltuieli` : `salvat=${done}#cheltuieli`));
 }
 
 /** Anulează o cheltuială greșită (rămâne în registru, tăiată, cu motivul). */

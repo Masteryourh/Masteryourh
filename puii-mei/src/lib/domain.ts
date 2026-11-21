@@ -514,6 +514,13 @@ export interface Expense {
   documentId?: string;
   createdAt: string;
   createdBy: string;
+  updatedAt?: string;
+  /**
+   * Confirmarea corectitudinii datelor (cere nr. document fiscal + documentul atașat).
+   * Fără ea, înregistrarea e ciornă: se poate completa; după ea nu se mai modifică.
+   */
+  confirmedAt?: string;
+  confirmedBy?: string;
   voided?: { at: string; by: string; reason: string };
 }
 
