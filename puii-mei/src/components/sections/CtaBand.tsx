@@ -3,7 +3,7 @@ import { Container } from "@/components/ui/Container";
 
 export function CtaBand({
   title = "Puii mei. Crescuți pentru tine.",
-  text = "Rezervă acum din următorul lot. Te sunăm pentru confirmare și îți spunem detaliile avansului pentru hrană.",
+  text = "Rezervă acum din următorul lot. Te sunăm pentru confirmare și îți spunem detaliile avansului (pui de o zi + furaj), care se scade din prețul total.",
 }: {
   title?: string;
   text?: string;

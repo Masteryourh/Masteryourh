@@ -24,13 +24,13 @@ export const journey: JourneyStep[] = [
   },
   {
     id: "hrana",
-    short: "Hrana",
-    title: "Plătești hrana, direct gospodăriei",
-    text: "Avansul acoperă furajul puilor tăi, prin transfer în contul gospodăriei. Fără intermediari.",
-    chips: ["~6 kg furaj / pui", "Transfer direct"],
+    short: "Avansul",
+    title: "Plătești avansul, direct gospodăriei",
+    text: "Avansul acoperă puii de o zi și furajul lor. Se scade din prețul total; la livrare plătești diferența.",
+    chips: ["Pui de o zi + ~6 kg furaj", "Se scade din total"],
     image: "/images/poveste/2-hrana.webp",
     alt: "Mâinile unui gospodar torn porumb și grâu într-o hrănitoare de lemn",
-    badge: "~6 kg / pui",
+    badge: "Pui + furaj",
   },
   {
     id: "puii",

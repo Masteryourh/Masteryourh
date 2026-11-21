@@ -26,7 +26,7 @@ const audiences: {
     cta: "Aplică ca gospodărie",
     items: [
       { icon: "clipboard", title: "Cerere asigurată", text: "Crești doar puii deja comandați. Știi dinainte câți pui și pentru cine." },
-      { icon: "leaf", title: "Hrana plătită în avans", text: "Clienții plătesc în avans hrana puilor, direct în contul gospodăriei tale." },
+      { icon: "leaf", title: "Pui și furaj plătite în avans", text: "Clienții plătesc în avans puii de o zi și furajul, direct în contul gospodăriei tale." },
       { icon: "users", title: "Clienți din oraș", text: "Vinzi direct clienților. Platforma Puii mei îți aduce precomenzile." },
       { icon: "chart", title: "Consultanță completă", text: "Pe bază de contract: acte și autorizații, taxe, contabilitate, plăți și administrare, plus protocolul de creștere." },
     ],

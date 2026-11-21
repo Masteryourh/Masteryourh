@@ -1,7 +1,7 @@
 export const faq = [
   {
     q: "Trebuie să plătesc în avans?",
-    a: "Da, hrana puilor: aproximativ 6 kg de furaj pentru fiecare pui comandat. Avansul se plătește direct în contul gospodăriei partenere care îți crește puii, nu către Puii mei. Detaliile de plată le primești când confirmăm precomanda.",
+    a: "Da, un avans care acoperă puii de o zi și furajul lor (aproximativ 6 kg pentru fiecare pui). Nu e un cost în plus: avansul se scade din prețul total, iar la livrare plătești doar diferența, după greutatea reală. Avansul se plătește direct în contul gospodăriei partenere care îți crește puii, nu către Puii mei.",
   },
   {
     q: "De ce prețul este estimativ?",
@@ -21,7 +21,7 @@ export const faq = [
   },
   {
     q: "Pot anula sau modifica precomanda?",
-    a: "Da, până la confirmarea precomenzii, fără niciun cost. După plata avansului pentru hrană, condițiile de anulare ți le comunicăm la confirmare. Ne poți scrie sau suna oricând.",
+    a: "Da, până la confirmarea precomenzii, fără niciun cost. După plata avansului (pui de o zi + furaj), condițiile de anulare ți le comunicăm la confirmare. Ne poți scrie sau suna oricând.",
   },
   {
     q: "Cine îmi vinde puii?",

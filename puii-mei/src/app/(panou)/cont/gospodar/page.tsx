@@ -22,6 +22,8 @@ import { AerialMap, Bars, FARM_SPOTS, Gauge, Glass, GlassTitle, Metric, Pill, Ri
 import { expenseCategoryLabels } from "@/lib/documents";
 import { lotDay, statusLabels } from "@/lib/lots";
 import { expenseRepository, expenseTotals } from "@/server/repositories/documents";
+import { governanceRepository } from "@/server/repositories/governance";
+import { birdsInYear, effectiveLimits, standingLabels } from "@/lib/governance";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Contul gospodarului", robots: { index: false, follow: false } };
@@ -64,12 +66,17 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
   const farmPreorders = preorders.filter((p) => p.lotCode && lotCodes.has(p.lotCode) && p.status !== "anulata");
   const zoneName = new Map(zones.map((z) => [z.id, z.name]));
   const activeLots = lots.filter((l) => lotStatus(l) !== "livrat");
-  const [allParcels, allTours, payment, expenses] = await Promise.all([
+  const [allParcels, allTours, payment, expenses, gov] = await Promise.all([
     parcelRepository.list(),
     tourRepository.list(),
     farmPaymentRepository.bySlug(farm.slug),
     expenseRepository.byFarm(farm.slug),
+    governanceRepository.bySlug(farm.slug),
   ]);
+  const limits = effectiveLimits(gov);
+  const thisYear = new Date().getFullYear();
+  const usedThisYear = birdsInYear(lots, thisYear);
+  const blocked = gov?.standing === "suspendata" || gov?.standing === "exclusa";
   const parcels = allParcels.filter((x) => x.farmSlug === farm.slug);
   const parcelById = new Map(parcels.map((x) => [x.id, x]));
   const preorderById = new Map(farmPreorders.map((x) => [x.id, x]));
@@ -107,6 +114,14 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         </form>
       )}
 
+      {gov && gov.standing !== "activa" && (
+        <div role="alert" className={`mb-4 rounded-xl p-4 text-sm ${gov.standing === "avertizata" ? "bg-amber-50" : "bg-red-50"}`}>
+          <p className="font-semibold">Gospodăria e {standingLabels[gov.standing].toLowerCase()} în platforma Puii mei.</p>
+          {gov.standingReason && <p className="mt-1">Motiv: {gov.standingReason}</p>}
+          {blocked && <p className="mt-1">Nu poți crea loturi noi, iar loturile tale nu mai primesc precomenzi. Comenzile existente continuă.</p>}
+          <p className="mt-1 opacity-80">Pentru lămuriri, contactează echipa Puii mei.</p>
+        </div>
+      )}
       <section className="mt-2 space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -162,7 +177,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
               />
               <Metric
                 delay={240}
-                label="Avans hrană primit"
+                label="Avansuri primite"
                 value={`${feedPaid}`}
                 unit={`/ ${farmPreorders.length}`}
                 pill={<Pill tone={feedPaid === farmPreorders.length ? "green" : "gold"}>{farmPreorders.length - feedPaid} de primit</Pill>}
@@ -266,7 +281,16 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
           ))}
         </div>
         <h3 className="mt-6 mb-2 font-sans text-base font-semibold">Lot nou</h3>
-        <NewLotForm farmSlug={farm.slug} returnTo={backTo} needsApproval={user.role !== "admin"} />
+        <p className="mb-3 text-sm text-slate-600">
+          Limitele gospodăriei: maximum <strong>{limits.birdsPerLot}</strong> păsări pe lot și{" "}
+          <strong>{limits.birdsPerYear.toLocaleString("ro-RO")}</strong> pe an (în {thisYear}: {usedThisYear.toLocaleString("ro-RO")} folosite)
+          {limits.reason ? ` – ${limits.reason}` : ""}. Sacrificarea se face în gospodărie, conform normelor sanitar-veterinare.
+        </p>
+        {blocked ? (
+          <p className="rounded-lg bg-red-50 p-3 text-sm">Crearea loturilor e oprită cât timp gospodăria e {standingLabels[gov!.standing].toLowerCase()}.</p>
+        ) : (
+          <NewLotForm farmSlug={farm.slug} returnTo={backTo} needsApproval={user.role !== "admin"} maxPerLot={limits.birdsPerLot} />
+        )}
       </details>
 
       <h2 className="mt-10 text-2xl font-semibold">Precomenzi pe loturile tale</h2>
@@ -274,7 +298,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         <table className="w-full min-w-[860px] text-left text-sm">
           <thead className="bg-cream-100 text-xs uppercase tracking-wider text-muted">
             <tr>
-              {["Nr.", "Client", "Pui", "Lot", "Livrare", "Status", "Avans hrană", "Etichetă"].map((h) => (
+              {["Nr.", "Client", "Pui", "Lot", "Livrare", "Status", "Avans", "Etichetă"].map((h) => (
                 <th key={h} className="px-4 py-3 font-semibold">{h}</th>
               ))}
             </tr>
@@ -300,7 +324,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <FeedCell preorder={p} amount={feedAdvance(p.birds, payment?.feedPricePerKg).amount} canConfirm />
+                  <FeedCell preorder={p} amount={feedAdvance(p.birds, payment?.feedPricePerKg, payment?.chickPricePerBird).amount} canConfirm />
                 </td>
                 <td className="px-4 py-3">
                   <LabelCell preorderId={p.id} parcel={parcelById.get(p.id)} delivered={p.status === "livrata"} />
@@ -311,7 +335,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         </table>
       </div>
 
-      <h2 id="plata-hrana" className="mt-10 scroll-mt-6 text-2xl font-semibold">Contul pentru avansul de hrană</h2>
+      <h2 id="plata-hrana" className="mt-10 scroll-mt-6 text-2xl font-semibold">Contul pentru avans (pui de o zi + furaj)</h2>
       <p className="mt-1 max-w-2xl text-sm text-muted">
         Clienții văd aceste date pe pagina comenzii și plătesc avansul prin transfer, direct în contul tău, cu numărul comenzii
         în detalii. Tu confirmi primirea banilor în tabelul de mai sus.
@@ -341,6 +365,13 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
           Prețul furajului (lei / kg)
           <input name="feedPricePerKg" type="number" step="0.01" min="0.1" max="50" defaultValue={payment?.feedPricePerKg ?? pricing.feedPricePerKg} required className={`${inputClasses} mt-1`} />
         </label>
+        <label className="text-sm font-semibold">
+          Prețul puiului de o zi (lei / pui)
+          <input name="chickPricePerBird" type="number" step="0.01" min="0.1" max="100" defaultValue={payment?.chickPricePerBird ?? pricing.chickPrice} required className={`${inputClasses} mt-1`} />
+        </label>
+        <p className="text-xs text-slate-500 sm:col-span-2">
+          Avansul plătit de client = puii de o zi + furajul (~{pricing.feedKgPerBird} kg / pui). Se scade din prețul total la livrare.
+        </p>
         <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
           <button className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">Salvează datele de plată</button>
           {payment && <span className="text-xs text-muted">Actualizat {formatDate(payment.updatedAt)} de {payment.updatedBy}</span>}

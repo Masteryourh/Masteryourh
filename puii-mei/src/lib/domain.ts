@@ -158,6 +158,8 @@ export interface FarmPaymentDetails {
   bank: string;
   /** Prețul furajului (lei / kg) folosit la calculul avansului. */
   feedPricePerKg: number;
+  /** Prețul puiului de o zi (lei / pui), inclus în avans. */
+  chickPricePerBird?: number;
   updatedAt: string;
   updatedBy: string;
 }

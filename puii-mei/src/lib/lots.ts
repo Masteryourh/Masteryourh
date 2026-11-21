@@ -19,7 +19,7 @@ export function lotStages(lot: Lot): LotStageDefinition[] {
     {
       key: "precomenzi",
       label: "Precomenzi",
-      description: "Clienții rezervă puii din lot și plătesc în avans hrana, direct gospodăriei. Producția se planifică pe baza cererii.",
+      description: "Clienții rezervă puii din lot și plătesc avansul (puii de o zi și furajul), direct gospodăriei. Producția se planifică pe baza cererii.",
       startDay: -PREORDER_WINDOW_DAYS,
     },
     {

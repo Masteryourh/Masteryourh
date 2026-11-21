@@ -71,7 +71,7 @@ export default function AboutPage() {
               <div>
                 <h3 className="font-sans text-lg font-semibold text-cream-50">Pentru gospodării</h3>
                 <p className="mt-2 leading-relaxed">
-                  Cerere sigură înainte de a începe creșterea, hrana plătită în avans de clienți, consultanță și acces la
+                  Cerere sigură înainte de a începe creșterea, puii de o zi și furajul plătite în avans de clienți, consultanță și acces la
                   clienți din oraș, fără intermediari.
                 </p>
               </div>

@@ -11,6 +11,8 @@ export const pricing = {
   feedKgPerBird: 6,
   /** Preț orientativ al furajului (lei / kg); fiecare gospodărie își poate seta prețul ei. */
   feedPricePerKg: 3.5,
+  /** Preț orientativ al puiului de o zi (lei / pui); fiecare gospodărie își poate seta prețul ei. */
+  chickPrice: 7,
   minBirds: 2,
   maxBirds: 100,
   presets: [4, 8, 12, 20],
@@ -35,10 +37,21 @@ export function estimatePrice(birds: number, zone?: DeliveryZone | null): PriceE
   };
 }
 
-/** Avansul pentru hrană: cantitatea de furaj și suma (lei). */
-export function feedAdvance(birds: number, pricePerKg: number = pricing.feedPricePerKg) {
-  const kg = Math.max(0, Math.floor(birds)) * pricing.feedKgPerBird;
-  return { kg, pricePerKg, amount: round(kg * pricePerKg, 2) };
+/**
+ * Avansul (plătit acum, direct gospodăriei): puii de o zi + furajul (~6 kg / pui).
+ * Avansul NU e un cost în plus: se scade din prețul total, la livrare.
+ */
+export function feedAdvance(birds: number, pricePerKg: number = pricing.feedPricePerKg, chickPrice: number = pricing.chickPrice) {
+  const n = Math.max(0, Math.floor(birds));
+  const kg = n * pricing.feedKgPerBird;
+  const feedAmount = round(kg * pricePerKg, 2);
+  const chickAmount = round(n * chickPrice, 2);
+  return { birds: n, kg, pricePerKg, feedAmount, chickPrice, chickAmount, amount: round(feedAmount + chickAmount, 2) };
+}
+
+/** Împărțirea prețului: total estimat = avans (acum) + rest de plată la livrare. */
+export function paymentSplit(total: number, advance: number) {
+  return { total, advance, atDelivery: round(Math.max(0, total - advance), 2) };
 }
 
 export const feedPaymentLabels = {

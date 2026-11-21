@@ -21,7 +21,7 @@ export const expenseCategoryLabels: Record<ExpenseCategory, string> = {
   taxe: "Taxe și avize",
   altele: "Alte cheltuieli",
   "vanzare-carne": "Vânzare carne",
-  "avans-hrana": "Avans hrană încasat",
+  "avans-hrana": "Avans încasat (pui + furaj)",
   "alte-venituri": "Alte venituri",
 };
 
