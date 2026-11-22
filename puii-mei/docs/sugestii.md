@@ -71,7 +71,8 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [ ] **SMS pentru PIN-ul clientului** (Twilio): `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` în Vercel. Până atunci
       PIN-ul pleacă pe email (dacă e configurat Resend) sau apare în Admin → Precomenzi, cu buton „Trimite pe WhatsApp”.
 
-- [ ] **SESSION_SECRET** în Vercel → Environment Variables (o valoare lungă, aleatorie), apoi Redeploy.
+- [ ] **SESSION_SECRET** în Vercel → Environment Variables (minimum 32 de caractere aleatorii), apoi Redeploy.
+      **Obligatoriu înainte de merge la PR-ul de securitate (SEC-001)**: fără el, autentificarea și PIN-urile se opresc.
 - [ ] **Resend** (`RESEND_API_KEY`, `EMAIL_FROM`, ex. „Puii mei <comenzi@puiimei.ro>”): emailul cu linkul
       „Comanda mea” și celelalte emailuri pleacă doar după configurare.
 - [ ] **Vercel Blob** pentru fișiere mari (opțional; documentele merg și fără, până la 3,5 MB).

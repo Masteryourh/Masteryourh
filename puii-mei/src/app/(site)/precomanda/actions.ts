@@ -54,7 +54,8 @@ export async function submitPreorder(
     });
     await notifyNewPreorder(preorder);
     // Cel care a trimis precomanda are acces 24 de ore la „Comanda mea”, fără PIN.
-    await grantOrderAccess(preorder);
+    // Fără SESSION_SECRET nu se poate semna accesul; comanda rămâne salvată, clientul intră apoi cu PIN.
+    await grantOrderAccess(preorder).catch((err) => console.error("[puii-mei] Accesul la comandă nu a putut fi semnat", err));
     // Alocarea automată: primul loc disponibil în care încape toată comanda.
     const alloc = await allocateNewPreorder(preorder);
     revalidatePath("/", "layout");

@@ -1,5 +1,5 @@
 import "server-only";
-import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
+import { randomInt, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "./session";
@@ -10,7 +10,7 @@ import { normalizeLotCode } from "@/lib/lots";
 import { preorderRepository } from "@/server/repositories/preorders";
 import { emailEnabled, sendEmail } from "./email";
 import { sendSms, smsEnabled } from "./sms";
-import { signPayload, verifyPayload } from "./session-token";
+import { keyedHash, sessionSecretReady, signPayload, verifyPayload } from "./session-token";
 import { ensureTrackingToken } from "./orders";
 
 /** Accesul clientului la „Comanda mea” cu numărul precomenzii + PIN valabil 24 de ore. */
@@ -19,8 +19,7 @@ const MAX_ATTEMPTS = 5;
 const RESEND_SECONDS = 60;
 const COOKIE = "puii_comanda";
 
-const pinHash = (orderId: string, pin: string) =>
-  createHmac("sha256", process.env.SESSION_SECRET || `puii-mei:${process.env.ADMIN_PASSWORD ?? ""}`).update(`${orderId}:${pin}`).digest("hex");
+const pinHash = (orderId: string, pin: string) => keyedHash("pin", `${orderId}:${pin}`);
 
 export const maskPhone = (phone: string) => {
   const d = phone.replace(/\D/g, "");
@@ -32,6 +31,7 @@ export type PinRequest =
   | { ok: false; error: string };
 
 export async function requestOrderPin(numberInput: string): Promise<PinRequest> {
+  if (!sessionSecretReady()) return { ok: false, error: "Accesul la comenzi e oprit temporar (platforma nu e configurată complet). Încearcă mai târziu." };
   const number = normalizeLotCode(numberInput);
   const p = number ? await preorderRepository.byNumber(number) : null;
   if (!p || p.status === "anulata") return { ok: false, error: "Nu am găsit o precomandă activă cu acest număr." };

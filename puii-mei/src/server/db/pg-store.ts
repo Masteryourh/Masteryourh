@@ -1,6 +1,7 @@
 import "server-only";
 import { Pool } from "pg";
 import type { DocumentStore } from "./store";
+import { pgSslConfig } from "./pg-ssl";
 
 /**
  * Stocare PostgreSQL: un tabel `documents` cu date JSONB, creat automat.
@@ -8,10 +9,10 @@ import type { DocumentStore } from "./store";
  * (prisma/schema.prisma) poate înlocui acest strat ulterior.
  */
 export function pgStore(connectionString: string): DocumentStore {
-  const isLocal = /@(localhost|127\.0\.0\.1)(:|\/)/.test(connectionString) || connectionString.includes("host=/");
   const pool = new Pool({
     connectionString,
-    ssl: isLocal ? undefined : { rejectUnauthorized: false },
+    // Certificatul serverului se verifică mereu (fără `rejectUnauthorized: false`).
+    ssl: pgSslConfig(connectionString),
     max: 3,
   });
 
