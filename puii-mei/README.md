@@ -14,6 +14,21 @@ npm run dev                  # http://localhost:3000
 npm run build && npm start   # producție
 ```
 
+## Verificări și teste
+
+```bash
+npm run lint        # ESLint
+npm run typecheck   # tipurile rutelor (next typegen) + TypeScript
+npm test            # teste unitare (node:test), fără bază de date
+npm run test:e2e    # teste E2E Playwright pe un server pornit (BASE_URL, implicit http://localhost:3005)
+```
+
+Pentru E2E local: PostgreSQL de test în `DATABASE_URL`, `SESSION_SECRET` (min. 32 de caractere), `ADMIN_USER` /
+`ADMIN_PASSWORD`, apoi `npm run build && npm start` (PORT=3005) și `npm run test:e2e`.
+
+Pe GitHub, `.github/workflows/ci.yml` rulează automat la fiecare PR: lint, TypeScript, teste unitare, build și E2E
+(cu PostgreSQL efemer). Nu face deploy.
+
 ## Pagini
 
 | Rută | Conținut |

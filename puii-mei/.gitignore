@@ -42,3 +42,7 @@ next-env.d.ts
 
 # date locale (precomenzi, mesaje) – nu se versionează
 /.data/
+
+# Playwright
+/test-results/
+/playwright-report/
