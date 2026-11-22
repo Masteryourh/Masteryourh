@@ -19,22 +19,23 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       user={user}
       title="Panou de administrare"
       home="/admin"
+      rail
       items={[
-        { href: "/admin", label: "Precomenzi", exact: true },
-        { href: "/admin/loturi", label: "Loturi", badge: pendingLots },
-        { href: "/admin/livrari", label: "Livrări live", badge: alerts.filter((a) => a.kind === "prelungire").length },
-        { href: "/admin/monitorizare", label: "Monitorizare creștere", badge: alerts.filter((a) => a.kind === "crestere").length },
-        { href: "/admin/calitate", label: "Calitate" },
-        { href: "/admin/documente", label: "Documente" },
-        { href: "/admin/investitii", label: "Investiții" },
-        { href: "/admin/parteneri", label: "Solicitări parteneri", badge: newApplications },
-        { href: "/admin/gospodarii", label: "Gospodării" },
-        { href: "/admin/preturi", label: "Prețuri" },
-        { href: "/admin/zone", label: "Zone de livrare" },
-        { href: "/admin/interes", label: "Interes produse" },
-        { href: "/admin/utilizatori", label: "Utilizatori" },
-        { href: "/admin/legislatie", label: "Legislație și surse" },
-        { href: "/cont/gospodar", label: "Vedere gospodar" },
+        { href: "/admin", label: "Precomenzi", exact: true, icon: "comenzi" },
+        { href: "/admin/loturi", label: "Loturi", badge: pendingLots, icon: "loturi" },
+        { href: "/admin/livrari", label: "Livrări live", badge: alerts.filter((a) => a.kind === "prelungire").length, icon: "livrari" },
+        { href: "/admin/monitorizare", label: "Monitorizare creștere", badge: alerts.filter((a) => a.kind === "crestere").length, icon: "crestere" },
+        { href: "/admin/calitate", label: "Calitate", icon: "calitate" },
+        { href: "/admin/documente", label: "Documente", icon: "documente" },
+        { href: "/admin/investitii", label: "Investiții", icon: "investitii" },
+        { href: "/admin/parteneri", label: "Solicitări parteneri", badge: newApplications, icon: "parteneri" },
+        { href: "/admin/gospodarii", label: "Gospodării", icon: "gospodarii" },
+        { href: "/admin/preturi", label: "Prețuri", icon: "preturi" },
+        { href: "/admin/zone", label: "Zone de livrare", icon: "zone" },
+        { href: "/admin/interes", label: "Interes produse", icon: "interes" },
+        { href: "/admin/utilizatori", label: "Utilizatori", icon: "utilizatori" },
+        { href: "/admin/legislatie", label: "Legislație și surse", icon: "legislatie" },
+        { href: "/cont/gospodar", label: "Vedere gospodar", icon: "vedere" },
       ]}
     >
       {alerts.length > 0 && (
