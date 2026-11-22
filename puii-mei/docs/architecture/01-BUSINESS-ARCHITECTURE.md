@@ -150,7 +150,7 @@ Pentru fiecare combinație `gospodărie × program × activitate × regiune`, re
 
 **[PROPUS]** Pentru fiecare program/lot se măsoară: venit brut gospodărie, avansuri, sold final, costuri directe, costuri indirecte, cost contabilitate, cost PUII MEI, pierderi, profit estimat și profit realizat, ore de muncă, reclamații, mortalitate, respectarea termenelor și gradul de utilizare a capacității.
 
-**[DECIS]** Remunerația PUII MEI este exclusiv procent din profitul eligibil al programului/lotului, fără abonament și fără procent din vânzări. **[PROPUS]** 10% din profitul eligibil pozitiv, restul rămânând gospodăriei; procentul nu este încă aprobat. Profit eligibil = încasări eligibile ale lotului (fără TVA colectată, după retururi/rambursări) minus costuri eligibile documentate și alocate lotului, inclusiv o regulă contractuală pentru munca gospodarului și cheltuielile indirecte. Nu se confundă automat cu profitul contabil/fiscal. TVA aferent facturii de servicii PUII MEI, scadențele, pierderile reportate și ajustările rămân de validat.
+**[DECIS]** Remunerația PUII MEI este exclusiv procent din profitul eligibil al programului/lotului, fără abonament și fără procent din vânzări. **[DECIS]** 20% din profitul operațional eligibil pozitiv revine PUII MEI ca onorariu contractual; 80% rămâne gospodăriei înaintea impozitelor proprii. Fără abonament lunar. Profit eligibil = încasări eligibile ale lotului (fără TVA colectată, după retururi/rambursări) minus costuri eligibile documentate și alocate lotului, inclusiv o regulă contractuală pentru munca gospodarului și cheltuielile indirecte. Nu se confundă automat cu profitul contabil/fiscal. TVA aferent facturii de servicii PUII MEI, scadențele, pierderile reportate și ajustările rămân de validat.
 
 ## 11. Riscuri și controale
 
@@ -173,7 +173,7 @@ Pentru fiecare combinație `gospodărie × program × activitate × regiune`, re
 | BA-002 | Cum arată mandatul PUII MEI, ce poate semna și ce poate plăti? | VALIDARE jurist + bancă |
 | BA-003 | Care este traseul legal complet pentru sacrificare, procesare și livrare? | VALIDARE DSVSA + specialist |
 | BA-004 | Ce contracte încheie gospodăria cu clientul și prestatorii? | VALIDARE jurist |
-| BA-005 | Ce procent din profit, ce definiție a costurilor eligibile și ce moment de facturare? | DECIZIE fondator + VALIDARE contabil/jurist |
+| BA-005 | 20% confirmat; definiția exactă POE, costuri eligibile și facturare | DECIZIE parțială + VALIDARE contabil/jurist |
 | BA-006 | Cine contractează transportul și cine răspunde pe fiecare verigă? | DECIZIE + VALIDARE |
 | BA-007 | Care sunt regulile avansului, anulării, rambursării și diferenței finale? | DECIZIE + VALIDARE |
 | BA-008 | Cum se rezolvă discrepanțele de greutate, furaj și preț între documente? | DECIZIE + test economic |
@@ -191,3 +191,32 @@ Pentru fiecare combinație `gospodărie × program × activitate × regiune`, re
 - [ ] Fiecare flux critic are owner, statusuri, erori, dovezi și teste asociate.
 
 **Următoarele livrabile propuse:** `02-OPERATIONAL-ARCHITECTURE.md`, `04-DATABASE-ARCHITECTURE.md` și registrul ADR; ordinea depinde de închiderea BA-001–BA-008.
+
+## 14. Politica de calcul POE și onorariu — v0.1
+
+**[DECIS]** Cota PUII MEI = **20%** din profitul eligibil pozitiv, fără abonament și fără procent din cifra de afaceri. Este onorariu de servicii facturat gospodăriei, nu dividend și nu participare automată la capital.
+
+**[PROPUS]** Profit Operațional Eligibil (POE) per lot = venituri eligibile fără TVA, după reduceri, retururi și rambursări, minus (a) costuri directe documentate, (b) costuri indirecte alocate prin regulă consecventă, (c) remunerația convențională a muncii gospodarului și (d) ajustări/pierderi eligibile fără dublă contabilizare. Onorariu = 20% × max(0, POE).
+
+### Costuri propuse drept eligibile
+
+- Pui de o zi, furaje, suplimente și materiale consumabile.
+- Veterinar, tratamente, analize și servicii aferente lotului.
+- Utilități, încălzire, apă, așternut: consum măsurat sau metodă de alocare justificată.
+- Sacrificare, procesare, ambalare, depozitare și transport, numai în cadrul operațiunilor legal permise.
+- Comisioane bancare și costuri de încasare aferente lotului.
+- Contabilitate, asigurări, autorizări și alte costuri administrative externe: partea documentată și alocată programului.
+- Echipamente și țarcuri: uzură/amortizare economică alocată lotului, nu valoarea integrală repetată la fiecare ciclu.
+- Munca gospodarului: tarif/oră și ore acceptate în prealabil, cu evidență; tratamentul fiscal al remunerației efective este separat.
+- Pierderi, rebuturi și mortalitate: costuri documentate și ajustări fără dublă scădere.
+
+### Excluderi și controale
+
+- Cheltuieli personale, fără legătură cu programul, fără dovadă sau arbitrar alocate.
+- Cheltuielile interne ale PUII MEI nu sunt deduse separat din POE dacă sunt deja acoperite prin onorariul de 20%; evitarea dublei taxări.
+- Amenzile, despăgubirile și pierderile din culpă se tratează separat potrivit răspunderii contractuale, nu automat ca reducere de profit imputată gospodarului.
+- Încasarea avansului nu înseamnă venit definitiv realizat pentru calculul comisionului; închiderea lotului cere reconcilierea documentelor, încasărilor, livrărilor și ajustărilor.
+- Dacă POE ≤ 0, onorariul PUII MEI este zero. Regula de reportare a pierderilor între loturi și programe rămâne [DESCHIS].
+- Fiecare linie de calcul trebuie să aibă categorie, lot, sumă, document, justificare, responsabil și istoric de modificări; gospodăria are acces la calcul și dovezi.
+
+**[VALIDARE]** POE este indicator contractual, nu sinonim automat al profitului fiscal/contabil. Definiția veniturilor și a cheltuielilor, TVA-ul facturii de servicii, munca gospodarului, costurile comune, deprecierea, pierderile reportate și momentul recunoașterii trebuie revizuite de contabil și jurist înainte de utilizare în contracte.
