@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/Container";
 import { CopyLink } from "@/components/admin/CopyLink";
 import { UserForm } from "@/components/admin/UserForm";
 import { DemoAccounts } from "@/components/admin/DemoAccounts";
+import { ResetTestData } from "@/components/admin/ResetTestData";
 import type { User, UserStatus } from "@/lib/domain";
 import { roleLabels } from "@/lib/roles";
 import { formatDate } from "@/lib/format";
@@ -48,6 +49,7 @@ export default async function UsersPage() {
 
       <div className="mt-6 max-w-3xl">
         <DemoAccounts />
+        <div className="mt-4"><ResetTestData /></div>
       </div>
 
       <h2 className="mt-8 text-xl font-semibold">Cont nou</h2>

@@ -56,7 +56,7 @@ export async function createDemoAccounts(): Promise<DemoAccountsState> {
 
   const investor = await make("Investitor de test", "investitor@demo.puiimei.ro", "investitor");
   if (investor) {
-    const farm = farms.find((f) => f.slug === "ferma-de-la-deal") ?? farms[0];
+    const farm = farms.find((f) => f.slug === "gospodaria-hreniuc") ?? farms[0];
     const today = new Date().toISOString().slice(0, 10);
     await investmentRepository.create({
       investorId: investor.id,

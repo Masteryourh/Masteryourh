@@ -69,7 +69,7 @@ export default async function AdminInvestmentsPage({ searchParams }: PageProps<"
               {farms.map((f) => <option key={f.slug} value={f.slug}>{f.name}</option>)}
             </select>
           </label>
-          <label className="text-sm font-semibold sm:col-span-2">Obiectul investiției<input name="title" required placeholder="Ex. Adăpost nou pentru 300 de pui – Ferma de la Deal" className={input} /></label>
+          <label className="text-sm font-semibold sm:col-span-2">Obiectul investiției<input name="title" required placeholder="Ex. Adăpost nou pentru 300 de pui – Gospodăria Hreniuc" className={input} /></label>
           <label className="text-sm font-semibold">Suma (lei)<input name="amount" required inputMode="decimal" className={input} /></label>
           <label className="text-sm font-semibold">Data<input name="date" type="date" required defaultValue={new Date().toISOString().slice(0, 10)} className={input} /></label>
           <label className="text-sm font-semibold">Status

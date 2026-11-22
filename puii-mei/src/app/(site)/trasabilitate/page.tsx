@@ -32,7 +32,7 @@ export default async function TraceabilityPage({ searchParams }: PageProps<"/tra
   if (typeof cod === "string" && cod.trim()) {
     const lot = await lotRepository.byCode(cod);
     if (lot) redirect(`/trasabilitate/${lot.code}`);
-    error = `Nu am găsit lotul „${normalizeLotCode(cod)}”. Verifică codul de pe etichetă (format PM-AALL-X00).`;
+    error = `Nu am găsit lotul „${normalizeLotCode(cod)}”. Verifică codul de pe etichetă (format MS-2026-01).`;
   }
 
   const [lots, farms] = await Promise.all([lotRepository.list(), farmRepository.listAll()]);

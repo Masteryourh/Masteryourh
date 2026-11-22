@@ -14,6 +14,8 @@ export interface DocumentStore {
   get<T extends { id: string }>(collection: string, id: string): Promise<T | null>;
   append<T extends { id: string }>(collection: string, item: T): Promise<T>;
   update<T extends { id: string }>(collection: string, id: string, patch: Partial<T>): Promise<T | null>;
+  /** Șterge documente: toată colecția sau doar id-urile date. Întoarce câte s-au șters. */
+  remove(collection: string, ids?: string[]): Promise<number>;
 }
 
 export const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || "";

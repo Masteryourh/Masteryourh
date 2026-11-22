@@ -120,6 +120,30 @@ export function isOpenForPreorder(lot: Lot, now = new Date()) {
 }
 
 /** Normalizează codul introdus de client (spații, litere mici). */
+/**
+ * Prefixul codului de lot: inițialele localității (ex. Moldova-Sulița → MS, Vatra Moldoviței → VM);
+ * pentru un singur cuvânt, primele două litere (Breaza → BR).
+ */
+export function villagePrefix(village: string) {
+  const words = village
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .split(/[^A-Z]+/)
+    .filter(Boolean);
+  if (!words.length) return "XX";
+  return words.length > 1 ? words[0][0] + words[1][0] : words[0].slice(0, 2).padEnd(2, "X");
+}
+
+/** Codul lotului: localitate – anul pornirii – numărul lotului în localitate în acel an (ex. MS-2026-01). */
+export function lotCodeFor(village: string, startDate: string, existing: Set<string>) {
+  const base = `${villagePrefix(village)}-${startDate.slice(0, 4)}-`;
+  for (let i = 1; ; i++) {
+    const code = base + String(i).padStart(2, "0");
+    if (!existing.has(code)) return code;
+  }
+}
+
 export function normalizeLotCode(input: string) {
   return input.trim().toUpperCase().replace(/\s+/g, "");
 }

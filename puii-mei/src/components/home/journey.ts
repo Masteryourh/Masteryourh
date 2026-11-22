@@ -40,7 +40,7 @@ export const journey: JourneyStep[] = [
     chips: ["Cod de lot", "Fără risipă"],
     image: "/images/poveste/3-pui.webp",
     alt: "Pui de o zi, galbeni și pufoși, sub o lampă caldă, pe paie",
-    badge: "Lot PM-…",
+    badge: "Lot MS-2026-01",
   },
   {
     id: "crestere",

@@ -74,7 +74,10 @@ _Ultima actualizare: 22 noiembrie 2026_
       (`src/lib/pricing.ts`); fiecare gospodărie își setează prețurile reale în panou.
 
 - [ ] **Fotografii reale** ale gospodăriilor în `public/images/gospodarii/` (acum se afișează imagini de rezervă).
-- [ ] **Datele gospodăriilor și loturilor** sunt demonstrative (pilot); de înlocuit cu cele reale.
+- [ ] **Datele gospodăriilor** sunt demonstrative: 5 gospodării în Moldova-Sulița, Fundu Moldovei, Vatra Moldoviței,
+      Ciocănești, Breaza (22 nov. 2026); nu mai există loturi demo. De înlocuit cu cele reale.
+- [ ] **După merge la #30**: Admin → Utilizatori → „Șterge datele de test” (scrii STERG) pe site-ul live, ca să plece
+      precomenzile, loturile, pozele și documentele de test.
 - [ ] **Conturile de test**: Admin → Utilizatori → „Creează conturile de test” (parolele apar o singură dată).
 - [ ] **Conturile reale** ale gospodarilor și investitorilor, create din Admin → Utilizatori și trimise pe WhatsApp.
 
