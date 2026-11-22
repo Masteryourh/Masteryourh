@@ -40,7 +40,8 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [ ] **Imaginea aeriană reală a fiecărei gospodării** în dashboard (acum una comună, generată) + pozițiile reale ale
       țarcurilor din măsurătoarea în teren.
 - [ ] **Designul site-ului** – de reluat (utilizatorul nu e mulțumit de varianta actuală; lucrăm împreună).
-- [ ] **Zonele de livrare și prețurile** editabile din admin (acum sunt în cod: `src/data/zones.ts`, `src/lib/pricing.ts`).
+- [x] **Zonele de livrare și prețurile** editabile din admin (PR #33 prețuri, PR #34 Admin → Zone de livrare: zone noi,
+      taxe, zile, localități, activare/dezactivare, pragul de livrare gratuită).
 - [ ] **Editarea gospodăriilor demonstrative** din admin (acum se pot edita doar cele create din admin).
 - [ ] **Modele de documente**: contract de consultanță pentru gospodari, contract de investiție, chitanță pentru avansul
       de hrană – de redactat cu juristul și încărcat în platformă.
@@ -72,8 +73,7 @@ _Ultima actualizare: 22 noiembrie 2026_
       „Contul pentru avansul de hrană”. Fără ele, clienții nu pot plăti avansul.
 - [x] **Prețul pieței editabil din admin** (PR #33): Admin → Prețuri (piață + adaos, cu istoric). Implicit 30 lei/kg + 20%
       = 36 lei/kg; de actualizat periodic (surse: industrial ~35 lei/kg, pui de țară ~55–60 lei/kg în București, 2026).
-- [ ] **Pragul de livrare gratuită** după trecerea la 5 kg / pui (acum 34 lei/kg → ~170 lei/pui;
-      livrare gratuită peste 600 lei, adică de la 4 pui) – de confirmat (propus pe 21 nov. 2026, fără răspuns).
+- [ ] **Pragul de livrare gratuită** (acum 600 lei): de confirmat; se schimbă din Admin → Zone de livrare.
 - [ ] **Prețurile implicite din avans:** furaj 3,50 lei/kg și pui de o zi 7 lei/pui sunt orientative
       (`src/lib/pricing.ts`); fiecare gospodărie își setează prețurile reale în panou.
 

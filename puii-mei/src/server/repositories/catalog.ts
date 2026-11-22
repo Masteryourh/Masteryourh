@@ -159,11 +159,33 @@ export const lotRepository = {
   },
 };
 
+const ZONES = "zones";
+type StoredZone = DeliveryZone & { updatedAt?: string; updatedBy?: string };
+
+/** Zonele: cele din cod (implicit) + modificările și zonele noi din admin (baza de date). */
+async function allZones(): Promise<(StoredZone & { source: "cod" | "admin" })[]> {
+  const stored = await store.list<StoredZone>(ZONES);
+  const byId = new Map(stored.map((z) => [z.id, z]));
+  return [
+    ...deliveryZones.map((z) => ({ ...z, ...(byId.get(z.id) ?? {}), source: "cod" as const })),
+    ...stored.filter((z) => !deliveryZones.some((d) => d.id === z.id)).map((z) => ({ ...z, source: "admin" as const })),
+  ];
+}
+
 export const zoneRepository = {
   async listActive(): Promise<DeliveryZone[]> {
-    return deliveryZones.filter((z) => z.active);
+    return (await allZones()).filter((z) => z.active);
   },
-  async byId(id: string): Promise<DeliveryZone | null> {
-    return deliveryZones.find((z) => z.id === id && z.active) ?? null;
+  /** Toate zonele, inclusiv cele dezactivate (pentru admin). */
+  listAll: allZones,
+  /** Implicit doar zonele active (precomenzi); `includeInactive` pentru afișarea comenzilor vechi. */
+  async byId(id: string, { includeInactive = false } = {}): Promise<DeliveryZone | null> {
+    return (await allZones()).find((z) => z.id === id && (z.active || includeInactive)) ?? null;
+  },
+  async save(zone: StoredZone) {
+    const existing = await store.get<StoredZone>(ZONES, zone.id);
+    if (existing) return store.update<StoredZone>(ZONES, zone.id, zone);
+    return store.append<StoredZone>(ZONES, zone);
   },
 };
+

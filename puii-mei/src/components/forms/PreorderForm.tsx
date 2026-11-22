@@ -28,12 +28,15 @@ export function PreorderForm({
   capacity,
   initialBirds,
   pricePerKg = pricing.pricePerKg,
+  freeDeliveryFrom = pricing.freeDeliveryFrom,
 }: {
   zones: DeliveryZone[];
   capacity: Capacity;
   initialBirds?: number;
   /** Prețul curent pe kg (setat din admin). */
   pricePerKg?: number;
+  /** Pragul de livrare gratuită (setat din admin); 0 = fără. */
+  freeDeliveryFrom?: number;
 }) {
   const [state, formAction] = useActionState(submitPreorder, initialPreorderState);
   // Trimitere fără resetarea automată a formularului (ca valorile să rămână după o eroare).
@@ -47,7 +50,7 @@ export function PreorderForm({
   const errors = state.status === "error" ? state.errors : {};
   const values = state.status === "error" ? state.values : {};
   const zone = zones.find((z) => z.id === zoneId) ?? null;
-  const estimate = estimatePrice(birds, zone, pricePerKg);
+  const estimate = estimatePrice(birds, zone, pricePerKg, freeDeliveryFrom);
   const feed = feedAdvance(Number.isNaN(birds) ? 0 : birds);
   const split = paymentSplit(estimate.total, feed.amount);
   const needsAddress = zoneId !== "" && !NO_ADDRESS_ZONES.includes(zoneId);
@@ -351,9 +354,9 @@ export function PreorderForm({
             <p className="mt-1 text-xs text-cream-100/60">
               Avansul se scade din prețul total: la livrare plătești doar diferența, după greutatea reală.
             </p>
-            {zone && zone.fee > 0 && estimate.deliveryFee > 0 && (
+            {zone && zone.fee > 0 && estimate.deliveryFee > 0 && freeDeliveryFrom > 0 && (
               <p className="mt-2 text-xs text-cream-100/60">
-                Livrare gratuită pentru comenzi de peste {formatLei(pricing.freeDeliveryFrom)}.
+                Livrare gratuită pentru comenzi de peste {formatLei(freeDeliveryFrom)}.
               </p>
             )}
             <div className="mt-6">
