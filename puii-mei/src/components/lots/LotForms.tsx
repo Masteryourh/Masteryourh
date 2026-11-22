@@ -28,7 +28,7 @@ function Fields({ lot, maxPerLot = 10000 }: { lot?: Lot; maxPerLot?: number }) {
       </label>
       <label className="text-sm font-semibold">
         Durata creșterii (zile)
-        <input name="growthDays" type="number" min={30} max={200} required defaultValue={lot?.growthDays ?? 56} className={input} />
+        <input name="growthDays" type="number" min={30} max={200} required defaultValue={lot?.growthDays ?? 60} className={input} />
       </label>
       <label className="text-sm font-semibold sm:col-span-2">
         Rasa / tipul

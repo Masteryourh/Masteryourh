@@ -44,13 +44,13 @@ export const journey: JourneyStep[] = [
   },
   {
     id: "crestere",
-    short: "Cresc liberi",
-    title: "Cresc liberi, fără grabă",
-    text: "Aproximativ opt săptămâni, în aer de munte, cu cereale și ieșire zilnică pe pajiște.",
-    chips: ["~8 săptămâni", "Pajiște zilnic"],
+    short: "Pe pășune",
+    title: "Cresc pe pășune, fără grabă",
+    text: "Primele 21 de zile la căldură, în interior; apoi pe pășune, în țarcuri de 40 de pui mutate zilnic pe iarbă proaspătă. Gata la 60 de zile.",
+    chips: ["60 de zile", "Țarc mutat zilnic"],
     image: "/images/poveste/4-crestere.webp",
     alt: "O gospodină aruncă grăunțe găinilor albe pe o pajiște de munte",
-    badge: "~8 săptămâni",
+    badge: "60 de zile",
   },
   {
     id: "pregatire",

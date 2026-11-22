@@ -106,6 +106,10 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
   (temperatură, întârzieri, PIN-uri greșite), cereri de prelungire.
 - **Jurnal complet și nemodificabil** pentru fiecare tură; comparație foto ridicare ↔ primire; raport „Calitate”.
 
+## 3b. Implementat după etapa 2
+- Dashboard închis (gospodar, investitor), registru fiscal (venituri / cheltuieli, ciornă → confirmare), avans = pui
+  de o zi + furaj, limite și regimul gospodăriilor, legislație publică, alerte în admin, mod luminos / întunecat.
+
 ## 4. Etapa 3 – dashboard gospodar
 - Loturi, comenzi, calitate; **registrul de cheltuieli pe lot** cu documente justificative; facturi, avize,
   documente contabile, înregistrări DSV, contracte – toate descărcabile și verificabile (cine, când a încărcat).

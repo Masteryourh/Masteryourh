@@ -9,7 +9,7 @@ export const faq = [
   },
   {
     q: "Cât durează până primesc puii?",
-    a: "Puii cresc aproximativ 8 săptămâni. Când alegi un lot deschis pentru precomenzi, vezi direct data estimată a disponibilității. Dacă alegi „primul lot disponibil”, precomanda ta intră în cel mai apropiat lot cu locuri libere.",
+    a: "Puii cresc aproximativ 60 de zile: primele 21 la interior, la căldură, apoi pe pășune, în țarcuri mobile mutate zilnic. Când alegi un lot deschis pentru precomenzi, vezi direct data estimată a disponibilității. Dacă alegi „primul lot disponibil”, precomanda ta intră în cel mai apropiat lot cu locuri libere.",
   },
   {
     q: "Unde sunt sacrificați puii?",

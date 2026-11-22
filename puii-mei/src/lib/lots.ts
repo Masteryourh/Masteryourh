@@ -25,19 +25,19 @@ export function lotStages(lot: Lot): LotStageDefinition[] {
     {
       key: "pui-de-o-zi",
       label: "Pui de o zi",
-      description: "Puii de o zi, din incubatoare autorizate, ajung în gospodăria parteneră.",
+      description: "Puii de o zi, din incubatoare autorizate, ajung în gospodărie. Primele 21 de zile stau la interior, la căldură (becuri roșii) și pe pat de rumeguș.",
       startDay: 0,
     },
     {
       key: "crestere",
-      label: "Creștere",
-      description: "Puii cresc în adăpost și padoc. Greutatea și hrana sunt înregistrate zilnic.",
-      startDay: 3,
+      label: "Pe pășune, în țarc",
+      description: "De la 21 de zile, puii trec pe pășune, în țarcuri mobile de 4 × 3 m (40 de pui), mutate zilnic pe iarbă proaspătă. Gospodarul notează fiecare mutare și fiecare intervenție.",
+      startDay: 21,
     },
     {
       key: "finisare",
       label: "Finisare",
-      description: "Ultimele două săptămâni: hrană din cereale și verificare veterinară.",
+      description: "Ultimele două săptămâni: pășune, hrană din cereale și verificare veterinară.",
       startDay: lot.growthDays - 14,
     },
     {

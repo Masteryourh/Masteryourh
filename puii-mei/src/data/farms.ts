@@ -19,7 +19,7 @@ export const farms: Farm[] = [
     description:
       "Familia Mureșan crește păsări de trei generații, pe un versant însorit din Vama, în valea Moldovei. În parteneriat cu Puii mei, a amenajat un adăpost nou, ventilat natural, cu acces zilnic la un padoc înierbat. Puii cresc în aer curat de munte și sunt hrăniți cu furaje din cereale, completate cu porumb în etapa de finisare.",
     practices: [
-      "Acces zilnic la padoc înierbat",
+      "Țarcuri mobile pe pășune, mutate zilnic",
       "Furaje fără antibiotice ca promotori de creștere",
       "Densitate redusă în adăpost",
       "Jurnal zilnic de creștere: greutate, hrană, apă",
@@ -72,7 +72,7 @@ export const farms: Farm[] = [
       "Gospodăria Rusu, din Vatra Moldoviței, lucrează cu loturi mici, ceea ce permite o atenție deosebită pentru fiecare pasăre. Puii au acces la pajiștea din spatele casei, la marginea pădurii, iar hrana este completată cu verdețuri. Este gospodăria potrivită pentru cei care vor să vadă cum arată creșterea „ca la bunici” în Bucovina, dar cu evidență modernă.",
     practices: [
       "Loturi mici, maximum 180 de pui",
-      "Acces la pajiște și verdețuri",
+      "Țarcuri mobile pe pășune, mutate zilnic",
       "Furaje din cereale, fără făinuri de origine animală",
       "Program de vizite pentru clienți (la cerere)",
     ],
