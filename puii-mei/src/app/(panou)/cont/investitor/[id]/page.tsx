@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { LotStatusBadge } from "@/components/lots/LotStatusBadge";
@@ -32,7 +31,6 @@ export default async function InvestorInvestmentPage({ params }: PageProps<"/con
 
   return (
     <Container className="max-w-5xl py-8">
-      <Link href="/cont/investitor" className="text-sm text-slate-500">← Investițiile mele</Link>
       <h1 className="mt-2">{inv.title}</h1>
       <div className="mt-4 grid gap-3 sm:grid-cols-4">
         <Stat label="Suma" value={formatLei(inv.amount)} />

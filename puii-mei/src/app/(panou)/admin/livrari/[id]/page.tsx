@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { TourDetail } from "@/components/delivery/TourDetail";
@@ -20,7 +19,6 @@ export default async function AdminTourPage({ params }: PageProps<"/admin/livrar
   const { stops } = await loadTourView(tour);
   return (
     <Container className="py-8">
-      <Link href="/admin/livrari" className="text-sm text-muted">← Livrări live</Link>
       <div className="mt-4">
         <TourDetail tour={tour} user={user} />
       </div>

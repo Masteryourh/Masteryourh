@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import { Breadcrumbs } from "@/components/nav/Breadcrumbs";
 import { Container } from "@/components/ui/Container";
 import { Photo } from "@/components/ui/Photo";
 import { Icon } from "@/components/ui/Icon";
@@ -39,11 +39,7 @@ export default async function FarmPage({ params }: PageProps<"/gospodarii/[slug]
     <>
       <section className="bg-cream-100">
         <Container className="py-10 sm:py-14">
-          <nav aria-label="Breadcrumb" className="text-sm text-muted">
-            <Link href="/gospodarii" className="hover:text-forest-800">Gospodării partenere</Link>
-            <span aria-hidden> / </span>
-            <span className="text-forest-900">{farm.name}</span>
-          </nav>
+          <Breadcrumbs items={[{ label: "Gospodării partenere", href: "/gospodarii" }, { label: farm.name }]} />
           <div className="mt-6 grid gap-10 lg:grid-cols-2 lg:items-center">
             <div className="animate-fade-up">
               <p className="flex items-center gap-1.5 text-sm font-medium text-grain-600">

@@ -53,6 +53,10 @@ _Ultima actualizare: 22 noiembrie 2026_
       în cod (nori, iarbă în vânt, semințe). Clipul se pune în `public/images/poveste/` și înlocuiește animația din cod.
 - [ ] **Imagini Higgsfield pentru gospodării** (profilurile au încă imagini de rezervă) și pentru paginile interioare.
 
+- [x] **Navigare clară** (PR #32): traseul „Acasă › …” pe site, „Panou admin › …” în panouri, iar pe telefon
+      „← Înapoi la <pagina părinte>”.
+- [ ] **Română / engleză** – următorul pas (întâi site-ul public, apoi panourile).
+
 ## De configurat (Vercel / servicii)
 
 - [ ] **SESSION_SECRET** în Vercel → Environment Variables (o valoare lungă, aleatorie), apoi Redeploy.

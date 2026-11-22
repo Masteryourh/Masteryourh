@@ -34,7 +34,6 @@ export default async function FarmRegimePage({ params, searchParams }: PageProps
 
   return (
     <Container className="max-w-4xl py-8">
-      <Link href="/admin/gospodarii" className="text-sm text-slate-500">← Gospodării</Link>
       <h1 className="mt-2">Regimul gospodăriei · {farm.name}</h1>
       <p className="mt-1 text-sm text-slate-600">
         Limitele de creștere și starea în platformă. Totul se păstrează în istoric, cu motivul și cine a decis.

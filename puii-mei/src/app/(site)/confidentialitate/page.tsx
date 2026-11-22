@@ -13,7 +13,8 @@ export const metadata: Metadata = pageMetadata({
 export default function PrivacyPage() {
   return (
     <>
-      <PageHeader eyebrow="Informații legale" title="Politica de confidențialitate" />
+      <PageHeader
+        crumbs={[{ label: "Confidențialitate" }]} eyebrow="Informații legale" title="Politica de confidențialitate" />
       <Container className="max-w-3xl py-14">
         <div className="space-y-6 leading-relaxed text-ink/85 [&_h2]:mt-10 [&_h2]:text-2xl [&_h2]:font-semibold">
           <p className="rounded-2xl bg-grain-300/30 p-4 text-sm">

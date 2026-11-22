@@ -41,6 +41,7 @@ export default async function TraceabilityPage({ searchParams }: PageProps<"/tra
   return (
     <>
       <PageHeader
+        crumbs={[{ label: "Trasabilitate" }]}
         eyebrow="Trasabilitate"
         title="Știi unde cresc. Știi ce ajunge pe masa ta."
         intro="Fiecare lot de producție are un cod unic, tipărit pe eticheta produsului și în confirmarea precomenzii."

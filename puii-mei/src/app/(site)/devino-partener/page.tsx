@@ -49,6 +49,7 @@ export default function BecomePartnerPage() {
   return (
     <>
       <PageHeader
+        crumbs={[{ label: "Devino partener" }]}
         eyebrow="Devino partener"
         title="Construim împreună rețeaua Puii mei"
         intro="Căutăm gospodării care vor să crească pui corect, cu evidență clară, și investitori care vor să susțină producția locală de calitate."

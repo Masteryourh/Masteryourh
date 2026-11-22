@@ -16,6 +16,7 @@ export default function UpcomingPage() {
   return (
     <>
       <PageHeader
+        crumbs={[{ label: "În curând" }]}
         eyebrow="În curând"
         title="Mai mult decât pui"
         intro="Începem cu puii, în Bucovina. Urmează curcani, rațe, fazani și legume din seră. Ce ajunge în zona ta depinde de gospodăriile partenere din regiune și de interesul celor din jur."

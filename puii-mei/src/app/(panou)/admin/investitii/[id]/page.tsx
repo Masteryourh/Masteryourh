@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { DocumentTable } from "@/components/documents/DocumentTable";
@@ -26,7 +25,6 @@ export default async function AdminInvestmentPage({ params, searchParams }: Page
 
   return (
     <Container className="py-8">
-      <Link href="/admin/investitii" className="text-sm text-slate-500">← Toate investițiile</Link>
       <h1 className="mt-2">{inv.title}</h1>
       <p className="text-sm text-slate-600">
         {investor?.name} · {formatLei(inv.amount)} · {formatDate(inv.date)} · <strong>{investmentStatusLabels[inv.status]}</strong>

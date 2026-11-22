@@ -1,3 +1,4 @@
+import { Breadcrumbs } from "@/components/nav/Breadcrumbs";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Container } from "@/components/ui/Container";
@@ -17,6 +18,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/cont/auten
 
   return (
     <Container className="flex max-w-md flex-col py-16 sm:py-24">
+      <Breadcrumbs items={[{ label: "Intră în cont" }]} className="mb-6" />
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-grain-600">Contul meu</p>
       <h1 className="mt-3 text-3xl font-semibold">Intră în cont</h1>
       <p className="mt-2 text-muted">Pentru gospodarii partenerii, investitori și echipa Puii mei.</p>

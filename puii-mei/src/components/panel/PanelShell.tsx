@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { User } from "@/lib/domain";
 import { roleLabels } from "@/lib/roles";
 import { PanelNav, type PanelNavItem } from "./PanelNav";
+import { PanelCrumbs } from "./PanelCrumbs";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 /**
@@ -54,6 +55,7 @@ export function PanelShell({
         </div>
       </aside>
       <main id="continut" className="min-w-0 flex-1 pb-10">
+        <PanelCrumbs />
         {children}
       </main>
     </div>

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { TourDetail } from "@/components/delivery/TourDetail";
@@ -18,8 +17,7 @@ export default async function FarmerTourPage({ params, searchParams }: PageProps
   if (!tour || !canManageFarm(user, tour.farmSlug)) notFound();
   return (
     <Container className="py-8">
-      <Link href="/cont/gospodar" className="mt-4 inline-block text-sm text-muted">← Înapoi</Link>
-      <div className="mt-4">
+      <div>
         <TourDetail tour={tour} user={user} highlightRequest={typeof cerere === "string" ? cerere : undefined} />
       </div>
     </Container>

@@ -17,7 +17,6 @@ export default async function EditFarmPage({ params, searchParams }: PageProps<"
 
   return (
     <Container className="max-w-3xl py-8">
-      <Link href="/admin/gospodarii" className="text-sm text-muted hover:text-forest-800">← Toate gospodăriile</Link>
       <h1 className="mt-3 text-3xl font-semibold">{farm.name}</h1>
       <p className="mt-1 text-sm text-muted">
         Adresă pe site: <Link href={`/gospodarii/${farm.slug}`} className="font-mono text-forest-700 underline">/gospodarii/{farm.slug}</Link>
