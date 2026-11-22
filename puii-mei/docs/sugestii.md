@@ -35,7 +35,10 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [ ] **Mesaj pe pagina de precomandă** cât timp site-ul e „under construction live”: „Comenzile se confirmă după
       lansare” (propus pe 21 nov. 2026, fără răspuns).
 - [x] **Dashboard închis (stil „aerial + sticlă”) pentru gospodar și investitor**; adminul rămâne simplu.
-- [ ] **„Comanda mea” în același stil de dashboard** (bun și pentru marketing) – de discutat.
+- [x] **„Comanda mea” în același stil de dashboard** (PR #30): gospodăria de sus cu țarcurile („Puii tăi · țarcul N”),
+      cadranul creșterii, avans / rest la livrare, drumul comenzii în 7 pași, poza săptămânii.
+- [ ] **Imaginea aeriană reală a fiecărei gospodării** în dashboard (acum una comună, generată) + pozițiile reale ale
+      țarcurilor din măsurătoarea în teren.
 - [ ] **Designul site-ului** – de reluat (utilizatorul nu e mulțumit de varianta actuală; lucrăm împreună).
 - [ ] **Zonele de livrare și prețurile** editabile din admin (acum sunt în cod: `src/data/zones.ts`, `src/lib/pricing.ts`).
 - [ ] **Editarea gospodăriilor demonstrative** din admin (acum se pot edita doar cele create din admin).

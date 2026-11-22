@@ -21,6 +21,8 @@ import { lotPens, sellableBirds } from "@/lib/growth";
 import { growthLogRepository } from "@/server/repositories/growth-log";
 import { GrowthTimeline } from "@/components/growth/GrowthTimeline";
 import { PenTrackMap } from "@/components/maps/PenTrackMap";
+import { OrderDashboard } from "@/components/orders/OrderDashboard";
+import { orderPens } from "@/lib/order-pens";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Comanda mea", robots: { index: false, follow: false } };
@@ -46,7 +48,8 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
   const maxSingle = Math.max(0, ...roomLots.map((l) => sellableBirds(l)));
   const totalFree = roomLots.reduce((s, l) => s + sellableBirds(l), 0);
   const rootNumber = order.parentNumber ?? order.number;
-  const siblings = (await preorderRepository.list())
+  const allOrders = await preorderRepository.list();
+  const siblings = allOrders
     .filter((x) => x.number === rootNumber || x.parentNumber === rootNumber)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const journal = lot ? await growthLogRepository.byLot(lot.code) : [];
@@ -59,6 +62,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
           .map((e) => ({ lat: e.lat!, lng: e.lng!, date: e.date })),
       }))
     : [];
+  const myPens = lot ? orderPens(order, lot, allOrders) : [];
   const feedStatus = feedStatusOf(order);
   const cancelled = order.status === "anulata";
   const delivered = order.status === "livrata" || Boolean(parcel?.delivered);
@@ -81,21 +85,29 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
 
   return (
     <>
-      <section className="border-b border-forest-900/5 bg-cream-100">
-        <Container className="max-w-3xl py-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-grain-600">Comanda mea</p>
-          <h1 className="mt-2 font-mono text-3xl font-semibold">{order.number}</h1>
-          <dl className="mt-4 grid gap-x-8 gap-y-2 text-sm sm:grid-cols-3">
-            <div><dt className="text-muted">Cantitate</dt><dd className="font-semibold">{order.birds} pui (~{formatNumber(order.estimate.estimatedKg)} kg)</dd></div>
-            <div><dt className="text-muted">Livrare</dt><dd className="font-semibold">{zone?.name ?? order.zoneId}</dd></div>
-            <div><dt className="text-muted">Gospodăria</dt><dd className="font-semibold">{farm ? `${farm.name}, ${farm.village}` : "Se alocă în curând"}</dd></div>
-          </dl>
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-muted">Păstrează linkul acestei pagini.</span>
-            <CopyButton value={`${site.url}/comanda/${token}`} label="Copiază linkul" />
-          </div>
-        </Container>
-      </section>
+      <OrderDashboard
+        order={order}
+        lot={lot}
+        farm={farm}
+        myPens={myPens}
+        journal={journal}
+        steps={steps}
+        advance={feed.amount}
+        advanceStatus={feedStatus}
+        token={token}
+        availableOn={lot ? availabilityDate(lot) : undefined}
+      />
+      <Container className="max-w-3xl pt-6">
+        <dl className="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-3">
+          <div><dt className="text-muted">Cantitate</dt><dd className="font-semibold">{order.birds} pui (~{formatNumber(order.estimate.estimatedKg)} kg)</dd></div>
+          <div><dt className="text-muted">Livrare</dt><dd className="font-semibold">{zone?.name ?? order.zoneId}</dd></div>
+          <div><dt className="text-muted">Gospodăria</dt><dd className="font-semibold">{farm ? `${farm.name}, ${farm.village}` : "Se alocă în curând"}</dd></div>
+        </dl>
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted">Păstrează linkul acestei pagini.</span>
+          <CopyButton value={`${site.url}/comanda/${token}`} label="Copiază linkul" />
+        </div>
+      </Container>
 
       <Container className="max-w-3xl space-y-8 py-10">
         {cancelled && (
