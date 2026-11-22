@@ -14,7 +14,7 @@ export const speciesLabels: Record<Species, string> = {
   fazani: "Fazani",
 };
 
-export type UpcomingProductId = "curcani" | "rate" | "fazani" | "legume-sera";
+export type UpcomingProductId = "curcani" | "rate" | "fazani" | "legume-sera" | "borcane" | "afumaturi" | "pastravi" | "congelator";
 
 export const upcomingProducts: { id: UpcomingProductId; name: string; text: string }[] = [
   {
@@ -36,6 +36,26 @@ export const upcomingProducts: { id: UpcomingProductId; name: string; text: stri
     id: "legume-sera",
     name: "Legume din seră",
     text: "Roșii, castraveți și verdețuri din serele gospodăriilor partenere.",
+  },
+  {
+    id: "borcane",
+    name: "Borcane din cămară",
+    text: "Zacuscă, dulcețuri, zarzavaturi și murături făcute în gospodărie, după rețetele casei.",
+  },
+  {
+    id: "afumaturi",
+    name: "Afumături",
+    text: "Slănină, cârnați și carne afumată la fum de lemn, ca la munte.",
+  },
+  {
+    id: "pastravi",
+    name: "Păstrăvi",
+    text: "Păstrăvi din bazine cu apă rece de munte, de la păstrăvării din zonă.",
+  },
+  {
+    id: "congelator",
+    name: "Pachete pentru congelator",
+    text: "Comenzi mari de pui, pentru familiile care vor rezervă pe câteva luni, cu livrare o dată.",
   },
 ];
 

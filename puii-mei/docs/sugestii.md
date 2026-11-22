@@ -23,8 +23,9 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [x] **Investiții cu rambursare** de către gospodar, la fiecare lot vândut (PR #35): rata pe pui livrat se setează pe
       fiecare investiție; ratele se înregistrează pe lot; progresul îl văd adminul, investitorul și gospodarul.
 - [ ] **Suma reținută pe pui** la rambursare: **de stabilit** (22 nov. 2026).
-- [ ] **Comenzi pentru congelator** (cantități mari) pe lângă cele pentru consum imediat.
-- [ ] **Alte produse din gospodărie** la precomandă: borcane, afumături, păstrăvi etc.
+- [ ] **Comenzi pentru congelator** (cantități mari) pe lângă cele pentru consum imediat – anunțate pe „În curând” (PR #36).
+- [ ] **Alte produse din gospodărie** la precomandă: borcane, afumături, păstrăvi – anunțate pe „În curând”, cu înscriere
+      de interes (PR #36); precomanda lor e de construit.
 
 - [x] **Etapa 3 – gospodar:** registrul de cheltuieli pe lot + documente (SHA-256, verificare admin). Fișierele stau
       deocamdată în baza de date (max. 3,5 MB); pentru volum mare → Vercel Blob.

@@ -69,7 +69,7 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
   (Admin → Utilizatori, confirmare „STERG”; păstrează conturile și gospodăriile create din admin). **#31** ștergerea conturilor din Admin → Utilizatori.
   **#32** navigare: traseu „Acasă › …” pe site și în panouri, „← Înapoi la …” pe telefon. **#33** Admin → Prețuri: prețul pieței și adaosul editabile, cu istoric. **#34** Admin → Zone de livrare (zone, taxe, zile, prag livrare gratuită).
   **#35** fără livrare gratuită; mesaj „Comenzile se confirmă după lansare” pe precomandă; rambursarea investițiilor de
-  către gospodar la fiecare lot vândut (suma pe pui: de stabilit). **#36** editarea gospodăriilor demo din admin; meniul adminului = bară cu iconițe în dreapta ecranului (numele la hover).
+  către gospodar la fiecare lot vândut (suma pe pui: de stabilit). **#36** editarea gospodăriilor demo din admin; meniul adminului = bară cu iconițe în dreapta ecranului (numele la hover); „În curând” + borcane, afumături, păstrăvi, pachete pentru congelator.
 - (vechi) **#26**: mod luminos / întunecat peste tot (buton soare/lună), eticheta coletului alb-negru;
   prețuri după modelul de creștere; „țarc” și „pui curățat, gata de gătit”; texte despre creșterea de 60 de zile.
 
