@@ -357,7 +357,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         <summary className="cursor-pointer text-sm font-semibold">Administrează loturile: lot nou, modificare, închidere</summary>
         <div className="mt-4 space-y-2">
           {lots.map((l) => (
-            <LotAdminRow key={l.code} lot={l} returnTo={backTo} canApprove={user.role === "admin"} maxPens={limits.pens} />
+            <LotAdminRow key={l.code} lot={l} returnTo={backTo} canApprove={user.role === "admin"} maxPens={limits.pens} orders={farmPreorders} />
           ))}
         </div>
         <h3 className="mt-6 mb-2 font-sans text-base font-semibold">Lot nou</h3>

@@ -28,6 +28,7 @@ _Ultima actualizare: 22 noiembrie 2026_
       preluați; dacă nu o preia nimeni, de stabilit ce se întâmplă cu avansul (puii și furajul sunt deja cumpărați).
       De gândit: lista de așteptare care preia automat locurile, termenul până la care se poate anula, cine returnează
       banii (gospodăria, direct clientului) și cum apare în registru și în contract.
+- [ ] **Căutare în Admin → Precomenzi** după număr, nume sau telefon (propus pe 22 nov. 2026, fără răspuns).
 - [ ] **Comenzi pentru congelator** (cantități mari) pe lângă cele pentru consum imediat – anunțate pe „În curând” (PR #36).
 - [ ] **Alte produse din gospodărie** la precomandă: borcane, afumături, păstrăvi – anunțate pe „În curând”, cu înscriere
       de interes (PR #36); precomanda lor e de construit.

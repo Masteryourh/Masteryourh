@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { LotAdminRow, NewLotForm } from "@/components/lots/LotForms";
 import { farmRepository, lotRepository } from "@/server/repositories/catalog";
+import { preorderRepository } from "@/server/repositories/preorders";
 import { governanceRepository } from "@/server/repositories/governance";
 import { landRepository } from "@/server/repositories/land";
 import { effectiveLimits } from "@/lib/governance";
@@ -12,7 +13,7 @@ export const metadata: Metadata = { title: "Loturi", robots: { index: false, fol
 
 export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/loturi">) {
   const sp = await searchParams;
-  const [lots, farms] = await Promise.all([lotRepository.list({ all: true }), farmRepository.listAll()]);
+  const [lots, farms, orders] = await Promise.all([lotRepository.list({ all: true }), farmRepository.listAll(), preorderRepository.list()]);
   const farmName = new Map(farms.map((f) => [f.slug, f.name]));
   const pending = lots.filter((l) => l.approval?.status === "asteapta");
   const farm = typeof sp.gospodarie === "string" && farmName.has(sp.gospodarie) ? sp.gospodarie : farms[0]?.slug;
@@ -35,7 +36,7 @@ export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/
           <p className="text-sm text-slate-600">Loturi propuse de gospodari. Apar la precomandă doar după aprobare.</p>
           <div className="mt-2 space-y-2">
             {pending.map((l) => (
-              <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove />
+              <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove orders={orders} />
             ))}
           </div>
           <h2 className="mt-8 text-lg">Toate loturile</h2>
@@ -43,7 +44,7 @@ export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/
       )}
       <div id="loturi" className="mt-6 space-y-2">
         {lots.filter((l) => l.approval?.status !== "asteapta").map((l) => (
-          <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove />
+          <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove orders={orders} />
         ))}
       </div>
 
