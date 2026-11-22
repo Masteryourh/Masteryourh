@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Container } from "@/components/ui/Container";
-import { Breadcrumbs } from "@/components/nav/Breadcrumbs";
+import { ClientShell } from "@/components/orders/ClientShell";
 import { PrintButton } from "@/components/orders/PrintButton";
 import { buttonClasses } from "@/components/ui/Button";
 import { formatDate, formatLei, formatNumber } from "@/lib/format";
@@ -39,7 +39,7 @@ export default async function ContractPage({ params }: PageProps<"/comanda/[toke
   const { token } = await params;
   const order = await preorderRepository.byTrackingToken(token);
   if (!order) notFound();
-  if (!(await canViewOrder(order))) redirect(`/comanda/${token}`);
+  if (!(await canViewOrder(order))) redirect(`/comanda?nr=${encodeURIComponent(order.number)}`);
   const [{ lot, farm, payment }, zone] = await Promise.all([orderFarm(order), zoneRepository.byId(order.zoneId, { includeInactive: true })]);
   const adv = order.feedPayment?.amount ?? feedAdvance(order.birds, payment?.feedPricePerKg, payment?.chickPricePerBird).amount;
   const split = paymentSplit(order.estimate.total, adv);
@@ -47,9 +47,9 @@ export default async function ContractPage({ params }: PageProps<"/comanda/[toke
 
 
   return (
+    <ClientShell number={order.number} token={token}>
     <Container className="max-w-3xl py-10 print:py-0">
       <div className="print:hidden">
-        <Breadcrumbs items={[{ label: "Comanda mea", href: "/comanda" }, { label: order.number, href: `/comanda/${token}` }, { label: "Contract" }]} className="mb-6" />
         <p role="note" className="mb-6 rounded-2xl border-2 border-[#f5c400] bg-[#fff6c7] p-4 text-sm text-[#3d3200]">
           <strong>Model de contract, în curs de validare juridică.</strong> Datele companiei se completează la înființarea firmei.
           Clauzele finale pot diferi.
@@ -144,5 +144,6 @@ export default async function ContractPage({ params }: PageProps<"/comanda/[toke
         <a href={`/comanda/${token}`} className={buttonClasses("ghost", "md")}>← Înapoi la comandă</a>
       </div>
     </Container>
+    </ClientShell>
   );
 }
