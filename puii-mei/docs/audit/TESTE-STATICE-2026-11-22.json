@@ -1,0 +1,47 @@
+{
+  "project": "PUII MEI",
+  "date": "2026-11-22",
+  "source": "Masteryourh-main.zip",
+  "scope": "static source audit; not production certification",
+  "checks": [
+    {
+      "command": "npm run lint",
+      "exit_code": 127,
+      "result": "blocked",
+      "reason": "eslint not found"
+    },
+    {
+      "command": "npx tsc --noEmit",
+      "exit_code": 2,
+      "result": "blocked",
+      "reason": "missing type definitions"
+    },
+    {
+      "command": "npm run build",
+      "exit_code": 127,
+      "result": "blocked",
+      "reason": "next not found"
+    },
+    {
+      "name": "unit tests",
+      "result": "not run",
+      "reason": "no test suite identified"
+    },
+    {
+      "name": "E2E/API/concurrency/security",
+      "result": "not run",
+      "reason": "test environment unavailable"
+    }
+  ],
+  "verified_findings": [
+    "JSON fallback in production",
+    "no multi-entity transaction API",
+    "generic PostgreSQL JSONB document table",
+    "TLS certificate verification disabled",
+    "session secret fallback",
+    "Base64 files stored in data collections",
+    "Prisma not integrated",
+    "no test script identified"
+  ],
+  "note": "Blocked commands do not prove source compilation errors."
+}
