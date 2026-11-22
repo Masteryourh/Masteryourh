@@ -35,6 +35,10 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
   **~6,9 kg în viu**.
 - **Furaj**: randament de asimilare ~70% ⇒ 6,9 / 0,7 ≈ **9,8 kg furaj / pui** (intră în avans).
 - **Preț la client**: prețul pieței + 20–30% (acum 30 lei/kg + 20% = **36 lei/kg**).
+- **Alocarea precomenzilor (automată)**: clientul **nu alege lotul**; precomanda merge la **primul loc disponibil**.
+  Dacă prima gospodărie disponibilă poate primi **toată comanda**, se alocă acolo. Dacă nu, clientul e **anunțat** și
+  alege: **împărțire** în mai multe gospodării (livrări și plăți separate, câte una pe gospodărie) sau **așteptare**
+  până se găsește / se eliberează o gospodărie în care încape toată comanda.
 - **Investiția în gospodărie** (o dată, amortizată în timp): spațiul pentru 1–21 zile, țarcurile, echipamentele pentru
   toate etapele și pentru sacrificare (opăritor, deplumator, conuri, masă inox, ladă frigorifică pentru păstrare
   scurtă). **Gospodarul plătește investiția în tranșe.**

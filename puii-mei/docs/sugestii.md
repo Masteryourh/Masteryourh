@@ -9,6 +9,8 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 - [ ] **Modelul „un lot pe rând + țarcuri de 40”** (vezi `plan-platforma.md` §1b): capacitate din numărul de țarcuri,
       subloturi pe țarcuri pornite la 40 de precomenzi, etapele 0–21–60 zile, greutate 4,8 kg (22 nov. 2026).
+      Include **alocarea automată** (fără alegerea lotului de către client) și alegerea clientului „împărțire în
+      gospodării” / „aștept o gospodărie pentru toată comanda” când nu încape într-una singură.
 - [ ] **Investiții cu rambursare în tranșe** de către gospodar (echipamente de creștere și sacrificare). Ritmul ratelor
       (lunar sau la fiecare lot vândut): **nedecis încă** (22 nov. 2026).
 - [ ] **Comenzi pentru congelator** (cantități mari) pe lângă cele pentru consum imediat.

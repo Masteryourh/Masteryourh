@@ -69,6 +69,8 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
 - **Modelul de creștere** e descris în `plan-platforma.md` §1b: țarc mobil 4 × 3 m, 40 de pui / țarc, ~170 m² de
   pășune / țarc (capacitatea = suprafața dovedită / 170 × 40), un lot pe rând, țarcurile pornesc la câte 40 de
   precomenzi, la cel mult **7 zile** unul de altul; 0–21 zile la interior, de la 21 pe pășune, sacrificare la 60.
+- **Alocare**: clientul nu alege lotul; primul loc disponibil, automat; dacă nu încape toată comanda într-o
+  gospodărie, clientul alege împărțirea (livrări și plăți separate) sau așteptarea.
 - **Termeni**: „țarc” (nu „cușcă”), „pui curățat, gata de gătit” (nu „eviscerat”).
 - **Prețuri**: 4,8 kg / pui curățat (≈ 70% din ~6,9 kg în viu); furaj ≈ 9,8 kg / pui (asimilare ~70%);
   prețul pieței 30 lei/kg + 20% = 36 lei/kg; pui de o zi 7 lei, furaj 3,50 lei/kg (orientative, pe gospodărie).
