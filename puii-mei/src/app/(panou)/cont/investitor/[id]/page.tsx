@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { RepaymentBox } from "@/components/documents/RepaymentBox";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { LotStatusBadge } from "@/components/lots/LotStatusBadge";
@@ -39,6 +40,13 @@ export default async function InvestorInvestmentPage({ params }: PageProps<"/con
         <Stat label="Condiții" value={inv.terms || "—"} />
       </div>
       {inv.description && <p className="mt-4 max-w-3xl text-slate-700">{inv.description}</p>}
+
+      {inv.farmSlug && (
+        <section className="mt-8 max-w-3xl">
+          <h2 className="text-lg">Rambursarea</h2>
+          <div className="mt-3"><RepaymentBox investment={inv} /></div>
+        </section>
+      )}
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1.3fr]">
         <section>

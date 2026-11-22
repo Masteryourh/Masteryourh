@@ -56,3 +56,11 @@ export const FILE_LIMITS = {
 };
 
 export const formatBytes = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`);
+
+/** Cât a rambursat gospodarul dintr-o investiție (rate la fiecare lot vândut). */
+export function repaymentSummary(inv: import("./domain").Investment) {
+  const payments = inv.repayment?.payments ?? [];
+  const repaid = Math.round(payments.reduce((s, p) => s + p.amount, 0) * 100) / 100;
+  const left = Math.max(0, Math.round((inv.amount - repaid) * 100) / 100);
+  return { repaid, left, pct: inv.amount ? Math.min(100, Math.round((repaid / inv.amount) * 100)) : 0, perBird: inv.repayment?.perBird, payments };
+}

@@ -127,3 +127,46 @@ export async function uploadInvestmentDocumentAction(formData: FormData) {
   refresh();
   redirect(`/admin/investitii/${inv.id}?${error ? `eroare=${encodeURIComponent(error)}` : "salvat=1"}#documente`);
 }
+
+/** Suma reținută pe pui livrat (gol = încă de stabilit). */
+export async function setRepaymentRateAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const inv = await investmentRepository.get(t(formData, "id"));
+  if (!inv) redirect("/admin/investitii");
+  const raw = t(formData, "perBird").replace(",", ".");
+  const perBird = raw ? Math.round(Number(raw) * 100) / 100 : undefined;
+  if (perBird !== undefined && !(perBird > 0 && perBird <= 500)) redirect(`/admin/investitii/${inv.id}?eroare=${encodeURIComponent("Suma pe pui trebuie să fie între 0 și 500 lei.")}#rambursare`);
+  await investmentRepository.update(inv.id, {
+    repayment: { perBird, payments: inv.repayment?.payments ?? [] },
+    events: [...inv.events, { at: new Date().toISOString(), date: new Date().toISOString().slice(0, 10), title: "Rata de rambursare", text: perBird ? `${perBird} lei / pui livrat` : "De stabilit", by: `${admin.name} (admin)` }],
+  });
+  refresh();
+  redirect(`/admin/investitii/${inv.id}?salvat=1#rambursare`);
+}
+
+/** Rata plătită de gospodar dintr-un lot vândut. Suma goală = pui livrați × suma pe pui. */
+export async function addRepaymentAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const inv = await investmentRepository.get(t(formData, "id"));
+  if (!inv) redirect("/admin/investitii");
+  const date = t(formData, "date");
+  const lotCode = t(formData, "lotCode") || undefined;
+  const birds = t(formData, "birds") ? Math.floor(Number(t(formData, "birds"))) : undefined;
+  const perBird = inv.repayment?.perBird;
+  const rawAmount = t(formData, "amount").replace(",", ".");
+  const amount = rawAmount ? Math.round(Number(rawAmount) * 100) / 100 : birds && perBird ? Math.round(birds * perBird * 100) / 100 : NaN;
+  let error = "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) error = "Alege data.";
+  else if (birds !== undefined && !(birds > 0)) error = "Numărul de pui trebuie să fie pozitiv.";
+  else if (!(amount > 0)) error = perBird ? "Scrie suma sau numărul de pui livrați." : "Scrie suma (rata pe pui nu e stabilită încă).";
+  if (error) redirect(`/admin/investitii/${inv.id}?eroare=${encodeURIComponent(error)}#rambursare`);
+  const payment = { id: crypto.randomUUID(), at: new Date().toISOString(), date, lotCode, birds, amount, note: t(formData, "note") || undefined, by: `${admin.name} (admin)` };
+  await investmentRepository.update(inv.id, {
+    repayment: { perBird, payments: [payment, ...(inv.repayment?.payments ?? [])] },
+    events: [...inv.events, { at: payment.at, date, title: "Rată rambursată", text: `${amount} lei${lotCode ? ` din lotul ${lotCode}` : ""}${birds ? ` (${birds} pui)` : ""}`, by: payment.by }],
+  });
+  await notifyInvestor(inv.investorId, "Rată rambursată", `Gospodăria a rambursat ${amount} lei${lotCode ? ` din lotul ${lotCode}` : ""} (investiția „${inv.title}”).`);
+  refresh();
+  revalidatePath("/cont/gospodar", "layout");
+  redirect(`/admin/investitii/${inv.id}?salvat=1#rambursare`);
+}

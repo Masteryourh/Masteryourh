@@ -21,7 +21,8 @@ import { LotAdminRow, NewLotForm } from "@/components/lots/LotForms";
 import { AerialMap, Bars, FARM_SPOTS, Gauge, Glass, GlassTitle, Metric, Pill, Ring } from "@/components/panel/Dash";
 import { expenseCategoryLabels } from "@/lib/documents";
 import { lotDay, statusLabels } from "@/lib/lots";
-import { expenseRepository, expenseTotals } from "@/server/repositories/documents";
+import { expenseRepository, expenseTotals, investmentRepository } from "@/server/repositories/documents";
+import { RepaymentBox } from "@/components/documents/RepaymentBox";
 import { governanceRepository } from "@/server/repositories/governance";
 import { legalRepository } from "@/server/repositories/legal";
 import { legalKindLabels } from "@/lib/legal";
@@ -61,10 +62,11 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
     );
   }
 
-  const [lots, preorders, zones] = await Promise.all([
+  const [lots, preorders, zones, investments] = await Promise.all([
     lotRepository.byFarm(farm.slug, { all: true }),
     preorderRepository.list(),
     zoneRepository.listActive(),
+    investmentRepository.list().then((all) => all.filter((i) => i.farmSlug === farm.slug && (i.status === "activa" || i.status === "semnata" || i.status === "finalizata"))),
   ]);
   const lotCodes = new Set(lots.map((l) => l.code));
   const backTo = user.role === "admin" ? `/cont/gospodar?gospodarie=${farm.slug}` : "/cont/gospodar";
@@ -262,6 +264,21 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
           ))}
         </ul>
       </Glass>
+
+      {investments.length > 0 && (
+        <section id="investitii" className="mt-4 scroll-mt-6">
+          <h2 className="text-lg">Investiții de rambursat</h2>
+          <p className="mt-1 text-sm text-slate-600">Echipamentele finanțate de investitori se rambursează în rate, la fiecare lot vândut.</p>
+          <div className="mt-3 grid gap-4 lg:grid-cols-2">
+            {investments.map((i) => (
+              <div key={i.id}>
+                <p className="mb-2 text-sm font-semibold">{i.title}</p>
+                <RepaymentBox investment={i} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section id="teren" className="mt-4 scroll-mt-6 rounded-xl bg-white p-5 ring-1 ring-slate-200">
         <h2 className="text-lg">Suprafața pentru creștere</h2>
