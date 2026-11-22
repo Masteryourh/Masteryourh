@@ -1,4 +1,5 @@
-import type { Lot } from "@/lib/domain";
+import type { Lot, Preorder } from "@/lib/domain";
+import { penOrders } from "@/lib/order-pens";
 import { speciesLabels } from "@/lib/products";
 import { availableBirds, lotStatus, statusLabels } from "@/lib/lots";
 import { createLotAction, decideLotAction, startPenAction, updateLotAction } from "@/app/(panou)/cont/gospodar/loturi-actions";
@@ -6,7 +7,8 @@ import { GROWTH, lotPens, penStateLabels, penView } from "@/lib/growth";
 
 const input = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm";
 
-function Fields({ lot, maxPens = 250 }: { lot?: Lot; maxPens?: number }) {
+function Fields({ lot, maxPens: maxPensProp }: { lot?: Lot; maxPens?: number }) {
+  const maxPens = maxPensProp ?? 250;
   return (
     <>
       {!lot && (
@@ -35,11 +37,11 @@ function Fields({ lot, maxPens = 250 }: { lot?: Lot; maxPens?: number }) {
           disabled={Boolean(lot?.penStarts?.length) || (!lot && maxPens < 1)}
           className={input}
         />
-        <span className={`mt-1 block text-xs font-normal ${maxPens < 1 ? "text-red-700" : "text-slate-500"}`}>
+        {maxPensProp !== undefined && <span className={`mt-1 block text-xs font-normal ${maxPens < 1 ? "text-red-700" : "text-slate-500"}`}>
           {maxPens < 1
             ? "Suprafața gospodăriei nu e confirmată încă, deci nu se pot alege țarcuri. Gospodarul o declară cu actul de proprietate, iar Puii mei o confirmă după măsurare."
             : `Între 1 și ${maxPens} țarcuri (${maxPens * GROWTH.birdsPerPen} pui), după suprafața confirmată.`}
-        </span>
+        </span>}
       </label>
       {lot?.penStarts?.length ? <input type="hidden" name="pens" value={lotPens(lot)} /> : null}
       <label className="text-sm font-semibold">
@@ -85,7 +87,7 @@ export function NewLotForm({ farmSlug, returnTo, needsApproval = false, maxPens 
 }
 
 /** Rândul unui lot, cu editare și închidere / redeschidere pentru precomenzi. */
-export function LotAdminRow({ lot, farmName, returnTo, canApprove = false, maxPens }: { lot: Lot; farmName?: string; returnTo: string; canApprove?: boolean; maxPens?: number }) {
+export function LotAdminRow({ lot, farmName, returnTo, canApprove = false, maxPens, orders = [] }: { lot: Lot; farmName?: string; returnTo: string; canApprove?: boolean; maxPens?: number; orders?: Preorder[] }) {
   const status = lotStatus(lot);
   return (
     <details className="rounded-xl bg-white ring-1 ring-slate-200">
@@ -104,7 +106,7 @@ export function LotAdminRow({ lot, farmName, returnTo, canApprove = false, maxPe
           {lot.approval?.status === "respins" && <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-900">respins</span>}
         </span>
       </summary>
-      <PensPanel lot={lot} returnTo={returnTo} />
+      <PensPanel lot={lot} returnTo={returnTo} orders={orders} />
       {lot.approval?.status === "respins" && lot.approval.reason && (
         <p className="border-t border-slate-200 bg-red-50 px-4 py-2 text-sm text-red-900">
           Motivul respingerii: {lot.approval.reason}. Corectează și salvează; lotul intră din nou la aprobare.
@@ -149,9 +151,10 @@ export function LotAdminRow({ lot, farmName, returnTo, canApprove = false, maxPe
 }
 
 /** Țarcurile lotului: câți pui are fiecare, starea și butonul „Pornește țarcul” când e plin. */
-function PensPanel({ lot, returnTo }: { lot: Lot; returnTo: string }) {
+function PensPanel({ lot, returnTo, orders }: { lot: Lot; returnTo: string; orders: Preorder[] }) {
   if (lot.approval?.status === "asteapta" || lot.approval?.status === "respins") return null;
   const pens = penView(lot);
+  const inPen = penOrders(lot, orders);
   const today = new Date().toISOString().slice(0, 10);
   return (
     <div className="border-t border-slate-200 px-4 py-3">
@@ -169,6 +172,23 @@ function PensPanel({ lot, returnTo }: { lot: Lot; returnTo: string }) {
             <p className="mt-1 text-xs text-slate-500">
               {p.birds} / {GROWTH.birdsPerPen} pui{p.date ? ` · pornit ${p.date}` : ""}
             </p>
+            {(inPen.get(p.n)?.length ?? 0) > 0 && (
+              <ul className="mt-2 space-y-1 border-t border-slate-200 pt-2 text-xs">
+                {inPen.get(p.n)!.map((o) => (
+                  <li key={o.number} className="flex flex-wrap items-baseline justify-between gap-x-2">
+                    {o.token ? (
+                      <a href={`/comanda/${o.token}`} className="font-mono font-semibold text-slate-800 underline">{o.number}</a>
+                    ) : (
+                      <span className="font-mono font-semibold">{o.number}</span>
+                    )}
+                    <span className="text-slate-600">
+                      {o.name} · {o.birds} pui
+                      {o.birds < o.total ? ` (din ${o.total}; și în țarcul ${o.pens.filter((x) => x !== p.n).join(", ")})` : ""}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
             {(p.state === "plin" || p.state === "se-umple") && (
               <form action={startPenAction} className="mt-2 flex items-center gap-2">
                 <input type="hidden" name="code" value={lot.code} />
