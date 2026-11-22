@@ -8,6 +8,11 @@ import { pgSslConfig } from "./pg-ssl";
  * Simplu și robust pentru prima versiune; schema relațională completă
  * (prisma/schema.prisma) poate înlocui acest strat ulterior.
  */
+/** Eroarea apărută când alt proces a creat același tabel în paralel. */
+export function isConcurrentCreate(err: { code?: string } | null | undefined) {
+  return err?.code === "23505" || err?.code === "42P07";
+}
+
 export function pgStore(connectionString: string): DocumentStore {
   const pool = new Pool({
     connectionString,
@@ -29,7 +34,10 @@ export function pgStore(connectionString: string): DocumentStore {
          )`,
       )
       .then(() => undefined)
-      .catch((err) => {
+      .catch((err: { code?: string }) => {
+        // Mai multe procese (ex. build-ul paralel) pot crea tabelul în același timp pe o bază nouă:
+        // Postgres răspunde cu 23505 (pg_type) sau 42P07 (tabel existent). Tabelul există, deci e în regulă.
+        if (isConcurrentCreate(err)) return undefined;
         ready = null;
         throw err;
       }));
