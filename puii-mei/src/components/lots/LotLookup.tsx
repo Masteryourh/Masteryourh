@@ -16,7 +16,7 @@ export function LotLookup({ defaultValue, error, dark = false }: { defaultValue?
             id="cod-lot"
             name="cod"
             defaultValue={defaultValue}
-            placeholder="ex. PM-2611-C01"
+            placeholder="ex. MS-2026-01"
             autoComplete="off"
             required
             aria-invalid={error ? true : undefined}

@@ -2,7 +2,7 @@ import type { DeliveryZone, Farm, FarmRecord, Lot } from "@/lib/domain";
 import { farms as demoFarms } from "@/data/farms";
 import { lots } from "@/data/lots";
 import { deliveryZones } from "@/data/zones";
-import { isApproved, isOpenForPreorder, normalizeLotCode } from "@/lib/lots";
+import { isApproved, isOpenForPreorder, lotCodeFor, normalizeLotCode } from "@/lib/lots";
 import { slugify } from "@/lib/slug";
 import { store } from "@/server/db/store";
 
@@ -105,15 +105,6 @@ async function allLots(): Promise<Lot[]> {
   }));
 }
 
-function lotCodeFor(farmSlug: string, startDate: string, existing: Set<string>) {
-  const yymm = startDate.slice(2, 4) + startDate.slice(5, 7);
-  const letter = (farmSlug.replace(/^(gospodaria|ferma)-(de-la-)?/, "")[0] ?? "X").toUpperCase();
-  for (let i = 1; ; i++) {
-    const code = `PM-${yymm}-${letter}${String(i).padStart(2, "0")}`;
-    if (!existing.has(code)) return code;
-  }
-}
-
 export type NewLot = Pick<Lot, "farmSlug" | "species" | "breed" | "startDate" | "growthDays" | "totalBirds" | "feed" | "processor" | "notes" | "pens">;
 
 /** Implicit doar loturile aprobate (publice); `{ all: true }` în panouri. */
@@ -144,7 +135,8 @@ export const lotRepository = {
   /** `needsApproval`: lot propus de gospodar, devine public după aprobarea adminului. */
   async create(data: NewLot, createdBy: string, needsApproval = false): Promise<Lot> {
     const existing = new Set((await allLots()).map((l) => l.code));
-    const code = lotCodeFor(data.farmSlug, data.startDate, existing);
+    const farm = (await allFarms()).find((f) => f.slug === data.farmSlug);
+    const code = lotCodeFor(farm?.village ?? data.farmSlug, data.startDate, existing);
     const lot: StoredLot = {
       ...data,
       id: code,

@@ -67,4 +67,12 @@ export const jsonStore: DocumentStore = {
       return items[idx];
     });
   },
+  remove(name: string, ids?: string[]) {
+    return withLock(name, async () => {
+      const items = await readCollection<{ id: string }>(name);
+      const kept = ids ? items.filter((i) => !ids.includes(i.id)) : [];
+      await writeCollection(name, kept);
+      return items.length - kept.length;
+    });
+  },
 };

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { farmRepository, lotRepository } from "@/server/repositories/catalog";
 import { availabilityDate, availableBirds, currentStage, lotStatus } from "@/lib/lots";
 
-/** API public de trasabilitate: GET /api/loturi/PM-2611-C01 */
+/** API public de trasabilitate: GET /api/loturi/MS-2026-01 */
 export async function GET(_req: Request, ctx: RouteContext<"/api/loturi/[cod]">) {
   const { cod } = await ctx.params;
   const lot = await lotRepository.byCode(cod);

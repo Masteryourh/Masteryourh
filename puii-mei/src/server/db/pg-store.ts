@@ -68,5 +68,12 @@ export function pgStore(connectionString: string): DocumentStore {
       );
       return res.rows[0]?.data ?? null;
     },
+    async remove(collection: string, ids?: string[]) {
+      await init();
+      const res = ids
+        ? await pool.query("DELETE FROM documents WHERE collection = $1 AND id = ANY($2::text[])", [collection, ids])
+        : await pool.query("DELETE FROM documents WHERE collection = $1", [collection]);
+      return res.rowCount ?? 0;
+    },
   };
 }
