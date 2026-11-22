@@ -5,6 +5,7 @@ import { preorderRepository } from "@/server/repositories/preorders";
 import { contactRepository } from "@/server/repositories/contact";
 import { farmRepository, lotRepository, zoneRepository } from "@/server/repositories/catalog";
 import { availableBirds, lotStatus } from "@/lib/lots";
+import { sellableBirds } from "@/lib/growth";
 import { formatDate, formatLei } from "@/lib/format";
 import type { PreorderStatus } from "@/lib/domain";
 import { updatePreorderLot, updatePreorderStatus } from "./actions";
@@ -85,7 +86,7 @@ export default async function AdminPage() {
                   {p.number}
                   {p.parentNumber && <div className="mt-1 text-[10px] text-slate-500">parte din {p.parentNumber}</div>}
                   {!p.lotCode && p.allocation?.status === "alegere" && <div className="mt-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900">clientul alege</div>}
-                  {!p.lotCode && p.allocation?.status === "asteapta" && <div className="mt-1 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold">în așteptare</div>}
+                  {!p.lotCode && p.allocation?.status === "asteapta" && <div className="mt-1 rounded bg-slate-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">în așteptare</div>}
                   {p.trackingToken && (
                     <div className="mt-1.5">
                       <CopyButton value={`${site.url}/comanda/${p.trackingToken}`} label="Link client" />
@@ -118,8 +119,9 @@ export default async function AdminPage() {
                     <input type="hidden" name="id" value={p.id} />
                     <select name="lotCode" defaultValue={p.lotCode ?? ""} className="rounded-lg border border-forest-900/15 px-2 py-1 font-mono text-xs">
                       <option value="">primul disponibil</option>
+                      {/* Lista arată loturile (aprobate), nu gospodăriile: o gospodărie apare aici după ce are suprafața confirmată și un lot. */}
                       {lots.map((l) => (
-                        <option key={l.code} value={l.code}>{l.code} · {farmName.get(l.farmSlug)}</option>
+                        <option key={l.code} value={l.code}>{l.code} · {farmName.get(l.farmSlug)} · {sellableBirds(l)} locuri</option>
                       ))}
                     </select>
                     <button className="self-start rounded-lg px-2 py-0.5 text-xs font-semibold text-forest-800 ring-1 ring-forest-900/15">Alocă lotul</button>
