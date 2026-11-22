@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Label } from "@/components/delivery/LabelSheet";
 import { PrintButton } from "@/components/admin/PrintButton";
@@ -27,7 +26,6 @@ export default async function LabelsPage({ searchParams }: PageProps<"/cont/gosp
     <Container className="py-8 print:p-0">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 print:hidden">
         <div>
-          <Link href="/cont/gospodar" className="text-sm text-muted">← Contul gospodarului</Link>
           <h1 className="mt-1 text-2xl font-semibold">Etichete ({parcels.length})</h1>
           <p className="max-w-lg text-sm text-muted">
             Tipărește și lipește câte o etichetă pe fiecare colet. Etichetele sunt salvate automat la comandă și apar în

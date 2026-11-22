@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Breadcrumbs } from "@/components/nav/Breadcrumbs";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { ButtonLink } from "@/components/ui/Button";
@@ -49,11 +50,7 @@ export default async function LotPage({ params }: PageProps<"/trasabilitate/[cod
     <>
       <section className="bg-cream-100">
         <Container className="py-10 sm:py-14">
-          <nav aria-label="Breadcrumb" className="text-sm text-muted">
-            <Link href="/trasabilitate" className="hover:text-forest-800">Trasabilitate</Link>
-            <span aria-hidden> / </span>
-            <span className="text-forest-900">{lot.code}</span>
-          </nav>
+          <Breadcrumbs items={[{ label: "Trasabilitate", href: "/trasabilitate" }, { label: `Lotul ${lot.code}` }]} />
           <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div className="animate-fade-up">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-grain-600">Lot de producție</p>

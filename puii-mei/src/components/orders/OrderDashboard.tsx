@@ -6,6 +6,7 @@ import { penAgeDays } from "@/lib/growth-log";
 import { penSpots } from "@/lib/order-pens";
 import { formatDate, formatNumber } from "@/lib/format";
 import { cn } from "@/lib/cn";
+import { Breadcrumbs } from "@/components/nav/Breadcrumbs";
 
 interface Step { label: string; done: boolean; note?: string }
 
@@ -50,6 +51,7 @@ export function OrderDashboard({
   return (
     <section className="panou client-dash border-b border-[var(--pd-line)]">
       <div className="mx-auto max-w-6xl space-y-4 px-4 py-8 sm:px-6">
+        <Breadcrumbs items={[{ label: "Comanda mea", href: "/comanda" }, { label: order.number }]} className="[&_a]:text-[var(--pd-muted)] [&_span]:text-[var(--pd-muted)]" />
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs tracking-[0.25em] text-[var(--pd-muted)] uppercase">Puii mei · comanda mea</p>

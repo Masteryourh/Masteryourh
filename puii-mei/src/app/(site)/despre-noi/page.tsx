@@ -25,6 +25,7 @@ export default function AboutPage() {
   return (
     <>
       <PageHeader
+        crumbs={[{ label: "Despre noi" }]}
         eyebrow="Despre noi"
         title="Aducem gospodăria mai aproape de masa ta"
         intro="Puii mei – Pui de carne crescuți la comandă. O platformă care conectează direct consumatorii cu gospodăriile locale partenere."

@@ -25,6 +25,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contact"
   return (
     <>
       <PageHeader
+        crumbs={[{ label: "Contact" }]}
         eyebrow="Contact"
         title="Hai să vorbim"
         intro="Întrebări despre precomenzi, vrei să devii gospodărie parteneră sau ai o idee de colaborare? Îți răspundem în cel mult o zi lucrătoare."

@@ -40,6 +40,7 @@ export default function HowItWorksPage() {
   return (
     <>
       <PageHeader
+        crumbs={[{ label: "Cum funcționează" }]}
         eyebrow="Cum funcționează"
         title="Tu comanzi. Gospodăriile îi cresc."
         intro="Modelul e inversat: nu cumperi ce s-a produs deja, ci comanzi înainte, iar gospodăriile partenere cresc puii pentru tine."

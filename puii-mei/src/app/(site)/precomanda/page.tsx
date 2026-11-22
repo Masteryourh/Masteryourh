@@ -28,6 +28,7 @@ export default async function PreorderPage({ searchParams }: PageProps<"/precoma
   return (
     <>
       <PageHeader
+        crumbs={[{ label: "Precomandă" }]}
         eyebrow="Precomandă"
         title="Rezervă-ți puii din următorul lot"
         intro="Completezi în 2 minute. Plătești acum un avans – puii de o zi și furajul lor (~10 kg / pui) – direct în contul gospodăriei. Avansul se scade din prețul total; la livrare plătești doar diferența, după greutatea reală."

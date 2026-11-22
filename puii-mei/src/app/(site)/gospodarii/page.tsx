@@ -21,6 +21,7 @@ export default async function FarmsPage() {
   return (
     <>
       <PageHeader
+        crumbs={[{ label: "Gospodării partenere" }]}
         eyebrow="Gospodării partenere"
         title="Oameni reali, gospodării reale"
         intro="Fiecare gospodărie parteneră este vizitată, verificată și monitorizată. Toate lucrează după un protocol comun de creștere, cu evidență zilnică pentru fiecare lot."

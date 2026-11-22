@@ -1,3 +1,4 @@
+import { Breadcrumbs } from "@/components/nav/Breadcrumbs";
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { FindOrderForm } from "@/components/forms/FindOrderForm";
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 export default function FindOrderPage() {
   return (
     <Container className="max-w-xl py-12 sm:py-16">
+      <Breadcrumbs items={[{ label: "Comanda mea" }]} className="mb-6" />
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-grain-600">Comanda mea</p>
       <h1 className="mt-2 text-4xl font-semibold">Urmărește precomanda</h1>
       <p className="mt-3 text-muted">
