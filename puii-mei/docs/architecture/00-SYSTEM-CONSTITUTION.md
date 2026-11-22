@@ -19,6 +19,24 @@
 
 **SC-005 [PROPUS]** Conformitatea sanitar-veterinară, sacrificarea, procesarea, transportul, lanțul de frig, fiscalitatea și protecția consumatorului sunt condiții de lansare validate de specialiști și autorități competente; UI-ul nu poate substitui autorizațiile.
 
+## 1A. Household OS și responsabilitatea de conformitate
+
+**SC-040 [CONFIRMAT CA DIRECȚIE DE BUSINESS]** PUII MEI este prestatorul de administrare integrală a activităților economice ale gospodăriilor partenere: identifică programe de venit, coordonează formalizarea juridică, documentele, autorizările, contractele, fiscalitatea prin profesioniști externi, aprovizionarea, marketingul, precomenzile, monitorizarea și logistica. Gospodăria rămâne producătorul independent și titularul obligațiilor legale care îi revin.
+
+**SC-041 [CONFIRMAT]** PUII MEI primește venituri pentru serviciile sale numai de la gospodărie. Clientul final achită produsele direct în contul gospodăriei. PUII MEI poate pregăti, administra și executa operațiuni în numele gospodăriei numai prin mandat și mecanism bancar legal validat; fondurile nu devin proprietatea PUII MEI.
+
+**SC-042 [CONFIRMAT]** Contabilitatea este externalizată către prestatori competenți. PUII MEI coordonează relația, documentele și plata serviciului contabil din contul gospodăriei, în limitele autorizării; nu pretinde că efectuează el însuși acte profesionale rezervate contabililor.
+
+**SC-043 [PROPUS — OBLIGATORIU ÎNAINTE DE ACTIVARE]** Fiecare gospodărie și fiecare program economic au un **Compliance Gate** cu cerințe aplicabile, dovezi, autorități/profesioniști responsabili, dată de verificare, termen de expirare, rezultat și semnătură/aprobare umană. Nicio activitate comercială nu se activează înaintea validării cerințelor obligatorii. Neconformitățile pot suspenda operațiunile afectate și declanșa remedierea auditată.
+
+**SC-044 [PROPUS]** PUII MEI își asumă contractual obligația de a organiza și monitoriza proactiv conformitatea cap-coadă, cu proceduri, termene, escaladări și verificări documentate. Această obligație nu reprezintă garanția absolută că orice risc juridic dispare și nu stinge obligațiile legale proprii ale gospodăriei.
+
+**SC-045 [CONFIRMAT CA MODEL DE PRODUS]** Platforma propune gospodăriei programe productive adecvate resurselor sale, prezintă investițiile, costurile și veniturile estimate, atrage clienți înainte de producție și oferă clienților vizibilitate verificabilă asupra evoluției comenzilor. Estimările nu sunt garanții de venit.
+
+**SC-046 [PROPUS]** Arhitectura funcțională are trei capabilități coordonate prin Central Command: **Household OS** (administrare gospodărie), **Program Engine** (programe, eligibilitate, capacitate, economie) și **Marketplace & Traceability** (cerere, precomenzi, evoluție și livrare). Acestea sunt limite logice, nu obligația de a crea trei aplicații sau microservicii.
+
+**SC-047 [DESCHIS]** Trebuie validat pentru fiecare program cine poate efectua operațiuni bancare, depune documente la autorități, semna contracte și realiza acte rezervate unor profesii sau operatori autorizați. Mandatul singur nu conferă automat toate aceste drepturi.
+
 ## 2. Actori și responsabilități
 
 | Actor | Rol de principiu | Limită |
