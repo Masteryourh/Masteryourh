@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 
-export type PanelNavItem = { href: string; label: string; badge?: number; exact?: boolean };
+export type PanelNavItem = { href: string; label: string; badge?: number; exact?: boolean; /** Cheia iconiței din bara cu iconițe (RailNav). */ icon?: string };
 
 /** Secțiunile panoului: listă verticală pe desktop, bară orizontală pe telefon. */
 export function PanelNav({ items, label }: { items: PanelNavItem[]; label: string }) {

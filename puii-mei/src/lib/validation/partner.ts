@@ -109,11 +109,15 @@ export const interestSchema = z
     rate: checkbox,
     fazani: checkbox,
     "legume-sera": checkbox,
+    borcane: checkbox,
+    afumaturi: checkbox,
+    pastravi: checkbox,
+    congelator: checkbox,
     termsConsent: checkbox.refine((v) => v, { message: "Este necesar acordul pentru prelucrarea datelor." }),
     website: z.string().max(0).optional().or(z.literal("")),
   })
   .superRefine((d, ctx) => {
-    if (!d.curcani && !d.rate && !d.fazani && !d["legume-sera"]) {
+    if (!d.curcani && !d.rate && !d.fazani && !d["legume-sera"] && !d.borcane && !d.afumaturi && !d.pastravi && !d.congelator) {
       ctx.addIssue({ code: "custom", path: ["products"], message: "Alege cel puțin un produs." });
     }
   });

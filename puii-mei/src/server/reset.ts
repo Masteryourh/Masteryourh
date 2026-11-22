@@ -6,7 +6,7 @@ import type { User } from "@/lib/domain";
 /** Colecțiile golite complet la resetarea datelor de test. */
 const WIPE = [
   "preorders", "lots", "photos", "files", "documents", "expenses", "investments", "growth-log",
-  "tours", "tour-events", "parcels", "farm-overrides", "contact-messages", "farm-applications",
+  "tours", "tour-events", "parcels", "contact-messages", "farm-applications",
   "investor-applications", "interest-signups", "legal",
 ];
 /** Setările pe gospodărie: se păstrează doar pentru gospodăriile create din admin. */
@@ -32,6 +32,10 @@ export async function resetTestData() {
     const ids = (await store.list<{ id: string }>(c)).filter((x) => !adminFarms.has(x.id)).map((x) => x.id);
     removed[c] = ids.length ? await store.remove(c, ids) : 0;
   }
+
+  // Modificările gospodăriilor demo se păstrează; cele ale gospodăriilor demo vechi (care nu mai există) se șterg.
+  const stale = (await store.list<{ id: string }>("farm-overrides")).filter((o) => !demoFarms.some((f) => f.slug === o.id)).map((o) => o.id);
+  removed["farm-overrides"] = stale.length ? await store.remove("farm-overrides", stale) : 0;
 
   const valid = new Set([...adminFarms, ...demoFarms.map((f) => f.slug)]);
   let relinked = 0;

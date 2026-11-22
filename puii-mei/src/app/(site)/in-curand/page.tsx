@@ -19,7 +19,7 @@ export default function UpcomingPage() {
         crumbs={[{ label: "În curând" }]}
         eyebrow="În curând"
         title="Mai mult decât pui"
-        intro="Începem cu puii, în Bucovina. Urmează curcani, rațe, fazani și legume din seră. Ce ajunge în zona ta depinde de gospodăriile partenere din regiune și de interesul celor din jur."
+        intro="Începem cu puii, în Bucovina. Urmează curcani, rațe, fazani, legume din seră, borcane din cămară, afumături, păstrăvi și pachete pentru congelator. Ce ajunge în zona ta depinde de gospodăriile partenere din regiune și de interesul celor din jur."
       />
       <Container className="py-14 sm:py-20">
         <UpcomingProductGrid />

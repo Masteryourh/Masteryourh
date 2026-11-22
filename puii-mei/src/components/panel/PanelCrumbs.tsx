@@ -50,17 +50,17 @@ export function PanelCrumbs() {
   return (
     <nav aria-label="Unde ești" className="px-4 pt-4 text-sm sm:px-6 lg:px-8 print:hidden">
       {parent && (
-        <Link href={parent.href} className="inline-flex items-center gap-1 font-semibold text-slate-700 hover:text-slate-950 sm:hidden">
+        <Link href={parent.href} className="inline-flex items-center gap-1 font-semibold text-[var(--pd-text)] sm:hidden">
           <span aria-hidden>←</span> Înapoi la {parent.label}
         </Link>
       )}
-      <ol className="hidden flex-wrap items-center gap-1.5 text-slate-500 sm:flex">
+      <ol className="hidden flex-wrap items-center gap-1.5 text-[var(--pd-muted)] sm:flex">
         {crumbs.map((c, i) => {
           const last = i === crumbs.length - 1;
           const linkable = !last && c.known;
           return (
             <li key={c.href} className="flex items-center gap-1.5">
-              {linkable ? <Link href={c.href} className="hover:text-slate-900 hover:underline">{c.label}</Link> : <span aria-current={last ? "page" : undefined} className={last ? "font-semibold text-slate-800" : undefined}>{c.label}</span>}
+              {linkable ? <Link href={c.href} className="hover:text-slate-900 hover:underline">{c.label}</Link> : <span aria-current={last ? "page" : undefined} className={last ? "font-semibold text-[var(--pd-text)]" : undefined}>{c.label}</span>}
               {!last && <span aria-hidden>›</span>}
             </li>
           );

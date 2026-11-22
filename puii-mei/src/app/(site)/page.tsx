@@ -148,7 +148,7 @@ export default async function HomePage() {
             <SectionHeading
               eyebrow="În curând"
               title="Mai mult decât pui"
-              intro="Urmează curcani, rațe, fazani și legume din seră. Ce ajunge în zona ta depinde de gospodăriile partenere din regiune."
+              intro="Urmează curcani, rațe, fazani, legume din seră, borcane din cămară, afumături, păstrăvi și pachete pentru congelator. Ce ajunge în zona ta depinde de gospodăriile partenere din regiune."
             />
             <ButtonLink href="/in-curand" variant="secondary">
               Anunță-mă când ajung în zona mea
