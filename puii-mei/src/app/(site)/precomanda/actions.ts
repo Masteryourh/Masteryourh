@@ -1,5 +1,6 @@
 "use server";
 
+import { grantOrderAccess } from "@/server/order-access";
 import { revalidatePath } from "next/cache";
 import { estimatePrice, feedAdvance } from "@/lib/pricing";
 import { currentPriceParams } from "@/server/repositories/settings";
@@ -52,6 +53,8 @@ export async function submitPreorder(
       marketingConsent: data.marketingConsent,
     });
     await notifyNewPreorder(preorder);
+    // Cel care a trimis precomanda are acces 24 de ore la „Comanda mea”, fără PIN.
+    await grantOrderAccess(preorder);
     // Alocarea automată: primul loc disponibil în care încape toată comanda.
     const alloc = await allocateNewPreorder(preorder);
     revalidatePath("/", "layout");

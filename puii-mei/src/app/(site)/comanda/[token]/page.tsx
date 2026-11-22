@@ -18,10 +18,15 @@ import { parcelRepository, tourRepository } from "@/server/repositories/delivery
 import { allocationChoiceAction, cancelOrderAction, declarePaymentAction } from "../actions";
 import { lotRepository as lotsRepo } from "@/server/repositories/catalog";
 import { lotPens, sellableBirds } from "@/lib/growth";
+import { penAgeDays } from "@/lib/growth-log";
+import { pricing } from "@/lib/pricing";
 import { growthLogRepository } from "@/server/repositories/growth-log";
 import { GrowthTimeline } from "@/components/growth/GrowthTimeline";
 import { PenTrackMap } from "@/components/maps/PenTrackMap";
 import { OrderDashboard } from "@/components/orders/OrderDashboard";
+import { FindOrderForm } from "@/components/forms/FindOrderForm";
+import { Breadcrumbs } from "@/components/nav/Breadcrumbs";
+import { canViewOrder, orderAccessUntil } from "@/server/order-access";
 import { orderPens } from "@/lib/order-pens";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +40,19 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
   const sp = await searchParams;
   const order = await preorderRepository.byTrackingToken(token);
   if (!order) notFound();
+  if (!(await canViewOrder(order))) {
+    return (
+      <Container className="max-w-xl py-12 sm:py-16">
+        <Breadcrumbs items={[{ label: "Comanda mea", href: "/comanda" }, { label: order.number }]} className="mb-6" />
+        <h1 className="text-3xl font-semibold">Comanda {order.number}</h1>
+        <p className="mt-3 text-muted">
+          Ca să vezi comanda, confirmă că ești tu: îți trimitem un PIN pe telefonul folosit la precomandă. Accesul e valabil 24 de ore.
+        </p>
+        <div className="mt-8"><FindOrderForm number={order.number} /></div>
+      </Container>
+    );
+  }
+  const accessUntil = await orderAccessUntil(order);
 
   const [{ lot, farm, payment }, zone, parcel] = await Promise.all([
     orderFarm(order),
@@ -63,6 +81,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
       }))
     : [];
   const myPens = lot ? orderPens(order, lot, allOrders) : [];
+  const myStart = lot?.penStarts?.find((s) => s.n === myPens[0]);
   const feedStatus = feedStatusOf(order);
   const cancelled = order.status === "anulata";
   const delivered = order.status === "livrata" || Boolean(parcel?.delivered);
@@ -104,8 +123,16 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
           <div><dt className="text-muted">Gospodăria</dt><dd className="font-semibold">{farm ? `${farm.name}, ${farm.village}` : "Se alocă în curând"}</dd></div>
         </dl>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-muted">Păstrează linkul acestei pagini.</span>
+          <span className="text-muted">
+            {accessUntil ? `Acces cu PIN valabil până la ${time.format(accessUntil)}. ` : ""}Data viitoare intri cu numărul precomenzii și un PIN nou.
+          </span>
           <CopyButton value={`${site.url}/comanda/${token}`} label="Copiază linkul" />
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2 text-sm">
+          <Link href={`/comanda/${token}/contract`} className={buttonClasses("secondary", "md")}>Contractul de creștere</Link>
+          {lot && <Link href={`/trasabilitate/${lot.code}`} className={buttonClasses("ghost", "md")}>Trasabilitatea lotului</Link>}
+          {lot && journal.length > 0 && <a href="#jurnal" className={buttonClasses("ghost", "md")}>Jurnal și poze</a>}
+          <a href="#cifre" className={buttonClasses("ghost", "md")}>Cifrele comenzii</a>
         </div>
       </Container>
 
@@ -295,6 +322,31 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
             <Link href={`/trasabilitate/${lot.code}`} className={buttonClasses("secondary", "md", "mt-5")}>
               Vezi evoluția lotului, etapă cu etapă
             </Link>
+          </section>
+        )}
+
+        {/* Cifrele comenzii: ce se poate măsura până acum */}
+        {!cancelled && (
+          <section id="cifre" className="scroll-mt-28 rounded-3xl bg-white p-6 ring-1 ring-forest-900/10 sm:p-8">
+            <h2 className="text-2xl font-semibold">Cifrele comenzii</h2>
+            <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-3">
+              {[
+                ["Pui comandați", `${order.birds}`],
+                ["Greutate estimată", `~${formatNumber(order.estimate.estimatedKg)} kg pui curățat`],
+                ["Preț", `${formatLei(order.estimate.pricePerKg)} / kg`],
+                ["Total estimat", formatLei(order.estimate.total)],
+                ["Furaj pentru puii tăi", `~${formatNumber(Math.round(order.birds * pricing.feedKgPerBird))} kg`],
+                ["Ziua creșterii", myStart ? `${Math.max(0, penAgeDays(myStart.date))} din ${lot?.growthDays ?? 60}` : "țarcul nu a pornit"],
+                ["Mutări ale țarcului notate", `${journal.filter((e) => e.type === "mutare" && myPens.includes(e.pen ?? 0)).length}`],
+                ["Poze în jurnal", `${journal.filter((e) => e.photoId).length}`],
+                ["Verificări veterinare", `${journal.filter((e) => e.type === "veterinar").length}`],
+              ].map(([k, v]) => (
+                <div key={k} className="rounded-2xl bg-cream-100 p-4">
+                  <dt className="text-muted">{k}</dt>
+                  <dd className="mt-1 font-semibold text-forest-900">{v}</dd>
+                </div>
+              ))}
+            </dl>
           </section>
         )}
 

@@ -96,6 +96,19 @@ export default async function AdminPage() {
                 <td className="px-4 py-3">
                   <div className="font-medium">{p.customer.name}</div>
                   <div className="text-muted">{p.customer.phone} · {p.customer.email}</div>
+                  {p.accessPin?.manual && manualPinActive(p.accessPin.expiresAt) && (
+                    <div className="mt-1.5 rounded-lg bg-amber-100 p-2 text-xs text-amber-950">
+                      Clientul a cerut PIN (SMS neconfigurat): <strong className="font-mono text-sm">{p.accessPin.manual}</strong>{" "}
+                      <a
+                        href={`https://wa.me/${p.customer.phone.replace(/\D/g, "").replace(/^0/, "40")}?text=${encodeURIComponent(`Puii mei: PIN-ul pentru comanda ${p.number} este ${p.accessPin.manual}. Valabil 24 de ore.`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold underline"
+                      >
+                        Trimite pe WhatsApp
+                      </a>
+                    </div>
+                  )}
                   {p.address && <div className="text-muted">{p.address}</div>}
                   {p.notes && <div className="mt-1 text-xs italic text-muted">„{p.notes}”</div>}
                 </td>
@@ -197,4 +210,9 @@ function Stat({ label, value }: { label: string; value: string }) {
       <p className="mt-1 font-display text-2xl font-semibold text-forest-900">{value}</p>
     </div>
   );
+}
+
+/** PIN-ul de acces cerut de client, încă valabil (pentru trimiterea manuală). */
+function manualPinActive(expiresAt: string) {
+  return Date.parse(expiresAt) > Date.now();
 }

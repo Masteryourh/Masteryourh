@@ -2,29 +2,39 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { declareFeedPayment, ensureTrackingToken } from "@/server/orders";
+import { declareFeedPayment } from "@/server/orders";
+import { requestOrderPin, requireOrderAccess, verifyOrderPin } from "@/server/order-access";
 import { preorderRepository } from "@/server/repositories/preorders";
 import { notifyOrderEvent } from "@/server/notifications";
 import { chooseWait, processWaitingPreorders, splitPreorder } from "@/server/allocation";
 
-const digits = (s: string) => s.replace(/\D/g, "").slice(-9);
+export type FindOrderState =
+  | { status: "idle"; number?: string }
+  | { status: "pin"; number: string; masked: string; channel: "sms" | "email" | "manual"; error?: string }
+  | { status: "error"; error: string; number: string };
 
-export type FindOrderState = { status: "idle" } | { status: "error"; error: string; number: string };
-
-/** Găsește comanda după număr + telefon și deschide pagina ei. */
-export async function findOrder(_p: FindOrderState, formData: FormData): Promise<FindOrderState> {
+/** Pasul 1: numărul precomenzii → PIN trimis pe telefonul clientului (valabil 24 de ore). */
+export async function requestPinAction(_p: FindOrderState, formData: FormData): Promise<FindOrderState> {
   const number = String(formData.get("number") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "");
-  const p = number ? await preorderRepository.byNumber(number) : null;
-  if (!p || digits(phone).length < 9 || digits(p.customer.phone) !== digits(phone)) {
-    return { status: "error", error: "Nu am găsit o comandă cu acest număr și acest telefon.", number };
+  const r = await requestOrderPin(number);
+  if (!r.ok) return { status: "error", error: r.error, number };
+  return { status: "pin", number: r.number, masked: r.masked, channel: r.channel };
+}
+
+/** Pasul 2: PIN-ul → acces 24 de ore la „Comanda mea”. */
+export async function verifyPinAction(prev: FindOrderState, formData: FormData): Promise<FindOrderState> {
+  const number = String(formData.get("number") ?? "").trim();
+  const r = await verifyOrderPin(number, String(formData.get("pin") ?? ""));
+  if (!r.ok) {
+    return prev.status === "pin" ? { ...prev, error: r.error } : { status: "error", error: r.error, number };
   }
-  redirect(`/comanda/${await ensureTrackingToken(p)}`);
+  redirect(`/comanda/${r.token}`);
 }
 
 /** Clientul anunță că a plătit avansul pentru hrană. */
 export async function declarePaymentAction(formData: FormData) {
   const token = String(formData.get("token") ?? "");
+  await requireOrderAccess(token);
   let error = "";
   try {
     await declareFeedPayment(token);
@@ -39,7 +49,7 @@ export async function declarePaymentAction(formData: FormData) {
 /** Clientul își anulează precomanda, gratuit, cât timp nu e confirmată. */
 export async function cancelOrderAction(formData: FormData) {
   const token = String(formData.get("token") ?? "");
-  const p = await preorderRepository.byTrackingToken(token);
+  const p = await requireOrderAccess(token);
   if (!p) redirect("/comanda");
   if (p.status === "noua" && (p.feedPayment?.status ?? "de-platit") === "de-platit") {
     await preorderRepository.updateStatus(p.id, "anulata");
@@ -53,7 +63,7 @@ export async function cancelOrderAction(formData: FormData) {
 /** Comanda nu încape într-o singură gospodărie: clientul alege împărțirea sau așteptarea. */
 export async function allocationChoiceAction(formData: FormData) {
   const token = String(formData.get("token") ?? "");
-  const p = await preorderRepository.byTrackingToken(token);
+  const p = await requireOrderAccess(token);
   if (!p) redirect("/comanda");
   if (!p.lotCode && p.status !== "anulata") {
     if (formData.get("choice") === "imparte") await splitPreorder(p);

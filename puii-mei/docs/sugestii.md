@@ -62,6 +62,9 @@ _Ultima actualizare: 22 noiembrie 2026_
 
 ## De configurat (Vercel / servicii)
 
+- [ ] **SMS pentru PIN-ul clientului** (Twilio): `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` în Vercel. Până atunci
+      PIN-ul pleacă pe email (dacă e configurat Resend) sau apare în Admin → Precomenzi, cu buton „Trimite pe WhatsApp”.
+
 - [ ] **SESSION_SECRET** în Vercel → Environment Variables (o valoare lungă, aleatorie), apoi Redeploy.
 - [ ] **Resend** (`RESEND_API_KEY`, `EMAIL_FROM`, ex. „Puii mei <comenzi@puiimei.ro>”): emailul cu linkul
       „Comanda mea” și celelalte emailuri pleacă doar după configurare.
@@ -94,6 +97,9 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [ ] **Modelele de contract** și chitanța pentru avansul de hrană, cu datele firmei.
 
 ## De verificat juridic
+
+- [ ] **Contractul de creștere** tripartit (client – gospodărie – ECORATE consultant), model în `/comanda/<cod>/contract`:
+      clauza pentru pierderile de pui, semnarea electronică, datele firmei (22 nov. 2026).
 
 - [ ] **Mai multe loturi simultane** în aceeași gospodărie (sau un singur lot pe rând, cu țarcuri pornite eșalonat) –
       ce permite legea pentru sacrificarea în gospodărie și vânzarea directă (22 nov. 2026).
