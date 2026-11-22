@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { submitRating, type RatingFormState } from "@/app/(site)/evaluare/[token]/actions";
+import { submitRating, type RatingFormState } from "@/app/(client)/evaluare/[token]/actions";
 import { ratingTargets } from "@/lib/delivery";
 import { Field, fieldA11y, inputClasses } from "./Field";
 import { Stars } from "./Stars";

@@ -10,6 +10,7 @@ export function ClientShell({ number, token, children }: { number: string; token
     { href: `/comanda/${token}#panou`, label: "Panou" },
     { href: `/comanda/${token}#plata`, label: "Plăți" },
     { href: `/comanda/${token}#cifre`, label: "Cifre" },
+    { href: `/comanda/${token}#trasabilitate`, label: "Trasabilitate" },
     { href: `/comanda/${token}#jurnal`, label: "Jurnal și poze" },
     { href: `/comanda/${token}#livrare`, label: "Livrare" },
     { href: `/comanda/${token}/contract`, label: "Contract" },
@@ -23,11 +24,12 @@ export function ClientShell({ number, token, children }: { number: string; token
             <span className="block font-mono text-xs text-[var(--pd-muted)]">{number}</span>
           </Link>
           <div className="flex items-center gap-2">
-            <a href="/" target="_blank" rel="noopener noreferrer" className="hidden text-xs text-[var(--pd-muted)] underline sm:inline">Site-ul Puii mei ↗</a>
             <ThemeToggle className="h-8 w-8 rounded-md border border-[var(--pd-line)]" />
             <form action="/comanda/iesire" method="post">
               <button className="rounded-md border border-[var(--pd-line)] px-3 py-1.5 text-xs font-semibold text-[var(--pd-text)]">Ieșire</button>
             </form>
+            {/* Singurul drum din panou înapoi spre site. */}
+            <Link href="/" className="rounded-md border border-[var(--pd-line)] px-3 py-1.5 text-xs font-semibold text-[var(--pd-text)]">← Înapoi la site</Link>
           </div>
           <nav aria-label="Secțiunile comenzii" className="-mx-1 flex w-full gap-1 overflow-x-auto pb-0.5">
             {sections.map((s) => (

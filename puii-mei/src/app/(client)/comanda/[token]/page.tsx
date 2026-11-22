@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/Container";
 import { Icon } from "@/components/ui/Icon";
 import { buttonClasses } from "@/components/ui/Button";
 import { LotStatusBadge } from "@/components/lots/LotStatusBadge";
+import { LotTimeline } from "@/components/lots/LotTimeline";
 import { CopyButton } from "@/components/orders/CopyButton";
 import { availabilityDate, growthProgress, lotStatus } from "@/lib/lots";
 import { formatDate, formatLei, formatNumber } from "@/lib/format";
@@ -118,7 +119,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
         </div>
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
           <Link href={`/comanda/${token}/contract`} className={buttonClasses("secondary", "md")}>Contractul de creștere</Link>
-          {lot && <Link href={`/trasabilitate/${lot.code}`} className={buttonClasses("ghost", "md")}>Trasabilitatea lotului</Link>}
+          {lot && <a href="#trasabilitate" className={buttonClasses("ghost", "md")}>Trasabilitatea lotului</a>}
           {lot && journal.length > 0 && <a href="#jurnal" className={buttonClasses("ghost", "md")}>Jurnal și poze</a>}
           <a href="#cifre" className={buttonClasses("ghost", "md")}>Cifrele comenzii</a>
         </div>
@@ -294,9 +295,9 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
 
         {/* Lotul */}
         {lot && status && (
-          <section className="rounded-3xl bg-white p-6 ring-1 ring-forest-900/10 sm:p-8">
+          <section id="trasabilitate" className="scroll-mt-32 rounded-3xl bg-white p-6 ring-1 ring-forest-900/10 sm:p-8">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <h2 className="text-2xl font-semibold">Lotul <span className="font-mono">{lot.code}</span></h2>
+              <h2 className="text-2xl font-semibold">Trasabilitatea lotului <span className="font-mono">{lot.code}</span></h2>
               <LotStatusBadge status={status} />
             </div>
             <p className="mt-2 text-muted">
@@ -307,9 +308,23 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
                 <div className="h-full rounded-full bg-forest-500" style={{ width: `${growthProgress(lot)}%` }} />
               </div>
             )}
-            <Link href={`/trasabilitate/${lot.code}`} className={buttonClasses("secondary", "md", "mt-5")}>
-              Vezi evoluția lotului, etapă cu etapă
-            </Link>
+            <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+              {[
+                ["Gospodăria", farm ? `${farm.name}, ${farm.village}, jud. ${farm.county}` : "—"],
+                ["Înregistrare sanitar-veterinară", farm?.veterinaryRegistration ?? "—"],
+                ["Începutul creșterii", formatDate(lot.startDate)],
+                ["Durata creșterii", `${lot.growthDays} de zile`],
+                ["Tip pasăre", lot.breed],
+                ["Hrana", lot.feed],
+                ["Sacrificare", lot.processor],
+              ].map(([k, v]) => (
+                <div key={k}>
+                  <dt className="text-muted">{k}</dt>
+                  <dd className="font-medium text-forest-900">{v}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-6"><LotTimeline lot={lot} /></div>
           </section>
         )}
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { submitConfirmation, type ConfirmationFormState } from "@/app/(site)/confirmare/[token]/actions";
+import { submitConfirmation, type ConfirmationFormState } from "@/app/(client)/confirmare/[token]/actions";
 import { PHOTO_SIDES } from "@/lib/delivery";
 import { buttonClasses } from "@/components/ui/Button";
 import { Field, fieldA11y, inputClasses } from "./Field";
