@@ -6,6 +6,7 @@ import { roleHome } from "@/lib/roles";
 import { verifyPassword, hashPassword } from "@/server/password";
 import { setupLinkValid, userRepository } from "@/server/repositories/users";
 import { envAdmin, startSession } from "@/server/session";
+import { safeEqual, sessionSecretReady } from "@/server/session-token";
 
 export type AuthFormState = { status: "idle" } | { status: "error"; message: string; email?: string };
 
@@ -34,13 +35,17 @@ export async function login(_prev: AuthFormState, formData: FormData): Promise<A
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   if (!email || !password) return { status: "error", message: "Completează emailul și parola.", email };
+  if (!sessionSecretReady()) {
+    console.error("[puii-mei] Autentificare oprită: SESSION_SECRET lipsește sau e prea scurt.");
+    return { status: "error", message: "Autentificarea e oprită temporar: platforma nu e configurată complet (SESSION_SECRET). Anunță administratorul.", email };
+  }
   if (isLocked(email)) {
     return { status: "error", message: `Prea multe încercări. Încearcă din nou peste ${LOCK_MINUTES} minute.`, email };
   }
 
   const admin = envAdmin();
   let user = null;
-  if (admin && email === admin.email && password === process.env.ADMIN_PASSWORD) {
+  if (admin && email === admin.email && safeEqual(password, process.env.ADMIN_PASSWORD ?? "")) {
     user = admin;
   } else {
     const found = await userRepository.byEmail(email);

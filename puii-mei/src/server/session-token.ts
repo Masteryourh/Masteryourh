@@ -19,14 +19,51 @@ export interface SessionPayload {
   exp: number;
 }
 
-function secret() {
-  const s =
-    process.env.SESSION_SECRET || (process.env.ADMIN_PASSWORD ? `puii-mei:${process.env.ADMIN_PASSWORD}` : "");
-  if (!s) throw new Error("SESSION_SECRET nu este setat");
-  return s;
+/** Lungimea minimă a cheii de semnare (caractere). */
+export const MIN_SECRET_LENGTH = 32;
+/** Cheie folosită doar la dezvoltare locală (`next dev`), niciodată în producție. */
+const DEV_SECRET = "puii-mei:dezvoltare-locala:nu-se-foloseste-in-productie";
+
+/**
+ * Cheia de semnare a sesiunilor, accesului curierilor și PIN-urilor clienților.
+ * Vine DOAR din SESSION_SECRET (fără variante derivate din parola de admin).
+ * În producție, lipsa ei sau o cheie prea scurtă e eroare: platforma refuză să semneze.
+ */
+export function sessionSecret(env: Record<string, string | undefined> = process.env) {
+  const s = env.SESSION_SECRET?.trim();
+  if (s) {
+    if (s.length < MIN_SECRET_LENGTH) throw new Error(`SESSION_SECRET e prea scurt (minimum ${MIN_SECRET_LENGTH} de caractere).`);
+    return s;
+  }
+  if (env.NODE_ENV === "production") {
+    throw new Error("SESSION_SECRET nu este setat. Adaugă-l în Vercel → Settings → Environment Variables, apoi Redeploy.");
+  }
+  return DEV_SECRET;
 }
 
-const sign = (data: string) => createHmac("sha256", secret()).update(data).digest("base64url");
+/** Dacă platforma poate semna sesiuni (SESSION_SECRET configurat corect). */
+export function sessionSecretReady(env: Record<string, string | undefined> = process.env) {
+  try {
+    sessionSecret(env);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Amprentă HMAC cu separarea scopului (ex. „pin”), ca o cheie să nu poată fi folosită în alt context. */
+export function keyedHash(purpose: string, data: string, env?: Record<string, string | undefined>) {
+  return createHmac("sha256", sessionSecret(env)).update(`${purpose}:${data}`).digest("hex");
+}
+
+/** Comparație în timp constant pentru șiruri (parole, coduri). */
+export function safeEqual(a: string, b: string) {
+  const x = createHmac("sha256", "cmp").update(a).digest();
+  const y = createHmac("sha256", "cmp").update(b).digest();
+  return timingSafeEqual(x, y) && a.length === b.length;
+}
+
+const sign = (data: string) => createHmac("sha256", sessionSecret()).update(data).digest("base64url");
 
 /** Semnează orice obiect mic (folosit și pentru sesiunea temporară a curierului). */
 export function signPayload(p: object) {
