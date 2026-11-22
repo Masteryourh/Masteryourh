@@ -55,7 +55,7 @@ _Ultima actualizare: 22 noiembrie 2026_
 
 - [x] **Navigare clară** (PR #32): traseul „Acasă › …” pe site, „Panou admin › …” în panouri, iar pe telefon
       „← Înapoi la <pagina părinte>”.
-- [ ] **Română / engleză** – următorul pas (întâi site-ul public, apoi panourile).
+- [ ] **Română / engleză** – amânat de utilizator (22 nov. 2026); întâi site-ul public, apoi panourile.
 
 ## De configurat (Vercel / servicii)
 
