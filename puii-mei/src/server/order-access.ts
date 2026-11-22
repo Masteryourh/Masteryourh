@@ -112,3 +112,15 @@ export async function requireOrderAccess(token: string) {
   if (!p || !(await canViewOrder(p))) redirect(`/comanda?nr=${encodeURIComponent(p?.number ?? "")}`);
   return p;
 }
+
+export async function clearOrderAccess() {
+  (await cookies()).delete(COOKIE);
+}
+
+/** Comanda la care clientul are acces acum (PIN în ultimele 24 h), pentru „Continuă la comandă”. */
+export async function currentOrderAccess() {
+  const v = verifyPayload<{ num: string; exp: number }>((await cookies()).get(COOKIE)?.value);
+  if (!v) return null;
+  const p = await preorderRepository.byNumber(v.num);
+  return p && p.status !== "anulata" ? { number: p.number, token: await ensureTrackingToken(p) } : null;
+}

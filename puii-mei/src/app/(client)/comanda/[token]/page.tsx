@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { Icon } from "@/components/ui/Icon";
 import { buttonClasses } from "@/components/ui/Button";
@@ -15,7 +15,7 @@ import { feedFor, feedStatusOf, orderFarm } from "@/server/orders";
 import { preorderRepository } from "@/server/repositories/preorders";
 import { zoneRepository } from "@/server/repositories/catalog";
 import { parcelRepository, tourRepository } from "@/server/repositories/delivery";
-import { allocationChoiceAction, cancelOrderAction, declarePaymentAction } from "../actions";
+import { allocationChoiceAction, cancelOrderAction, declarePaymentAction } from "@/app/(site)/comanda/actions";
 import { lotRepository as lotsRepo } from "@/server/repositories/catalog";
 import { lotPens, sellableBirds } from "@/lib/growth";
 import { penAgeDays } from "@/lib/growth-log";
@@ -24,8 +24,7 @@ import { growthLogRepository } from "@/server/repositories/growth-log";
 import { GrowthTimeline } from "@/components/growth/GrowthTimeline";
 import { PenTrackMap } from "@/components/maps/PenTrackMap";
 import { OrderDashboard } from "@/components/orders/OrderDashboard";
-import { FindOrderForm } from "@/components/forms/FindOrderForm";
-import { Breadcrumbs } from "@/components/nav/Breadcrumbs";
+import { ClientShell } from "@/components/orders/ClientShell";
 import { canViewOrder, orderAccessUntil } from "@/server/order-access";
 import { orderPens } from "@/lib/order-pens";
 
@@ -40,18 +39,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
   const sp = await searchParams;
   const order = await preorderRepository.byTrackingToken(token);
   if (!order) notFound();
-  if (!(await canViewOrder(order))) {
-    return (
-      <Container className="max-w-xl py-12 sm:py-16">
-        <Breadcrumbs items={[{ label: "Comanda mea", href: "/comanda" }, { label: order.number }]} className="mb-6" />
-        <h1 className="text-3xl font-semibold">Comanda {order.number}</h1>
-        <p className="mt-3 text-muted">
-          Ca să vezi comanda, confirmă că ești tu: îți trimitem un PIN pe telefonul folosit la precomandă. Accesul e valabil 24 de ore.
-        </p>
-        <div className="mt-8"><FindOrderForm number={order.number} /></div>
-      </Container>
-    );
-  }
+  if (!(await canViewOrder(order))) redirect(`/comanda?nr=${encodeURIComponent(order.number)}`);
   const accessUntil = await orderAccessUntil(order);
 
   const [{ lot, farm, payment }, zone, parcel] = await Promise.all([
@@ -103,7 +91,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
   const current = steps.findIndex((s) => !s.done);
 
   return (
-    <>
+    <ClientShell number={order.number} token={token}>
       <OrderDashboard
         order={order}
         lot={lot}
@@ -373,7 +361,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
 
         {/* Livrarea */}
         {!cancelled && (
-          <section className="rounded-3xl bg-white p-6 ring-1 ring-forest-900/10 sm:p-8">
+          <section id="livrare" className="scroll-mt-32 rounded-3xl bg-white p-6 ring-1 ring-forest-900/10 sm:p-8">
             <h2 className="text-2xl font-semibold">Livrarea</h2>
             {!parcel && (
               <p className="mt-2 text-muted">
@@ -410,7 +398,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
           </section>
         )}
       </Container>
-    </>
+    </ClientShell>
   );
 }
 

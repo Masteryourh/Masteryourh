@@ -72,7 +72,8 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
   către gospodar la fiecare lot vândut (suma pe pui: de stabilit). **#36** editarea gospodăriilor demo din admin; meniul adminului = bară cu iconițe în dreapta ecranului (numele la hover); „În curând” + borcane, afumături, păstrăvi, pachete pentru congelator.
   **#37** țarcuri blocate explicit fără suprafață; trasabilitate după nr. precomenzii. **#38** „Comanda mea” cu nr. precomenzii +
   PIN (6 cifre, SMS / email / manual din admin, valabil 24 h); contractul de creștere tripartit (model); cifrele comenzii;
-  total avansuri primite la gospodar.
+  total avansuri primite la gospodar. **#39** comenzile din fiecare țarc. **#40** panoul clientului
+  separat de site (`app/(client)`): bară proprie (Panou, Plăți, Cifre, Jurnal, Livrare, Contract, Ieșire), fără meniul site-ului.
 - (vechi) **#26**: mod luminos / întunecat peste tot (buton soare/lună), eticheta coletului alb-negru;
   prețuri după modelul de creștere; „țarc” și „pui curățat, gata de gătit”; texte despre creșterea de 60 de zile.
 
