@@ -23,6 +23,11 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [x] **Investiții cu rambursare** de către gospodar, la fiecare lot vândut (PR #35): rata pe pui livrat se setează pe
       fiecare investiție; ratele se înregistrează pe lot; progresul îl văd adminul, investitorul și gospodarul.
 - [ ] **Suma reținută pe pui** la rambursare: **de stabilit** (22 nov. 2026).
+- [ ] **Anularea comenzii după plata avansului** – de gândit (22 nov. 2026): dacă alt client preia comanda anulată
+      (integral sau parțial, aceiași pui din același țarc), avansul se poate rambursa integral sau proporțional cu puii
+      preluați; dacă nu o preia nimeni, de stabilit ce se întâmplă cu avansul (puii și furajul sunt deja cumpărați).
+      De gândit: lista de așteptare care preia automat locurile, termenul până la care se poate anula, cine returnează
+      banii (gospodăria, direct clientului) și cum apare în registru și în contract.
 - [ ] **Comenzi pentru congelator** (cantități mari) pe lângă cele pentru consum imediat – anunțate pe „În curând” (PR #36).
 - [ ] **Alte produse din gospodărie** la precomandă: borcane, afumături, păstrăvi – anunțate pe „În curând”, cu înscriere
       de interes (PR #36); precomanda lor e de construit.
