@@ -41,7 +41,7 @@ export function Pill({ children, tone = "gold" }: { children: React.ReactNode; t
 }
 
 /** Cifră mare, subțire, cu unitate și eticheta. */
-export function Metric({ label, value, unit, pill, delay }: { label: string; value: string; unit?: string; pill?: React.ReactNode; delay?: number }) {
+export function Metric({ label, value, unit, pill, delay, note }: { label: string; value: string; unit?: string; pill?: React.ReactNode; delay?: number; note?: string }) {
   return (
     <Glass delay={delay} className="flex flex-col justify-between gap-3">
       <p className="text-sm text-[var(--pd-muted)]">{label}</p>
@@ -52,6 +52,7 @@ export function Metric({ label, value, unit, pill, delay }: { label: string; val
         </p>
         {pill}
       </div>
+      {note && <p className="-mt-1 text-sm text-[var(--pd-muted)] tabular-nums">{note}</p>}
     </Glass>
   );
 }

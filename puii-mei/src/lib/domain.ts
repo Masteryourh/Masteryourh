@@ -137,6 +137,12 @@ export interface Preorder {
   deliveredAt?: string;
   /** Codul secret al linkului „Comanda mea” (/comanda/<cod>), fără cont. */
   trackingToken?: string;
+  /**
+   * PIN-ul de acces la „Comanda mea” (cerut cu numărul precomenzii, trimis pe telefonul clientului).
+   * Se păstrează doar amprenta; `manual` = PIN-ul în clar, doar cât timp nu e configurat SMS-ul,
+   * ca adminul să-l poată trimite pe WhatsApp.
+   */
+  accessPin?: { hash: string; requestedAt: string; expiresAt: string; attempts: number; channel: "sms" | "email" | "manual"; manual?: string };
   /** Avansul pentru hrană, plătit de client direct în contul gospodăriei. */
   feedPayment?: FeedPayment;
   /**

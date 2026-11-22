@@ -105,6 +105,9 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
   const progress = currentLot ? growthProgress(currentLot) : 0;
   const totals = expenseTotals(expenses);
   const feedPaid = farmPreorders.filter((p) => p.feedPayment?.status === "primita").length;
+  const advanceOf = (p: (typeof farmPreorders)[number]) => p.feedPayment?.amount ?? feedAdvance(p.birds, payment?.feedPricePerKg, payment?.chickPricePerBird).amount;
+  const feedPaidSum = farmPreorders.filter((p) => p.feedPayment?.status === "primita").reduce((s, p) => s + advanceOf(p), 0);
+  const feedTotalSum = farmPreorders.reduce((s, p) => s + advanceOf(p), 0);
   const nextTour = farmTours
     .filter((t) => t.status === "planificata" || t.status === "in-curs")
     .sort((a, b) => a.date.localeCompare(b.date))[0];
@@ -191,6 +194,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
                 value={`${feedPaid}`}
                 unit={`/ ${farmPreorders.length}`}
                 pill={<Pill tone={feedPaid === farmPreorders.length ? "green" : "gold"}>{farmPreorders.length - feedPaid} de primit</Pill>}
+                note={`Total primit: ${formatLei(feedPaidSum)} din ${formatLei(feedTotalSum)}`}
               />
             </div>
           </div>
