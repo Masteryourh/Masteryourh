@@ -17,19 +17,21 @@ const FARMS = "farms";
 const OVERRIDES = "farm-overrides";
 
 type StoredFarm = Omit<FarmRecord, "source">;
-interface FarmOverride {
-  id: string;
-  active: boolean;
-}
+/** Modificările din admin peste gospodăriile demo (din cod): vizibilitatea și câmpurile editate. */
+type FarmOverride = { id: string; active?: boolean; updatedAt?: string } & Partial<Omit<Farm, "slug" | "photos" | "since">>;
 
 async function allFarms(): Promise<FarmRecord[]> {
   const [stored, overrides] = await Promise.all([
     store.list<StoredFarm>(FARMS),
     store.list<FarmOverride>(OVERRIDES),
   ]);
-  const hidden = new Map(overrides.map((o) => [o.id, o.active]));
+  const byId = new Map(overrides.map((o) => [o.id, o]));
   return [
-    ...demoFarms.map((f) => ({ ...f, id: f.slug, active: hidden.get(f.slug) ?? true, source: "demo" as const })),
+    ...demoFarms.map((f) => {
+      const { id: _id, active, ...edits } = byId.get(f.slug) ?? { id: f.slug };
+      void _id;
+      return { ...f, ...edits, id: f.slug, active: active ?? true, source: "demo" as const };
+    }),
     ...stored.map((f) => ({ ...f, source: "admin" as const })),
   ];
 }
@@ -67,13 +69,16 @@ export const farmRepository = {
     await store.append(FARMS, farm);
     return { ...farm, source: "admin" };
   },
-  async update(slug: string, patch: Partial<Omit<Farm, "slug">>) {
-    return store.update<StoredFarm>(FARMS, slug, patch);
+  /** Gospodăriile din admin se modifică direct; cele demo, prin suprascrieri salvate în baza de date. */
+  async update(slug: string, patch: Partial<Omit<Farm, "slug" | "photos" | "since">>) {
+    if (!demoFarms.some((f) => f.slug === slug)) return store.update<StoredFarm>(FARMS, slug, patch);
+    const data = { ...patch, updatedAt: new Date().toISOString() };
+    if (await store.get<FarmOverride>(OVERRIDES, slug)) return store.update<FarmOverride>(OVERRIDES, slug, data);
+    return store.append<FarmOverride>(OVERRIDES, { id: slug, ...data });
   },
   async setActive(farm: FarmRecord, active: boolean) {
     if (farm.source === "admin") return store.update<StoredFarm>(FARMS, farm.id, { active });
-    const overrides = await store.list<FarmOverride>(OVERRIDES);
-    if (overrides.some((o) => o.id === farm.slug)) return store.update<FarmOverride>(OVERRIDES, farm.slug, { active });
+    if (await store.get<FarmOverride>(OVERRIDES, farm.slug)) return store.update<FarmOverride>(OVERRIDES, farm.slug, { active });
     return store.append<FarmOverride>(OVERRIDES, { id: farm.slug, active });
   },
 };

@@ -43,7 +43,7 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [ ] **Designul site-ului** – de reluat (utilizatorul nu e mulțumit de varianta actuală; lucrăm împreună).
 - [x] **Zonele de livrare și prețurile** editabile din admin (PR #33 prețuri, PR #34 Admin → Zone de livrare: zone noi,
       taxe, zile, localități, activare/dezactivare, pragul de livrare gratuită).
-- [ ] **Editarea gospodăriilor demonstrative** din admin (acum se pot edita doar cele create din admin).
+- [x] **Editarea gospodăriilor demonstrative** din admin (PR #36): Admin → Gospodării → Editează (salvat peste datele din cod).
 - [ ] **Modele de documente**: contract de consultanță pentru gospodari, contract de investiție, chitanță pentru avansul
       de hrană – de redactat cu juristul și încărcat în platformă.
 - [ ] **Backup** periodic al bazei de date (Neon are istoric; de verificat planul).

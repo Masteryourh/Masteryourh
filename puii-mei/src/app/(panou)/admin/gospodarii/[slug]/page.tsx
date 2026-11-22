@@ -13,7 +13,7 @@ export default async function EditFarmPage({ params, searchParams }: PageProps<"
   const { slug } = await params;
   const sp = await searchParams;
   const farm = await farmRepository.bySlug(slug, { includeInactive: true });
-  if (!farm || farm.source !== "admin") notFound();
+  if (!farm) notFound();
 
   return (
     <Container className="max-w-3xl py-8">
@@ -22,6 +22,12 @@ export default async function EditFarmPage({ params, searchParams }: PageProps<"
         Adresă pe site: <Link href={`/gospodarii/${farm.slug}`} className="font-mono text-forest-700 underline">/gospodarii/{farm.slug}</Link>
         {!farm.active && " (ascunsă)"}
       </p>
+      {farm.source === "demo" && (
+        <p className="mt-3 rounded-2xl bg-cream-100 p-3 text-sm text-muted">
+          Gospodărie demonstrativă: modificările se salvează în baza de date, peste datele din cod. Schimbarea localității schimbă
+          și prefixul codurilor de lot noi (ex. Moldova-Sulița → MS).
+        </p>
+      )}
 
       {sp.nou && <Notice tone="ok">Profilul a fost creat din solicitare și e vizibil pe site. Completează descrierea și practicile.</Notice>}
       {sp.salvat && <Notice tone="ok">Modificările au fost salvate.</Notice>}

@@ -53,7 +53,7 @@ export async function saveFarm(formData: FormData) {
   await requireAdmin();
   const slug = String(formData.get("slug") ?? "");
   const farm = await farmRepository.bySlug(slug, { includeInactive: true });
-  if (!farm || farm.source !== "admin") throw new Error("Gospodăria nu poate fi editată");
+  if (!farm) throw new Error("Gospodăria nu există");
   const parsed = farmEditSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     const msg = parsed.error.issues[0]?.message ?? "Date invalide";

@@ -54,11 +54,9 @@ export default async function AdminFarmsPage() {
                 <Link href={`/admin/gospodarii/${f.slug}/regim`} className="rounded-full bg-slate-800 px-4 py-2 font-semibold text-white">
                   Limite și regim
                 </Link>
-                {f.source === "admin" && (
-                  <Link href={`/admin/gospodarii/${f.slug}`} className="rounded-full bg-forest-700 px-4 py-2 font-semibold text-white">
-                    Editează
-                  </Link>
-                )}
+                <Link href={`/admin/gospodarii/${f.slug}`} className="rounded-full bg-forest-700 px-4 py-2 font-semibold text-white">
+                  Editează
+                </Link>
                 {f.active && (
                   <Link href={`/gospodarii/${f.slug}`} className="rounded-full px-4 py-2 font-semibold text-forest-700 ring-1 ring-forest-900/15">
                     Vezi pe site
