@@ -105,6 +105,9 @@ _Ultima actualizare: 22 noiembrie 2026_
 
 ## De verificat juridic
 
+- [ ] **Onorariul PUII MEI = 10% din (venituri − cheltuieli)** per lot (decizie 23 nov. 2026, ADR-001): de definit cu
+      contabilul ce intră în venituri / cheltuieli, cheltuieli reale vs. standard, reportarea pierderilor, TVA.
+
 - [ ] **Contractul de creștere** tripartit (client – gospodărie – ECORATE consultant), model în `/comanda/<cod>/contract`:
       clauza pentru pierderile de pui, semnarea electronică, datele firmei (22 nov. 2026).
 

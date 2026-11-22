@@ -207,7 +207,7 @@ Toate entitățile sunt documente JSON în tabelul unic `documents(collection, i
 | Monitorizare | alertă la țarc nemutat 2 zile, poză lipsă > 7 zile | `lib/growth-log.ts` | [CONFIRMAT de PO] |
 | Lanț de frig | 0–4 °C; termen consum 5 zile | `lib/delivery.ts` | [DESCHIS] — de validat DSVSA (SC-021) |
 | Rambursare investiție | lei / pui livrat, „de stabilit” | `investments` | [DESCHIS] |
-| Onorariu PUII MEI | **nu există în cod** | — | [DESCHIS]: 20% din POE (BA §14) vs. 10% din venit minus costuri standard (PR #50) |
+| Onorariu PUII MEI | **nu există în cod** | — | [CONFIRMAT, ADR-001]: 10% din (venituri − cheltuieli); definițiile [DESCHIS] |
 
 ---
 
@@ -230,7 +230,7 @@ fiecare rol, fluxul curierului, registrul fiscal, investiții, încărcare fiși
 |---|---|---|---|---|
 | CX-01 | Contractul clientului e **tripartit**, ECORATE apare ca parte („Consultantul”) | `/comanda/[token]/contract` | BA §3: contract comercial **gospodărie–client**; tripartit = [VALIDARE], nu impus; PUII MEI = prestator B2B al gospodăriei | Contractul clientului devine bipartit (gospodărie–client), cu PUII MEI menționat ca administrator / reprezentant al gospodăriei în limita mandatului; textul final de la jurist |
 | CX-02 | Pagina publică `/cifre` arată venituri / cheltuieli / profit **pe fiecare gospodărie** | `app/(site)/cifre` | BA-010 / DEC-009: ce date vede fiecare actor e [DESCHIS] + GDPR | Doar totaluri agregate până la decizie |
-| CX-03 | Onorariul PUII MEI nu există în model; registrul fiscal nu are categoria „onorariu PUII MEI” și nici calculul profitului eligibil | `lib/documents.ts`, `expenses` | BA §14: 20% POE [DECIS], contrazis de 10% din venit minus costuri standard (PR #50) | Decizie PO; apoi modul Finance: închidere lot → profit eligibil → factură onorariu |
+| CX-03 | Onorariul PUII MEI nu există în model; registrul fiscal nu are categoria „onorariu PUII MEI” și nici calculul profitului eligibil | `lib/documents.ts`, `expenses` | ADR-001: 10% din (venituri − cheltuieli) | Modul Finance: închidere lot → venituri − cheltuieli → onorariu 10% → factură, după definirea veniturilor / cheltuielilor |
 | CX-04 | Confirmarea avansului se face prin click („primit”) de gospodar / admin, fără referință bancară | `plati-actions.ts`, `FeedCell` | F1 pas 4 + SC-017: confirmare cu document / identificator extern | Câmp obligatoriu: referință extras / OP + document atașat |
 | CX-05 | Rambursarea investițiilor „lei / pui livrat” | `investments.repayment` | DEC-007: statutul investitorilor [DESCHIS] | Păstrat ca funcție internă, neexpusă juridic până la decizie |
 | CX-06 | „Un lot pe rând” și limitele 10.000 / 300 aplicate ca reguli dure | `governance.ts`, `growth.ts` | SC-019: ipoteze configurabile, nevalidate legal | Mutate în configurație versionată pe program (Program Engine) |
@@ -287,9 +287,9 @@ fiecare rol, fluxul curierului, registrul fiscal, investiții, încărcare fiși
 
 ## 12. Decizii noi descoperite în documentele aprobate (de reflectat în cod și în spec)
 
-- **[DESCHIS — de confirmat de PO]** Onorariul PUII MEI: `01-BUSINESS-ARCHITECTURE.md` §14 îl marchează [DECIS] =
-  **20% din profitul operațional eligibil (POE)**; varianta ChatGPT (PR #50, AUD-011) semnalează o mențiune ulterioară a
-  fondatorului: **10% din venit minus cheltuieli standard**. Până la confirmare nu se implementează nicio formulă.
+- **[CONFIRMAT de PO, 23 nov. 2026 — ADR-001]** Onorariul PUII MEI = **10% din (venituri − cheltuieli)** per lot / ciclu,
+  facturat gospodăriei; înlocuiește „20% din POE” din BA §14. Definiția exactă a veniturilor și cheltuielilor: [DESCHIS]
+  (`adr/ADR-001-ONORARIU-PUII-MEI.md`).
 - **[CONFIRMAT, SC-041]** Clientul plătește integral gospodăriei; PUII MEI încasează doar de la gospodărie.
 - **[CONFIRMAT, SC-042]** Contabilitatea e externalizată, plătită din contul gospodăriei.
 - **[PROPUS, SC-043]** Compliance Gate obligatoriu înainte de orice activitate comercială.
