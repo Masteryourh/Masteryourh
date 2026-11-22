@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { estimatePrice, feedAdvance } from "@/lib/pricing";
+import { currentPricePerKg } from "@/server/repositories/settings";
 import { farmPaymentRepository } from "@/server/repositories/farm-payments";
 import { availabilityDate } from "@/lib/lots";
 import { allocateNewPreorder } from "@/server/allocation";
@@ -47,7 +48,7 @@ export async function submitPreorder(
         ? { location: parseLocation(data.lat, data.lng) ?? undefined, addressNote: data.addressNote }
         : {}),
       notes: data.notes,
-      estimate: estimatePrice(data.birds, zone),
+      estimate: estimatePrice(data.birds, zone, await currentPricePerKg()),
       marketingConsent: data.marketingConsent,
     });
     await notifyNewPreorder(preorder);

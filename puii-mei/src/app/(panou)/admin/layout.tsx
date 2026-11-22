@@ -29,6 +29,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         { href: "/admin/investitii", label: "Investiții" },
         { href: "/admin/parteneri", label: "Solicitări parteneri", badge: newApplications },
         { href: "/admin/gospodarii", label: "Gospodării" },
+        { href: "/admin/preturi", label: "Prețuri" },
         { href: "/admin/interes", label: "Interes produse" },
         { href: "/admin/utilizatori", label: "Utilizatori" },
         { href: "/admin/legislatie", label: "Legislație și surse" },

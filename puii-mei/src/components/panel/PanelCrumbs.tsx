@@ -14,6 +14,7 @@ const LABELS: Record<string, string> = {
   "/admin/investitii": "Investiții",
   "/admin/parteneri": "Solicitări parteneri",
   "/admin/gospodarii": "Gospodării",
+  "/admin/preturi": "Prețuri",
   "/admin/interes": "Interes produse",
   "/admin/utilizatori": "Utilizatori",
   "/admin/legislatie": "Legislație și surse",

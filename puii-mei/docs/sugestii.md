@@ -55,7 +55,7 @@ _Ultima actualizare: 22 noiembrie 2026_
 
 - [x] **Navigare clară** (PR #32): traseul „Acasă › …” pe site, „Panou admin › …” în panouri, iar pe telefon
       „← Înapoi la <pagina părinte>”.
-- [ ] **Română / engleză** – următorul pas (întâi site-ul public, apoi panourile).
+- [ ] **Română / engleză** – amânat de utilizator (22 nov. 2026); întâi site-ul public, apoi panourile.
 
 ## De configurat (Vercel / servicii)
 
@@ -70,8 +70,8 @@ _Ultima actualizare: 22 noiembrie 2026_
 
 - [ ] **Datele de plată ale fiecărei gospodării** (titular, IBAN, bancă, preț furaj): Contul meu → Vedere gospodar →
       „Contul pentru avansul de hrană”. Fără ele, clienții nu pot plăti avansul.
-- [ ] **Prețul pieței** (acum 30 lei/kg + 20% = 36 lei/kg): de actualizat periodic; surse găsite: industrial ~35 lei/kg,
-      pui de țară ~55–60 lei/kg în București (2026). De făcut editabil din admin.
+- [x] **Prețul pieței editabil din admin** (PR #33): Admin → Prețuri (piață + adaos, cu istoric). Implicit 30 lei/kg + 20%
+      = 36 lei/kg; de actualizat periodic (surse: industrial ~35 lei/kg, pui de țară ~55–60 lei/kg în București, 2026).
 - [ ] **Pragul de livrare gratuită** după trecerea la 5 kg / pui (acum 34 lei/kg → ~170 lei/pui;
       livrare gratuită peste 600 lei, adică de la 4 pui) – de confirmat (propus pe 21 nov. 2026, fără răspuns).
 - [ ] **Prețurile implicite din avans:** furaj 3,50 lei/kg și pui de o zi 7 lei/pui sunt orientative
