@@ -31,7 +31,7 @@
 - Cunoaște clar vânzătorul, condițiile de anulare, reclamațiile și persoana responsabilă.
 
 ### Pentru PUII MEI
-- Venituri B2B recurente sau per program/lot, de stabilit contractual.
+- Venituri B2B exclusiv ca procent din profitul eligibil verificat al programului/lotului; fără abonament lunar și fără procent din cifra de afaceri. Procentul exact este încă de aprobat.
 - Economii de scară prin administrare centralizată, standardizare și prestatori externi.
 - Control operațional prin Central Command, fără amestecarea banilor gospodăriilor cu veniturile companiei.
 
@@ -73,8 +73,8 @@
 3. Plata se autorizează și se operează din contul gospodăriei.
 4. Contabilul primește documentele necesare, cu acces limitat și jurnalizat.
 
-### F4. Gospodărie → PUII MEI
-1. PUII MEI facturează serviciile definite în contract.
+### F4. Gospodărie → PUII MEI (cotă contractuală din profitul eligibil)
+1. PUII MEI calculează, după închiderea și reconcilierea ciclului, un onorariu pentru servicii egal cu procentul contractual din profitul eligibil pozitiv. Nu se percepe abonament lunar sau comision din venituri. Formula și costurile eligibile trebuie aprobate înaintea programului; la profit eligibil nul/negativ onorariul este zero. PUII MEI facturează serviciile definite în contract.
 2. Gospodăria achită din propriul cont.
 3. Sistemul păstrează distinct creanța și încasarea PUII MEI de tranzacțiile comerciale ale gospodăriei.
 
@@ -150,7 +150,7 @@ Pentru fiecare combinație `gospodărie × program × activitate × regiune`, re
 
 **[PROPUS]** Pentru fiecare program/lot se măsoară: venit brut gospodărie, avansuri, sold final, costuri directe, costuri indirecte, cost contabilitate, cost PUII MEI, pierderi, profit estimat și profit realizat, ore de muncă, reclamații, mortalitate, respectarea termenelor și gradul de utilizare a capacității.
 
-**[VALIDARE]** Formula remunerației PUII MEI (abonament, tarif per lot, procent din vânzări sau combinație), baza de calcul, TVA, scadențele și serviciile incluse rămân de decis. Ipoteza anterioară de ~10% nu este încă tarif aprobat.
+**[DECIS]** Remunerația PUII MEI este exclusiv procent din profitul eligibil al programului/lotului, fără abonament și fără procent din vânzări. **[PROPUS]** 10% din profitul eligibil pozitiv, restul rămânând gospodăriei; procentul nu este încă aprobat. Profit eligibil = încasări eligibile ale lotului (fără TVA colectată, după retururi/rambursări) minus costuri eligibile documentate și alocate lotului, inclusiv o regulă contractuală pentru munca gospodarului și cheltuielile indirecte. Nu se confundă automat cu profitul contabil/fiscal. TVA aferent facturii de servicii PUII MEI, scadențele, pierderile reportate și ajustările rămân de validat.
 
 ## 11. Riscuri și controale
 
@@ -173,7 +173,7 @@ Pentru fiecare combinație `gospodărie × program × activitate × regiune`, re
 | BA-002 | Cum arată mandatul PUII MEI, ce poate semna și ce poate plăti? | VALIDARE jurist + bancă |
 | BA-003 | Care este traseul legal complet pentru sacrificare, procesare și livrare? | VALIDARE DSVSA + specialist |
 | BA-004 | Ce contracte încheie gospodăria cu clientul și prestatorii? | VALIDARE jurist |
-| BA-005 | Ce tarif plătește gospodăria PUII MEI și când? | DECIZIE fondator |
+| BA-005 | Ce procent din profit, ce definiție a costurilor eligibile și ce moment de facturare? | DECIZIE fondator + VALIDARE contabil/jurist |
 | BA-006 | Cine contractează transportul și cine răspunde pe fiecare verigă? | DECIZIE + VALIDARE |
 | BA-007 | Care sunt regulile avansului, anulării, rambursării și diferenței finale? | DECIZIE + VALIDARE |
 | BA-008 | Cum se rezolvă discrepanțele de greutate, furaj și preț între documente? | DECIZIE + test economic |
