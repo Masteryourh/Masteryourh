@@ -17,7 +17,10 @@ import { zoneRepository } from "@/server/repositories/catalog";
 import { parcelRepository, tourRepository } from "@/server/repositories/delivery";
 import { allocationChoiceAction, cancelOrderAction, declarePaymentAction } from "../actions";
 import { lotRepository as lotsRepo } from "@/server/repositories/catalog";
-import { sellableBirds } from "@/lib/growth";
+import { lotPens, sellableBirds } from "@/lib/growth";
+import { growthLogRepository } from "@/server/repositories/growth-log";
+import { GrowthTimeline } from "@/components/growth/GrowthTimeline";
+import { PenTrackMap } from "@/components/maps/PenTrackMap";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Comanda mea", robots: { index: false, follow: false } };
@@ -46,6 +49,16 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
   const siblings = (await preorderRepository.list())
     .filter((x) => x.number === rootNumber || x.parentNumber === rootNumber)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const journal = lot ? await growthLogRepository.byLot(lot.code) : [];
+  const tracks = lot
+    ? Array.from({ length: lotPens(lot) }, (_, i) => ({
+        pen: i + 1,
+        points: journal
+          .filter((e) => e.type === "mutare" && e.pen === i + 1 && e.lat && e.lng)
+          .sort((a, b) => a.at.localeCompare(b.at))
+          .map((e) => ({ lat: e.lat!, lng: e.lng!, date: e.date })),
+      }))
+    : [];
   const feedStatus = feedStatusOf(order);
   const cancelled = order.status === "anulata";
   const delivered = order.status === "livrata" || Boolean(parcel?.delivered);
@@ -270,6 +283,19 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
             <Link href={`/trasabilitate/${lot.code}`} className={buttonClasses("secondary", "md", "mt-5")}>
               Vezi evoluția lotului, etapă cu etapă
             </Link>
+          </section>
+        )}
+
+        {lot && journal.length > 0 && (
+          <section id="jurnal" className="scroll-mt-28 rounded-3xl bg-white p-6 ring-1 ring-forest-900/10 sm:p-8">
+            <h2 className="text-2xl font-semibold">Jurnalul de creștere</h2>
+            <p className="mt-1 text-sm text-muted">
+              Ce notează gospodarul: mutările zilnice ale țarcurilor pe pășune, poza săptămânii, hrănirea, verificările veterinare.
+            </p>
+            {tracks.some((t) => t.points.length) && (
+              <div className="mt-4"><PenTrackMap tracks={tracks} height="h-64" /></div>
+            )}
+            <div className="mt-4"><GrowthTimeline entries={journal} photoQuery={`?o=${token}`} limit={30} /></div>
           </section>
         )}
 

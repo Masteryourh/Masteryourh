@@ -22,7 +22,8 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       items={[
         { href: "/admin", label: "Precomenzi", exact: true },
         { href: "/admin/loturi", label: "Loturi", badge: pendingLots },
-        { href: "/admin/livrari", label: "Livrări live", badge: alerts.length },
+        { href: "/admin/livrari", label: "Livrări live", badge: alerts.filter((a) => a.kind === "prelungire").length },
+        { href: "/admin/monitorizare", label: "Monitorizare creștere", badge: alerts.filter((a) => a.kind === "crestere").length },
         { href: "/admin/calitate", label: "Calitate" },
         { href: "/admin/documente", label: "Documente" },
         { href: "/admin/investitii", label: "Investiții" },
@@ -37,14 +38,15 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       {alerts.length > 0 && (
         <div role="alert" className="border-b border-amber-300 bg-amber-100 px-4 py-3 text-sm text-amber-950 sm:px-6 lg:px-8">
           <p className="font-semibold">
-            🔔 {alerts.length === 1 ? "O cerere de prelungire așteaptă decizia ta" : `${alerts.length} cereri de prelungire așteaptă decizia ta`}
+            🔔 {alerts.length === 1 ? "O alertă cere atenția ta" : `${alerts.length} alerte cer atenția ta`}
           </p>
           <ul className="mt-1 space-y-0.5">
             {alerts.slice(0, 3).map((a) => (
               <li key={a.id}>
+                {a.kind === "crestere" ? "Monitorizare: " : "Prelungire: "}
                 {a.text} ·{" "}
                 <Link href={a.href} className="font-semibold underline">
-                  Decide
+                  {a.kind === "crestere" ? "Vezi jurnalul" : "Decide"}
                 </Link>
               </li>
             ))}
