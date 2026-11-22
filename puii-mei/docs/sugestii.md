@@ -14,8 +14,9 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [x] **Monitorizarea creșterii** (PR #28): jurnalul gospodarului (mutarea zilnică a țarcului cu GPS, intervenții,
       mortalitate, verificări veterinare), poza la 7 zile, alerte în admin („Monitorizare creștere”), traseul țarcurilor
       pe hartă și jurnalul vizibil clientului în „Comanda mea”.
-- [ ] **Pagina publică cu cifrele companiei** (bani intrați în gospodării, venituri, cheltuieli, profit, taxe,
-      gospodării, pui buc./kg, cereale) – următorul pas.
+- [x] **Pagina publică cu cifrele companiei** (PR #29, `/cifre`, link în footer): bani intrați în gospodării,
+      venituri, cheltuieli, profit, taxe, investiții, gospodării, pui buc./kg, furaj; doar înregistrări confirmate.
+- [ ] **Greutatea reală la livrare** (cântărită) pentru cifrele publice – acum kg sunt estimate (4,8 kg / pui).
 - [ ] **Poziția live a țarcului** pentru client: acum se vede ultima mutare notată (cu GPS); live real ar cere un
       senzor GPS pe țarc – de discutat.
 - [ ] **Harta suprafeței măsurate** (conturul pășunii desenat la verificarea în teren) – de adăugat peste traseul țarcurilor.

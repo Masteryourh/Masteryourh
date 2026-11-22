@@ -64,6 +64,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/cifre" className="hover:text-white">
+                Cifrele noastre (transparență)
+              </Link>
+            </li>
+            <li>
               <Link href="/legislatie" className="hover:text-white">
                 Legislație și reguli
               </Link>
