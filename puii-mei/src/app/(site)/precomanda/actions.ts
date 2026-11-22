@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { estimatePrice, feedAdvance } from "@/lib/pricing";
-import { currentPricePerKg } from "@/server/repositories/settings";
+import { currentPriceParams } from "@/server/repositories/settings";
 import { farmPaymentRepository } from "@/server/repositories/farm-payments";
 import { availabilityDate } from "@/lib/lots";
 import { allocateNewPreorder } from "@/server/allocation";
@@ -32,7 +32,7 @@ export async function submitPreorder(
     return { status: "error", errors: { form: "Cererea nu a putut fi procesată." }, values: raw };
   }
 
-  const zone = await zoneRepository.byId(data.zoneId);
+  const [zone, params] = await Promise.all([zoneRepository.byId(data.zoneId), currentPriceParams()]);
   if (!zone) {
     return { status: "error", errors: { zoneId: "Zona de livrare aleasă nu este disponibilă." }, values: raw };
   }
@@ -48,7 +48,7 @@ export async function submitPreorder(
         ? { location: parseLocation(data.lat, data.lng) ?? undefined, addressNote: data.addressNote }
         : {}),
       notes: data.notes,
-      estimate: estimatePrice(data.birds, zone, await currentPricePerKg()),
+      estimate: estimatePrice(data.birds, zone, params.pricePerKg, params.freeDeliveryFrom),
       marketingConsent: data.marketingConsent,
     });
     await notifyNewPreorder(preorder);

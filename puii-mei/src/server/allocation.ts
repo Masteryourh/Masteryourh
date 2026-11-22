@@ -5,6 +5,7 @@ import { estimatePrice } from "@/lib/pricing";
 import { site } from "@/lib/site";
 import { notifyFarm, notifyOrderEvent } from "./notifications";
 import { lotRepository, zoneRepository } from "./repositories/catalog";
+import { deliverySettingsRepository } from "./repositories/settings";
 import { preorderRepository } from "./repositories/preorders";
 
 /**
@@ -66,7 +67,7 @@ export async function chooseWait(p: Preorder) {
 export async function splitPreorder(p: Preorder) {
   if (p.lotCode || p.status === "anulata" || p.allocation?.status === "impartita") return [];
   const lots = await openLots();
-  const zone = await zoneRepository.byId(p.zoneId);
+  const zone = await zoneRepository.byId(p.zoneId, { includeInactive: true });
   let left = p.birds;
   const plan: { lot: Lot | null; birds: number }[] = [];
   for (const l of lots) {
@@ -88,7 +89,7 @@ export async function splitPreorder(p: Preorder) {
     const base = {
       birds: part.birds,
       // Părțile păstrează prețul pe kg de la plasarea comenzii.
-      estimate: estimatePrice(part.birds, zone, p.estimate.pricePerKg),
+      estimate: estimatePrice(part.birds, zone, p.estimate.pricePerKg, (await deliverySettingsRepository.get()).freeDeliveryFrom),
       parentNumber: p.number,
     };
     let piece: Preorder | null;

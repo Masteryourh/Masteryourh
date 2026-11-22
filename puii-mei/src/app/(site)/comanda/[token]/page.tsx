@@ -38,7 +38,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
 
   const [{ lot, farm, payment }, zone, parcel] = await Promise.all([
     orderFarm(order),
-    zoneRepository.byId(order.zoneId),
+    zoneRepository.byId(order.zoneId, { includeInactive: true }),
     parcelRepository.byId(order.id),
   ]);
   const tour = parcel?.tourId ? await tourRepository.byId(parcel.tourId) : null;
