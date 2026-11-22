@@ -42,7 +42,7 @@ export default async function PreorderPage({ searchParams }: PageProps<"/precoma
       <PageHeader
         eyebrow="Precomandă"
         title="Rezervă-ți puii din următorul lot"
-        intro="Completezi în 2 minute. Plătești acum un avans – puii de o zi și furajul lor (~6 kg / pui) – direct în contul gospodăriei. Avansul se scade din prețul total; la livrare plătești doar diferența, după greutatea reală."
+        intro="Completezi în 2 minute. Plătești acum un avans – puii de o zi și furajul lor (~7 kg / pui) – direct în contul gospodăriei. Avansul se scade din prețul total; la livrare plătești doar diferența, după greutatea reală."
       />
       <Container className="py-12 sm:py-16">
         <PreorderForm zones={zones} lots={lots} initialLot={lot} initialBirds={birdsParam >= 2 && birdsParam <= 100 ? birdsParam : undefined} />

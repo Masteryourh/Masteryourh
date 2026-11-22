@@ -3,7 +3,7 @@ import type { IconName } from "@/components/ui/Icon";
 export const steps: { title: string; text: string; detail: string; icon: IconName }[] = [
   {
     title: "Alegi cantitatea",
-    text: "Stabilești câți pui vrei și plătești un avans: puii de o zi și furajul lor (~6 kg / pui). Avansul se scade din prețul total.",
+    text: "Stabilești câți pui vrei și plătești un avans: puii de o zi și furajul lor (~7 kg / pui). Avansul se scade din prețul total.",
     detail:
       "Poți alege un lot anume sau primul lot disponibil. Avansul (puii de o zi + furajul) se plătește direct în contul gospodăriei partenere care crește puii și se scade din prețul total. Prețul total e estimat pe baza greutății medii și se confirmă la cântărire; la livrare plătești doar diferența.",
     icon: "scale",

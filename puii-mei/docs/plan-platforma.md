@@ -31,8 +31,9 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
 - **Țarcurile ca subloturi**: precomenzile se strâng până la **cel puțin 40 de pui** (un țarc plin) și pornește
   creșterea acelui țarc; al doilea țarc pornește când se adună încă 40 etc. Pornirile din același lot să nu fie prea
   distanțate (pui de vârste apropiate).
-- **Greutate medie**: ~4,8 kg / pui. **Conversia hranei**: ~70% (de clarificat cantitatea de furaj / pui).
-- **Preț la client**: cu 20–30% peste prețul pieței.
+- **Greutate**: ~4,8 kg în viu; puiul sacrificat ≈ 70% ⇒ **~3,4 kg carcasă** (prețul se calculează pe carcasă).
+- **Furaj**: randament de asimilare ~70% ⇒ 4,8 / 0,7 ≈ **6,9 kg furaj / pui** (intră în avans).
+- **Preț la client**: prețul pieței + 20–30% (acum 30 lei/kg + 20% = **36 lei/kg**).
 - **Investiția în gospodărie** (o dată, amortizată în timp): spațiul pentru 1–21 zile, țarcurile, echipamentele pentru
   toate etapele și pentru sacrificare (opăritor, deplumator, conuri, masă inox, ladă frigorifică pentru păstrare
   scurtă). **Gospodarul plătește investiția în tranșe.**

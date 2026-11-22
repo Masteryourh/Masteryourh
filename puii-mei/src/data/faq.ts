@@ -1,7 +1,7 @@
 export const faq = [
   {
     q: "Trebuie să plătesc în avans?",
-    a: "Da, un avans care acoperă puii de o zi și furajul lor (aproximativ 6 kg pentru fiecare pui). Nu e un cost în plus: avansul se scade din prețul total, iar la livrare plătești doar diferența, după greutatea reală. Avansul se plătește direct în contul gospodăriei partenere care îți crește puii, nu către Puii mei.",
+    a: "Da, un avans care acoperă puii de o zi și furajul lor (aproximativ 7 kg pentru fiecare pui: greutatea în viu de ~4,8 kg la un randament de asimilare de ~70%). Nu e un cost în plus: avansul se scade din prețul total, iar la livrare plătești doar diferența, după greutatea reală. Avansul se plătește direct în contul gospodăriei partenere care îți crește puii, nu către Puii mei.",
   },
   {
     q: "De ce prețul este estimativ?",

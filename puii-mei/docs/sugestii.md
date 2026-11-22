@@ -9,7 +9,8 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 - [ ] **Modelul „un lot pe rând + țarcuri de 40”** (vezi `plan-platforma.md` §1b): capacitate din numărul de țarcuri,
       subloturi pe țarcuri pornite la 40 de precomenzi, etapele 0–21–60 zile, greutate 4,8 kg (22 nov. 2026).
-- [ ] **Investiții cu rambursare în tranșe** de către gospodar (echipamente de creștere și sacrificare).
+- [ ] **Investiții cu rambursare în tranșe** de către gospodar (echipamente de creștere și sacrificare). Ritmul ratelor
+      (lunar sau la fiecare lot vândut): **nedecis încă** (22 nov. 2026).
 - [ ] **Comenzi pentru congelator** (cantități mari) pe lângă cele pentru consum imediat.
 - [ ] **Alte produse din gospodărie** la precomandă: borcane, afumături, păstrăvi etc.
 
@@ -51,7 +52,9 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 - [ ] **Datele de plată ale fiecărei gospodării** (titular, IBAN, bancă, preț furaj): Contul meu → Vedere gospodar →
       „Contul pentru avansul de hrană”. Fără ele, clienții nu pot plăti avansul.
-- [ ] **Prețul pe kg și pragul de livrare gratuită** după trecerea la 5 kg / pui (acum 34 lei/kg → ~170 lei/pui;
+- [ ] **Prețul pieței** (acum 30 lei/kg + 20% = 36 lei/kg): de actualizat periodic; surse găsite: industrial ~35 lei/kg,
+      pui de țară ~55–60 lei/kg în București (2026). De făcut editabil din admin.
+- [ ] **Pragul de livrare gratuită** după trecerea la 5 kg / pui (acum 34 lei/kg → ~170 lei/pui;
       livrare gratuită peste 600 lei, adică de la 4 pui) – de confirmat (propus pe 21 nov. 2026, fără răspuns).
 - [ ] **Prețurile implicite din avans:** furaj 3,50 lei/kg și pui de o zi 7 lei/pui sunt orientative
       (`src/lib/pricing.ts`); fiecare gospodărie își setează prețurile reale în panou.

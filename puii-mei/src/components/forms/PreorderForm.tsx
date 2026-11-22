@@ -158,7 +158,7 @@ export function PreorderForm({
                 </button>
               ))}
             </div>
-            <Field id="birds" label="Număr de pui" required error={errors.birds} className="mt-5" hint={`Între ${pricing.minBirds} și ${maxBirds} pui. Greutate medie estimată: ${formatNumber(pricing.avgWeightKg)} kg/pui.`}>
+            <Field id="birds" label="Număr de pui" required error={errors.birds} className="mt-5" hint={`Între ${pricing.minBirds} și ${maxBirds} pui. Greutate estimată: ~${formatNumber(pricing.avgWeightKg)} kg / pui sacrificat (~${formatNumber(pricing.liveWeightKg)} kg în viu).`}>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setBirds((b) => Math.max(pricing.minBirds, b - 1))} className="h-12 w-12 shrink-0 rounded-2xl border border-forest-900/15 bg-white text-xl font-semibold text-forest-800 hover:bg-forest-50" aria-label="Scade un pui">
                   −
