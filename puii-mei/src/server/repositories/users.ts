@@ -55,6 +55,8 @@ export const userRepository = {
     };
     return store.append(COLLECTION, user);
   },
+  /** Ștergere definitivă (sesiunile lui devin invalide: contul nu mai există). */
+  remove: (id: string) => store.remove(COLLECTION, [id]),
   async update(id: string, patch: Partial<User>) {
     return store.update<User>(COLLECTION, id, patch);
   },

@@ -11,7 +11,7 @@ import { formatDate } from "@/lib/format";
 import { farmRepository } from "@/server/repositories/catalog";
 import { setupLinkValid, userRepository } from "@/server/repositories/users";
 import { getCurrentUser } from "@/server/session";
-import { regenerateLink, toggleUserStatus } from "./actions";
+import { deleteUser, regenerateLink, toggleUserStatus } from "./actions";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Utilizatori", robots: { index: false, follow: false } };
@@ -124,6 +124,18 @@ function UserRow({ u, origin, farm, isMe }: { u: User; origin: string; farm?: st
               {u.status === "dezactivat" ? "Reactivează" : "Dezactivează"}
             </button>
           </form>
+        )}
+        {!isMe && (
+          <details className="w-full sm:w-auto">
+            <summary className="cursor-pointer list-none rounded-lg px-2.5 py-1 text-xs font-semibold text-red-800 ring-1 ring-red-200 hover:bg-red-50">
+              Șterge contul
+            </summary>
+            <form action={deleteUser} className="mt-2 rounded-lg bg-red-50 p-3 text-xs">
+              <input type="hidden" name="id" value={u.id} />
+              <p className="text-red-900">Contul lui {u.name} se șterge definitiv; persoana nu se mai poate conecta.</p>
+              <button className="mt-2 rounded-lg bg-red-700 px-3 py-1.5 font-semibold text-white">Da, șterge definitiv</button>
+            </form>
+          </details>
         )}
       </div>
     </li>

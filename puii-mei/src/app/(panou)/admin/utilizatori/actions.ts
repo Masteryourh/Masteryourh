@@ -72,3 +72,15 @@ export async function toggleUserStatus(formData: FormData) {
   });
   revalidatePath("/admin/utilizatori");
 }
+
+/** Ștergerea definitivă a unui cont (nu și a propriului cont). */
+export async function deleteUser(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (id === admin.id) throw new Error("Nu îți poți șterge propriul cont.");
+  const user = await userRepository.byId(id);
+  if (!user) return;
+  await userRepository.remove(id);
+  console.info(`[puii-mei] Cont șters de ${admin.name}: ${user.email}`);
+  revalidatePath("/admin/utilizatori");
+}
