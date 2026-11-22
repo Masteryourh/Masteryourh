@@ -29,13 +29,17 @@ function Fields({ lot, maxPens = 250 }: { lot?: Lot; maxPens?: number }) {
           name="pens"
           type="number"
           min={1}
-          max={Math.max(1, maxPens)}
+          max={maxPens >= 1 ? maxPens : undefined}
           required
           defaultValue={lot ? lotPens(lot) : Math.max(1, Math.min(maxPens, 5))}
-          disabled={Boolean(lot?.penStarts?.length)}
+          disabled={Boolean(lot?.penStarts?.length) || (!lot && maxPens < 1)}
           className={input}
         />
-        <span className="mt-1 block text-xs font-normal text-slate-500">Maximum {maxPens} țarcuri, după suprafața confirmată.</span>
+        <span className={`mt-1 block text-xs font-normal ${maxPens < 1 ? "text-red-700" : "text-slate-500"}`}>
+          {maxPens < 1
+            ? "Suprafața gospodăriei nu e confirmată încă, deci nu se pot alege țarcuri. Gospodarul o declară cu actul de proprietate, iar Puii mei o confirmă după măsurare."
+            : `Între 1 și ${maxPens} țarcuri (${maxPens * GROWTH.birdsPerPen} pui), după suprafața confirmată.`}
+        </span>
       </label>
       {lot?.penStarts?.length ? <input type="hidden" name="pens" value={lotPens(lot)} /> : null}
       <label className="text-sm font-semibold">
@@ -70,7 +74,7 @@ export function NewLotForm({ farmSlug, returnTo, needsApproval = false, maxPens 
       <input type="hidden" name="inapoi" value={returnTo} />
       <Fields maxPens={maxPens} />
       <div className="sm:col-span-2">
-        <button className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">{needsApproval ? "Trimite lotul spre aprobare" : "Creează lotul"}</button>
+        <button disabled={maxPens !== undefined && maxPens < 1} className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{needsApproval ? "Trimite lotul spre aprobare" : "Creează lotul"}</button>
         <span className="ml-3 text-xs text-slate-500">
           Codul lotului se generează automat.{" "}
           {needsApproval ? "Lotul apare la precomandă după aprobarea Puii mei." : "Lotul apare imediat la precomandă."}
