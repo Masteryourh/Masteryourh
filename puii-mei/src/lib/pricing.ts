@@ -5,8 +5,8 @@ import type { DeliveryZone, PriceEstimate } from "./domain";
  * Prețul final se confirmă la cântărirea fiecărui pui după sacrificare.
  */
 /** Modelul de creștere: pui pășunați, ~60 de zile (vezi docs/plan-platforma.md §1b). */
-const CARCASS_WEIGHT_KG = 4.8; // greutatea medie a puiului eviscerat (pe care se calculează prețul)
-const CARCASS_YIELD = 0.7; // puiul eviscerat ≈ 70% din greutatea în viu
+const CARCASS_WEIGHT_KG = 4.8; // greutatea medie a puiului curățat (gata de gătit) (pe care se calculează prețul)
+const CARCASS_YIELD = 0.7; // puiul curățat ≈ 70% din greutatea în viu
 const FEED_CONVERSION = 0.7; // ~70% din hrană se transformă în greutate (asimilare)
 const MARKET_PRICE_PER_KG = 30; // prețul de referință al pieței (lei / kg carcasă) – se actualizează
 const MARKUP_PCT = 20; // prețul la client: piața + 20–30%
@@ -14,7 +14,7 @@ const MARKUP_PCT = 20; // prețul la client: piața + 20–30%
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
 export const pricing = {
-  /** Greutatea în viu la sacrificare = eviscerat / 70%. */
+  /** Greutatea în viu la sacrificare = curățat / 70%. */
   liveWeightKg: round1(CARCASS_WEIGHT_KG / CARCASS_YIELD),
   carcassYield: CARCASS_YIELD,
   feedConversion: FEED_CONVERSION,
@@ -22,7 +22,7 @@ export const pricing = {
   markupPct: MARKUP_PCT,
   /** Prețul pe kg de carcasă pentru client = piața × (1 + adaos). */
   pricePerKg: Math.round(MARKET_PRICE_PER_KG * (1 + MARKUP_PCT / 100) * 100) / 100,
-  /** Greutatea estimată a puiului eviscerat, pe care se calculează prețul. */
+  /** Greutatea estimată a puiului curățat (gata de gătit), pe care se calculează prețul. */
   avgWeightKg: CARCASS_WEIGHT_KG,
   /** Furajul necesar pe pui = greutatea în viu / randamentul de asimilare (~9,8 kg). */
   feedKgPerBird: round1(CARCASS_WEIGHT_KG / CARCASS_YIELD / FEED_CONVERSION),

@@ -20,7 +20,7 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
 
 ## 1b. Modelul de creștere (stabilit pe 22 nov. 2026)
 
-- **Terminologie**: spunem **țarc** (nu „cușcă”) – în platformă, pe site și în comunicare.
+- **Terminologie**: spunem **țarc** (nu „cușcă”) și **pui curățat / gata de gătit** (nu „eviscerat”) – în platformă, pe site și în comunicare.
 - **Sistem**: pui pășunați în **țarc mobil de 4 × 3 m**, mutat zilnic pe suprafață nouă; suprafața se reface în
   **14 zile** ⇒ un țarc are nevoie de ~14 × 12 m² = **~168 m² de pășune** (+ rezervă). **40 de pui / țarc.**
 - **Etape**: 0–21 zile la interior (becuri roșii, pat de rumeguș) → de la **21 de zile** în țarcul de pe pășune →
@@ -31,7 +31,7 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
 - **Țarcurile ca subloturi**: precomenzile se strâng până la **cel puțin 40 de pui** (un țarc plin) și pornește
   creșterea acelui țarc; al doilea țarc pornește când se adună încă 40 etc. Pornirile din același lot să nu fie prea
   distanțate (pui de vârste apropiate).
-- **Greutate**: **~4,8 kg puiul eviscerat** (prețul se calculează pe această greutate); eviscerat ≈ 70% din viu ⇒
+- **Greutate**: **~4,8 kg puiul curățat, gata de gătit** (prețul se calculează pe această greutate); curățat ≈ 70% din viu ⇒
   **~6,9 kg în viu**.
 - **Furaj**: randament de asimilare ~70% ⇒ 6,9 / 0,7 ≈ **9,8 kg furaj / pui** (intră în avans).
 - **Preț la client**: prețul pieței + 20–30% (acum 30 lei/kg + 20% = **36 lei/kg**).
