@@ -27,7 +27,7 @@ export const journey: JourneyStep[] = [
     short: "Avansul",
     title: "Plătești avansul, direct gospodăriei",
     text: "Avansul acoperă puii de o zi și furajul lor. Se scade din prețul total; la livrare plătești diferența.",
-    chips: ["Pui de o zi + ~7 kg furaj", "Se scade din total"],
+    chips: ["Pui de o zi + ~10 kg furaj", "Se scade din total"],
     image: "/images/poveste/2-hrana.webp",
     alt: "Mâinile unui gospodar torn porumb și grâu într-o hrănitoare de lemn",
     badge: "Pui + furaj",
