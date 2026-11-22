@@ -8,6 +8,7 @@ import { LotLookup } from "@/components/lots/LotLookup";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { farmRepository, lotRepository } from "@/server/repositories/catalog";
 import { normalizeLotCode } from "@/lib/lots";
+import { preorderRepository } from "@/server/repositories/preorders";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -30,9 +31,15 @@ export default async function TraceabilityPage({ searchParams }: PageProps<"/tra
   const { cod } = await searchParams;
   let error: string | undefined;
   if (typeof cod === "string" && cod.trim()) {
-    const lot = await lotRepository.byCode(cod);
+    const code = normalizeLotCode(cod);
+    const lot = await lotRepository.byCode(code);
     if (lot) redirect(`/trasabilitate/${lot.code}`);
-    error = `Nu am găsit lotul „${normalizeLotCode(cod)}”. Verifică codul de pe etichetă (format MS-2026-01).`;
+    // Căutare și după numărul precomenzii (ex. PM2611-B83BD): duce la lotul pe care e alocată comanda.
+    const order = await preorderRepository.byNumber(code);
+    if (order?.lotCode) redirect(`/trasabilitate/${order.lotCode}`);
+    error = order
+      ? `Precomanda ${order.number} nu e încă alocată pe un lot. Lotul apare aici imediat după alocare.`
+      : `Nu am găsit lotul sau precomanda „${code}”. Verifică codul lotului (ex. MS-2026-01) sau numărul precomenzii (ex. PM2611-B83BD).`;
   }
 
   const [lots, farms] = await Promise.all([lotRepository.list(), farmRepository.listAll()]);

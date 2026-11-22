@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { LotAdminRow, NewLotForm } from "@/components/lots/LotForms";
@@ -61,7 +62,9 @@ export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/
           <p className="mb-2 text-sm text-slate-600">Pentru: <strong>{farmName.get(farm)}</strong></p>
           {lim && !lim.landVerified && (
             <p className="mb-2 rounded-lg bg-amber-50 p-3 text-sm">
-              Suprafața acestei gospodării nu e confirmată: confirm-o din Gospodării → „Limite și regim” înainte de a crea loturi.
+              Suprafața acestei gospodării nu e confirmată, deci numărul de țarcuri e blocat (maximum 0).{" "}
+              <Link href={`/admin/gospodarii/${farm}/regim#teren`} className="font-semibold underline">Confirmă suprafața</Link>{" "}
+              (fiecare țarc are nevoie de ~170 m² de pășune), apoi revino aici.
             </p>
           )}
           <NewLotForm farmSlug={farm} returnTo={`/admin/loturi?gospodarie=${farm}`} maxPens={lim?.pens} />
