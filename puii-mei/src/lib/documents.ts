@@ -6,6 +6,7 @@ export const documentCategoryLabels: Record<DocumentCategory, string> = {
   contabil: "Document contabil",
   dsv: "Înregistrare / act DSV",
   contract: "Contract",
+  proprietate: "Act de proprietate / folosință teren",
   altele: "Alt document",
 };
 

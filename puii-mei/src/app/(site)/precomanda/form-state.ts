@@ -7,6 +7,10 @@ export type PreorderFormState =
         number: string;
         birds: number;
         lotCode: string | null;
+        /** „alocata” = are gospodărie; „alegere” = clientul alege împărțire / așteptare; „asteapta” = în coadă. */
+        allocation: "alocata" | "alegere" | "asteapta";
+        farmName: string | null;
+        maxSingle: number;
         availableFrom: string | null;
         zoneName: string;
         total: number;

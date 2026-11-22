@@ -8,6 +8,9 @@ import { canManageFarm } from "@/server/delivery";
 import { lotRepository } from "@/server/repositories/catalog";
 import { governanceRepository } from "@/server/repositories/governance";
 import { checkLotLimits } from "@/lib/governance";
+import { GROWTH, lotPens, overlapError, penView } from "@/lib/growth";
+import { landRepository } from "@/server/repositories/land";
+import { processWaitingPreorders } from "@/server/allocation";
 import { notifyAdmins, notifyFarm } from "@/server/notifications";
 import { site } from "@/lib/site";
 
@@ -33,8 +36,9 @@ function readLot(formData: FormData) {
     species: SPECIES.includes(species) ? species : "pui",
     breed: t("breed") || "Pui cu creștere lentă (hibrid de exterior)",
     startDate: t("startDate"),
-    growthDays: Math.round(n("growthDays")),
-    totalBirds: Math.round(n("totalBirds")),
+    growthDays: Math.round(n("growthDays")) || GROWTH.growthDays,
+    pens: Math.round(n("pens")) || undefined,
+    totalBirds: Math.round(n("pens")) ? Math.round(n("pens")) * GROWTH.birdsPerPen : Math.round(n("totalBirds")),
     feed: t("feed") || "Furaje din cereale",
     processor: t("processor") || "Sacrificare tradițională în gospodăria de creștere",
     notes: t("notes"),
@@ -44,7 +48,7 @@ function readLot(formData: FormData) {
 function validate(d: ReturnType<typeof readLot>) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(d.startDate)) return "Alege data de început a lotului.";
   if (!(d.growthDays >= 30 && d.growthDays <= 200)) return "Durata creșterii trebuie să fie între 30 și 200 de zile.";
-  if (!(d.totalBirds >= 5 && d.totalBirds <= 10000)) return "Numărul de păsări trebuie să fie între 5 și 10.000.";
+  if (!(d.totalBirds >= GROWTH.birdsPerPen && d.totalBirds <= 10000)) return `Lotul are cel puțin un țarc (${GROWTH.birdsPerPen} de pui).`;
   return "";
 }
 
@@ -54,9 +58,13 @@ export async function createLotAction(formData: FormData) {
   const farmSlug = String(formData.get("farmSlug") ?? "");
   if (!canManageFarm(user, farmSlug)) throw new Error("Neautorizat");
   const data = readLot(formData);
-  const [farmLots, gov] = await Promise.all([lotRepository.byFarm(farmSlug, { all: true }), governanceRepository.bySlug(farmSlug)]);
+  const [farmLots, gov, land] = await Promise.all([
+    lotRepository.byFarm(farmSlug, { all: true }),
+    governanceRepository.bySlug(farmSlug),
+    landRepository.bySlug(farmSlug),
+  ]);
   const blocked = gov?.standing === "suspendata" || gov?.standing === "exclusa" ? `Gospodăria e ${gov.standing === "exclusa" ? "exclusă" : "suspendată"}: nu se pot crea loturi noi.` : "";
-  const error = blocked || validate(data) || checkLotLimits(farmLots, gov, data);
+  const error = blocked || validate(data) || checkLotLimits(farmLots, gov, data, land);
   if (error) redirect(back(formData, `eroareLot=${encodeURIComponent(error)}`));
   const needsApproval = user.role !== "admin";
   const lot = await lotRepository.create({ ...data, farmSlug }, `${user.name} (${user.role})`, needsApproval);
@@ -66,6 +74,7 @@ export async function createLotAction(formData: FormData) {
       `${user.name} a propus lotul ${lot.code}: ${lot.totalBirds} păsări, start ${lot.startDate}.\n${site.url}/admin/loturi`,
     );
   }
+  if (!needsApproval) await processWaitingPreorders();
   refresh();
   redirect(back(formData, `${needsApproval ? "lotPropus" : "lotNou"}=${lot.code}`));
 }
@@ -82,15 +91,21 @@ export async function updateLotAction(formData: FormData) {
     redirect(back(formData, `lotSalvat=${lot.code}`));
   }
   const data = readLot(formData);
-  const [farmLots, gov] = await Promise.all([lotRepository.byFarm(lot.farmSlug, { all: true }), governanceRepository.bySlug(lot.farmSlug)]);
+  const [farmLots, gov, land] = await Promise.all([
+    lotRepository.byFarm(lot.farmSlug, { all: true }),
+    governanceRepository.bySlug(lot.farmSlug),
+    landRepository.bySlug(lot.farmSlug),
+  ]);
   const error =
     validate(data) ||
     (data.totalBirds < lot.reservedBirds ? `Lotul are deja ${lot.reservedBirds} păsări rezervate.` : "") ||
-    (data.totalBirds !== lot.totalBirds || data.startDate !== lot.startDate ? checkLotLimits(farmLots, gov, { ...data, code: lot.code }) : "");
+    (data.totalBirds !== lot.totalBirds || data.startDate !== lot.startDate ? checkLotLimits(farmLots, gov, { ...data, code: lot.code }, land) : "");
   if (error) redirect(back(formData, `eroareLot=${encodeURIComponent(error)}`));
   await lotRepository.update(lot.code, {
     totalBirds: data.totalBirds,
-    startDate: data.startDate,
+    pens: data.pens,
+    // După pornirea primului țarc, data de început e cea reală.
+    startDate: lot.penStarts?.length ? lot.startDate : data.startDate,
     growthDays: data.growthDays,
     breed: data.breed,
     feed: data.feed,
@@ -99,6 +114,7 @@ export async function updateLotAction(formData: FormData) {
     // Un lot respins, corectat de gospodar, intră din nou la aprobare.
     ...(lot.approval?.status === "respins" && user.role !== "admin" ? { approval: { status: "asteapta" as const } } : {}),
   });
+  await processWaitingPreorders();
   refresh();
   redirect(back(formData, `lotSalvat=${lot.code}`));
 }
@@ -121,6 +137,36 @@ export async function decideLotAction(formData: FormData) {
       ? `Lotul ${lot.code} a fost aprobat și apare acum la precomandă.\n${site.url}/cont/gospodar`
       : `Lotul ${lot.code} nu a fost aprobat. Motiv: ${reason}\n${site.url}/cont/gospodar`,
   );
+  if (approve) await processWaitingPreorders();
+  refresh();
+  redirect(back(formData, `lotSalvat=${lot.code}`));
+}
+
+/**
+ * Pornirea unui țarc: puii de o zi au intrat în gospodărie. Se poate doar când țarcul e plin
+ * (40 de precomenzi) și în fereastra de 7 zile de la primul țarc al lotului.
+ */
+export async function startPenAction(formData: FormData) {
+  const user = await requireRole(["gospodar"]);
+  const lot = await lotRepository.byCode(String(formData.get("code") ?? ""), { all: true });
+  if (!lot || !canManageFarm(user, lot.farmSlug)) throw new Error("Neautorizat");
+  const n = Number(formData.get("pen"));
+  const date = String(formData.get("date") ?? "").trim() || new Date().toISOString().slice(0, 10);
+  const pen = penView(lot).find((p) => p.n === n);
+  let error = "";
+  if (!pen || n < 1 || n > lotPens(lot)) error = "Țarc inexistent.";
+  else if (pen.state === "pornit") error = `Țarcul ${n} a pornit deja.`;
+  else if (pen.state === "inchis") error = "Fereastra de 7 zile pentru pornirea țarcurilor acestui lot a trecut.";
+  else if (pen.birds < GROWTH.birdsPerPen && user.role !== "admin") error = `Țarcul ${n} are ${pen.birds} / ${GROWTH.birdsPerPen} pui rezervați; pornește când e plin.`;
+  else if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) error = "Data nu e validă.";
+  else if (!lot.penStarts?.length) {
+    // Primul țarc fixează data reală a lotului: tot un lot pe rând în gospodărie.
+    const [farmLots, gov] = await Promise.all([lotRepository.byFarm(lot.farmSlug, { all: true }), governanceRepository.bySlug(lot.farmSlug)]);
+    if (!gov?.allowConcurrentLots) error = overlapError(farmLots, date, lot.code);
+  }
+  if (error) redirect(back(formData, `eroareLot=${encodeURIComponent(error)}`));
+  const starts = [...(lot.penStarts ?? []), { n, date, at: new Date().toISOString(), by: `${user.name} (${user.role})` }].sort((a, b) => a.n - b.n);
+  await lotRepository.update(lot.code, { penStarts: starts, ...(starts.length === 1 ? { startDate: date } : {}) });
   refresh();
   redirect(back(formData, `lotSalvat=${lot.code}`));
 }

@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { LotAdminRow, NewLotForm } from "@/components/lots/LotForms";
 import { farmRepository, lotRepository } from "@/server/repositories/catalog";
+import { governanceRepository } from "@/server/repositories/governance";
+import { landRepository } from "@/server/repositories/land";
+import { effectiveLimits } from "@/lib/governance";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Loturi", robots: { index: false, follow: false } };
@@ -12,6 +15,7 @@ export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/
   const farmName = new Map(farms.map((f) => [f.slug, f.name]));
   const pending = lots.filter((l) => l.approval?.status === "asteapta");
   const farm = typeof sp.gospodarie === "string" && farmName.has(sp.gospodarie) ? sp.gospodarie : farms[0]?.slug;
+  const lim = farm ? effectiveLimits(await governanceRepository.bySlug(farm), await landRepository.bySlug(farm)) : null;
 
   return (
     <Container className="py-8">
@@ -55,7 +59,12 @@ export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/
       {farm && (
         <div className="mt-3 max-w-3xl">
           <p className="mb-2 text-sm text-slate-600">Pentru: <strong>{farmName.get(farm)}</strong></p>
-          <NewLotForm farmSlug={farm} returnTo={`/admin/loturi?gospodarie=${farm}`} />
+          {lim && !lim.landVerified && (
+            <p className="mb-2 rounded-lg bg-amber-50 p-3 text-sm">
+              Suprafața acestei gospodării nu e confirmată: confirm-o din Gospodării → „Limite și regim” înainte de a crea loturi.
+            </p>
+          )}
+          <NewLotForm farmSlug={farm} returnTo={`/admin/loturi?gospodarie=${farm}`} maxPens={lim?.pens} />
         </div>
       )}
     </Container>

@@ -3,10 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { estimatePrice, feedAdvance } from "@/lib/pricing";
 import { farmPaymentRepository } from "@/server/repositories/farm-payments";
-import { availableBirds, availabilityDate, isOpenForPreorder, normalizeLotCode } from "@/lib/lots";
+import { availabilityDate } from "@/lib/lots";
+import { allocateNewPreorder } from "@/server/allocation";
 import { flattenErrors } from "@/lib/validation/common";
 import { parseLocation, preorderSchema } from "@/lib/validation/preorder";
-import { lotRepository, zoneRepository } from "@/server/repositories/catalog";
+import { farmRepository, zoneRepository } from "@/server/repositories/catalog";
 import { preorderRepository } from "@/server/repositories/preorders";
 import { notifyNewPreorder } from "@/server/notifications";
 import type { PreorderFormState } from "./form-state";
@@ -35,32 +36,11 @@ export async function submitPreorder(
     return { status: "error", errors: { zoneId: "Zona de livrare aleasă nu este disponibilă." }, values: raw };
   }
 
-  let lotCode: string | null = null;
-  let farmSlug: string | null = null;
-  let availableFrom: string | null = null;
-  if (data.lotCode) {
-    const code = normalizeLotCode(data.lotCode);
-    const lot = (await lotRepository.openForPreorder()).find((l) => l.code === code);
-    if (!lot || !isOpenForPreorder(lot)) {
-      return { status: "error", errors: { lotCode: "Lotul ales nu mai acceptă precomenzi." }, values: raw };
-    }
-    if (availableBirds(lot) < data.birds) {
-      return {
-        status: "error",
-        errors: { birds: `În lotul ${lot.code} mai sunt disponibili doar ${availableBirds(lot)} pui.` },
-        values: raw,
-      };
-    }
-    lotCode = lot.code;
-    farmSlug = lot.farmSlug;
-    availableFrom = availabilityDate(lot).toISOString();
-  }
-
   try {
     const preorder = await preorderRepository.create({
       customer: { name: data.name, phone: data.phone, email: data.email },
       birds: data.birds,
-      lotCode,
+      lotCode: null,
       zoneId: zone.id,
       address: data.address,
       ...(data.zoneId !== "ridicare-personala" && data.zoneId !== "alta-zona"
@@ -71,8 +51,13 @@ export async function submitPreorder(
       marketingConsent: data.marketingConsent,
     });
     await notifyNewPreorder(preorder);
+    // Alocarea automată: primul loc disponibil în care încape toată comanda.
+    const alloc = await allocateNewPreorder(preorder);
     revalidatePath("/", "layout");
-    const payment = farmSlug ? await farmPaymentRepository.bySlug(farmSlug) : null;
+    const lot = alloc.kind === "alocata" ? alloc.lot : null;
+    const [payment, farm] = lot
+      ? await Promise.all([farmPaymentRepository.bySlug(lot.farmSlug), farmRepository.bySlug(lot.farmSlug, { includeInactive: true })])
+      : [null, null];
     const feed = feedAdvance(preorder.birds, payment?.feedPricePerKg, payment?.chickPricePerBird);
 
     return {
@@ -80,8 +65,11 @@ export async function submitPreorder(
       result: {
         number: preorder.number,
         birds: preorder.birds,
-        lotCode,
-        availableFrom,
+        lotCode: lot?.code ?? null,
+        allocation: alloc.kind,
+        farmName: farm?.name ?? null,
+        maxSingle: alloc.kind === "alegere" ? alloc.maxSingle : 0,
+        availableFrom: lot ? availabilityDate(lot).toISOString() : null,
         zoneName: zone.name,
         total: preorder.estimate.total,
         estimatedKg: preorder.estimate.estimatedKg,

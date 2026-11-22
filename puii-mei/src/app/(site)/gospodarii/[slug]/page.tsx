@@ -54,8 +54,8 @@ export default async function FarmPage({ params }: PageProps<"/gospodarii/[slug]
               <p className="mt-5 text-lg leading-relaxed text-muted">{farm.description}</p>
               {openLot && (
                 <div className="mt-8">
-                  <ButtonLink href={`/precomanda?lot=${openLot.code}`} size="lg">
-                    Comandă din lotul {openLot.code}
+                  <ButtonLink href="/precomanda" size="lg">
+                    Fă o precomandă
                   </ButtonLink>
                 </div>
               )}

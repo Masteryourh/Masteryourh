@@ -83,6 +83,9 @@ export default async function AdminPage() {
               <tr key={p.id} className="align-top">
                 <td className="px-4 py-3 font-mono text-xs">
                   {p.number}
+                  {p.parentNumber && <div className="mt-1 text-[10px] text-slate-500">parte din {p.parentNumber}</div>}
+                  {!p.lotCode && p.allocation?.status === "alegere" && <div className="mt-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900">clientul alege</div>}
+                  {!p.lotCode && p.allocation?.status === "asteapta" && <div className="mt-1 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold">în așteptare</div>}
                   {p.trackingToken && (
                     <div className="mt-1.5">
                       <CopyButton value={`${site.url}/comanda/${p.trackingToken}`} label="Link client" />

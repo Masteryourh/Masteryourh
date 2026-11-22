@@ -7,7 +7,7 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 ## De construit (etapele următoare)
 
-- [ ] **Modelul „un lot pe rând + țarcuri de 40”** (vezi `plan-platforma.md` §1b): capacitate din numărul de țarcuri,
+- [x] **Modelul „un lot pe rând + țarcuri de 40”** (PR #27) (vezi `plan-platforma.md` §1b): capacitate din numărul de țarcuri,
       subloturi pe țarcuri pornite la 40 de precomenzi, etapele 0–21–60 zile, greutate 4,8 kg (22 nov. 2026).
       Include **alocarea automată** (fără alegerea lotului de către client) și alegerea clientului „împărțire în
       gospodării” / „aștept o gospodărie pentru toată comanda” când nu încape într-una singură.

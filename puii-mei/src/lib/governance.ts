@@ -1,10 +1,11 @@
 import type { Lot } from "./domain";
+import { GROWTH, overlapError, pensForArea } from "./growth";
 
 /** Limitele implicite (vânzare directă, sacrificare în gospodărie). Adminul le poate schimba pe gospodărie. */
 export const DEFAULT_LIMITS = {
   /** Ordinul ANSVSA 6/2024: carne de pasăre sacrificată la fermă, din cel mult 10.000 de capete / an. */
   birdsPerYear: 10_000,
-  /** Capacitatea practică de sacrificare în gospodărie (igienă, răcire), recomandare Puii mei. */
+  /** Plafon pe lot, peste capacitatea dată de suprafață (recomandare Puii mei). */
   birdsPerLot: 300,
 } as const;
 
@@ -41,13 +42,34 @@ export interface FarmGovernance {
   limitReason?: string;
   standing: FarmStanding;
   standingReason?: string;
+  /** Doar dacă legea permite: mai multe loturi simultane în aceeași gospodărie. */
+  allowConcurrentLots?: boolean;
   events: GovernanceEvent[];
 }
 
-export function effectiveLimits(g: FarmGovernance | null) {
+/** Suprafața verde pentru creștere: declarată de gospodar (cu act), măsurată și confirmată de admin. */
+export interface FarmLand {
+  id: string;
+  declaredM2?: number;
+  proofDocumentId?: string;
+  declaredAt?: string;
+  declaredBy?: string;
+  verifiedM2?: number;
+  verifiedAt?: string;
+  verifiedBy?: string;
+  note?: string;
+}
+
+/** Limitele efective: țarcurile permise de suprafața confirmată, plafoanele admin și cel legal. */
+export function effectiveLimits(g: FarmGovernance | null, land?: FarmLand | null) {
+  const pens = pensForArea(land?.verifiedM2 ?? 0);
+  const byLand = pens * GROWTH.birdsPerPen;
+  const cap = g?.birdsPerLot ?? DEFAULT_LIMITS.birdsPerLot;
   return {
     birdsPerYear: g?.birdsPerYear ?? DEFAULT_LIMITS.birdsPerYear,
-    birdsPerLot: g?.birdsPerLot ?? DEFAULT_LIMITS.birdsPerLot,
+    birdsPerLot: Math.min(byLand, cap),
+    pens: Math.min(pens, Math.floor(cap / GROWTH.birdsPerPen)),
+    landVerified: Boolean(land?.verifiedM2),
     custom: Boolean(g?.birdsPerYear || g?.birdsPerLot),
     reason: g?.limitReason,
   };
@@ -67,10 +89,18 @@ export function checkLotLimits(
   lots: Lot[],
   g: FarmGovernance | null,
   lot: { totalBirds: number; startDate: string; code?: string },
+  land?: FarmLand | null,
 ) {
-  const lim = effectiveLimits(g);
+  const lim = effectiveLimits(g, land);
+  if (!lim.landVerified) {
+    return "Suprafața pentru creștere nu e încă confirmată: încarcă actul de proprietate și declară suprafața; după măsurare, Puii mei o confirmă.";
+  }
+  if (!g?.allowConcurrentLots) {
+    const overlap = overlapError(lots, lot.startDate, lot.code);
+    if (overlap) return overlap;
+  }
   if (lot.totalBirds > lim.birdsPerLot) {
-    return `Maximum ${lim.birdsPerLot} păsări pe lot pentru această gospodărie${lim.reason ? ` (${lim.reason})` : ""}.`;
+    return `Maximum ${lim.birdsPerLot} păsări pe lot (${lim.pens} țarcuri × ${GROWTH.birdsPerPen}) pentru această gospodărie${lim.reason ? ` – ${lim.reason}` : ""}.`;
   }
   const year = Number(lot.startDate.slice(0, 4));
   const used = birdsInYear(lots, year, lot.code);

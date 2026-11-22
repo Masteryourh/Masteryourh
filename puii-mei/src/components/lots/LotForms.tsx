@@ -1,11 +1,12 @@
 import type { Lot } from "@/lib/domain";
 import { speciesLabels } from "@/lib/products";
 import { availableBirds, lotStatus, statusLabels } from "@/lib/lots";
-import { createLotAction, decideLotAction, updateLotAction } from "@/app/(panou)/cont/gospodar/loturi-actions";
+import { createLotAction, decideLotAction, startPenAction, updateLotAction } from "@/app/(panou)/cont/gospodar/loturi-actions";
+import { GROWTH, lotPens, penStateLabels, penView } from "@/lib/growth";
 
 const input = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm";
 
-function Fields({ lot, maxPerLot = 10000 }: { lot?: Lot; maxPerLot?: number }) {
+function Fields({ lot, maxPens = 250 }: { lot?: Lot; maxPens?: number }) {
   return (
     <>
       {!lot && (
@@ -19,16 +20,27 @@ function Fields({ lot, maxPerLot = 10000 }: { lot?: Lot; maxPerLot?: number }) {
         </label>
       )}
       <label className="text-sm font-semibold">
-        Data de început (puii de o zi intră în gospodărie)
+        Data estimată de pornire (primul țarc)
         <input name="startDate" type="date" required defaultValue={lot?.startDate} className={input} />
       </label>
       <label className="text-sm font-semibold">
-        Număr de păsări în lot
-        <input name="totalBirds" type="number" min={5} max={maxPerLot} required defaultValue={lot?.totalBirds ?? 200} className={input} />
+        Număr de țarcuri ({GROWTH.birdsPerPen} de pui / țarc)
+        <input
+          name="pens"
+          type="number"
+          min={1}
+          max={Math.max(1, maxPens)}
+          required
+          defaultValue={lot ? lotPens(lot) : Math.max(1, Math.min(maxPens, 5))}
+          disabled={Boolean(lot?.penStarts?.length)}
+          className={input}
+        />
+        <span className="mt-1 block text-xs font-normal text-slate-500">Maximum {maxPens} țarcuri, după suprafața confirmată.</span>
       </label>
+      {lot?.penStarts?.length ? <input type="hidden" name="pens" value={lotPens(lot)} /> : null}
       <label className="text-sm font-semibold">
         Durata creșterii (zile)
-        <input name="growthDays" type="number" min={30} max={200} required defaultValue={lot?.growthDays ?? 60} className={input} />
+        <input name="growthDays" type="number" min={30} max={200} required defaultValue={lot?.growthDays ?? GROWTH.growthDays} className={input} />
       </label>
       <label className="text-sm font-semibold sm:col-span-2">
         Rasa / tipul
@@ -51,12 +63,12 @@ function Fields({ lot, maxPerLot = 10000 }: { lot?: Lot; maxPerLot?: number }) {
 }
 
 /** Formular pentru un lot nou. */
-export function NewLotForm({ farmSlug, returnTo, needsApproval = false, maxPerLot }: { farmSlug: string; returnTo: string; needsApproval?: boolean; maxPerLot?: number }) {
+export function NewLotForm({ farmSlug, returnTo, needsApproval = false, maxPens }: { farmSlug: string; returnTo: string; needsApproval?: boolean; maxPens?: number }) {
   return (
     <form action={createLotAction} className="grid gap-4 rounded-xl bg-white p-5 ring-1 ring-slate-200 sm:grid-cols-2">
       <input type="hidden" name="farmSlug" value={farmSlug} />
       <input type="hidden" name="inapoi" value={returnTo} />
-      <Fields maxPerLot={maxPerLot} />
+      <Fields maxPens={maxPens} />
       <div className="sm:col-span-2">
         <button className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">{needsApproval ? "Trimite lotul spre aprobare" : "Creează lotul"}</button>
         <span className="ml-3 text-xs text-slate-500">
@@ -69,7 +81,7 @@ export function NewLotForm({ farmSlug, returnTo, needsApproval = false, maxPerLo
 }
 
 /** Rândul unui lot, cu editare și închidere / redeschidere pentru precomenzi. */
-export function LotAdminRow({ lot, farmName, returnTo, canApprove = false }: { lot: Lot; farmName?: string; returnTo: string; canApprove?: boolean }) {
+export function LotAdminRow({ lot, farmName, returnTo, canApprove = false, maxPens }: { lot: Lot; farmName?: string; returnTo: string; canApprove?: boolean; maxPens?: number }) {
   const status = lotStatus(lot);
   return (
     <details className="rounded-xl bg-white ring-1 ring-slate-200">
@@ -88,6 +100,7 @@ export function LotAdminRow({ lot, farmName, returnTo, canApprove = false }: { l
           {lot.approval?.status === "respins" && <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-900">respins</span>}
         </span>
       </summary>
+      <PensPanel lot={lot} returnTo={returnTo} />
       {lot.approval?.status === "respins" && lot.approval.reason && (
         <p className="border-t border-slate-200 bg-red-50 px-4 py-2 text-sm text-red-900">
           Motivul respingerii: {lot.approval.reason}. Corectează și salvează; lotul intră din nou la aprobare.
@@ -114,7 +127,7 @@ export function LotAdminRow({ lot, farmName, returnTo, canApprove = false }: { l
       <form action={updateLotAction} className="grid gap-4 border-t border-slate-200 p-4 sm:grid-cols-2">
         <input type="hidden" name="code" value={lot.code} />
         <input type="hidden" name="inapoi" value={returnTo} />
-        <Fields lot={lot} />
+        <Fields lot={lot} maxPens={maxPens} />
         <div className="flex flex-wrap gap-2 sm:col-span-2">
           <button className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">Salvează lotul</button>
         </div>
@@ -128,5 +141,47 @@ export function LotAdminRow({ lot, farmName, returnTo, canApprove = false }: { l
         </button>
       </form>
     </details>
+  );
+}
+
+/** Țarcurile lotului: câți pui are fiecare, starea și butonul „Pornește țarcul” când e plin. */
+function PensPanel({ lot, returnTo }: { lot: Lot; returnTo: string }) {
+  if (lot.approval?.status === "asteapta" || lot.approval?.status === "respins") return null;
+  const pens = penView(lot);
+  const today = new Date().toISOString().slice(0, 10);
+  return (
+    <div className="border-t border-slate-200 px-4 py-3">
+      <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Țarcuri</p>
+      <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {pens.map((p) => (
+          <li key={p.n} className="rounded-lg bg-slate-50 p-3 text-sm ring-1 ring-slate-200">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-semibold">Țarcul {p.n}</span>
+              <span className="text-xs text-slate-500">{penStateLabels[p.state]}</span>
+            </div>
+            <div className="mt-2 h-2 overflow-hidden rounded bg-slate-200">
+              <div className="h-full rounded bg-green-600" style={{ width: `${(p.birds / GROWTH.birdsPerPen) * 100}%` }} />
+            </div>
+            <p className="mt-1 text-xs text-slate-500">
+              {p.birds} / {GROWTH.birdsPerPen} pui{p.date ? ` · pornit ${p.date}` : ""}
+            </p>
+            {(p.state === "plin" || p.state === "se-umple") && (
+              <form action={startPenAction} className="mt-2 flex items-center gap-2">
+                <input type="hidden" name="code" value={lot.code} />
+                <input type="hidden" name="pen" value={p.n} />
+                <input type="hidden" name="inapoi" value={returnTo} />
+                <input name="date" type="date" defaultValue={today} className="rounded border border-slate-300 px-1.5 py-0.5 text-xs" />
+                <button disabled={p.state !== "plin"} className="rounded bg-slate-800 px-2 py-1 text-xs font-semibold text-white disabled:opacity-40">
+                  Pornește țarcul
+                </button>
+              </form>
+            )}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 text-xs text-slate-500">
+        Țarcul pornește când are {GROWTH.birdsPerPen} de pui rezervați; țarcurile aceluiași lot pornesc în cel mult {GROWTH.penStartWindowDays} zile de la primul.
+      </p>
+    </div>
   );
 }

@@ -44,13 +44,17 @@ export async function notifyNewInvestorApplication(a: InvestorApplication) {
 /* Evenimentele comenzii                                               */
 /* ------------------------------------------------------------------ */
 
-export type OrderEvent = "confirmata" | "alocata" | "plata-primita" | "livrare-programata" | "livrata" | "anulata";
+export type OrderEvent = "confirmata" | "alocata" | "alegere" | "plata-primita" | "livrare-programata" | "livrata" | "anulata";
 
 const orderMessages: Record<OrderEvent, (p: Preorder, extra?: string) => { subject: string; body: string }> = {
   confirmata: (p) => ({ subject: `Precomanda ${p.number} a fost confirmată`, body: "Precomanda ta a fost confirmată. Pe pagina comenzii vezi pasul următor." }),
   alocata: (p) => ({
     subject: `Precomanda ${p.number}: datele pentru plata avansului`,
     body: `Comanda ta a fost alocată lotului ${p.lotCode}. Pe pagina comenzii găsești contul gospodăriei și suma avansului (pui de o zi + furaj).`,
+  }),
+  alegere: (p) => ({
+    subject: `Precomanda ${p.number}: alege cum continuăm`,
+    body: `Acum nu există o gospodărie cu loc pentru toți cei ${p.birds} pui. Pe pagina comenzii alegi: împărțim comanda în mai multe gospodării (livrări și plăți separate) sau aștepți o gospodărie în care încap toți.`,
   }),
   "plata-primita": (p) => ({ subject: `Avansul pentru ${p.number} a fost primit`, body: "Gospodăria a confirmat primirea avansului (pui de o zi + furaj). Mulțumim!" }),
   "livrare-programata": (p, date) => ({

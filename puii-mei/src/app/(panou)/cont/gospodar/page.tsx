@@ -26,6 +26,9 @@ import { governanceRepository } from "@/server/repositories/governance";
 import { legalRepository } from "@/server/repositories/legal";
 import { legalKindLabels } from "@/lib/legal";
 import { birdsInYear, effectiveLimits, standingLabels } from "@/lib/governance";
+import { landRepository } from "@/server/repositories/land";
+import { declareLandAction } from "./teren-actions";
+import { GROWTH, pensForArea } from "@/lib/growth";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Contul gospodarului", robots: { index: false, follow: false } };
@@ -68,16 +71,17 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
   const farmPreorders = preorders.filter((p) => p.lotCode && lotCodes.has(p.lotCode) && p.status !== "anulata");
   const zoneName = new Map(zones.map((z) => [z.id, z.name]));
   const activeLots = lots.filter((l) => lotStatus(l) !== "livrat");
-  const [allParcels, allTours, payment, expenses, gov] = await Promise.all([
+  const [allParcels, allTours, payment, expenses, gov, land] = await Promise.all([
     parcelRepository.list(),
     tourRepository.list(),
     farmPaymentRepository.bySlug(farm.slug),
     expenseRepository.byFarm(farm.slug),
     governanceRepository.bySlug(farm.slug),
+    landRepository.bySlug(farm.slug),
   ]);
   const legalNews = (await legalRepository.list()).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3);
   const recentSince = recentCutoff();
-  const limits = effectiveLimits(gov);
+  const limits = effectiveLimits(gov, land);
   const thisYear = new Date().getFullYear();
   const usedThisYear = birdsInYear(lots, thisYear);
   const blocked = gov?.standing === "suspendata" || gov?.standing === "exclusa";
@@ -259,6 +263,37 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         </ul>
       </Glass>
 
+      <section id="teren" className="mt-4 scroll-mt-6 rounded-xl bg-white p-5 ring-1 ring-slate-200">
+        <h2 className="text-lg">Suprafața pentru creștere</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Fiecare țarc mobil ({GROWTH.birdsPerPen} de pui, mutat zilnic) are nevoie de ~{GROWTH.pastureM2PerPen} m² de pășune. Capacitatea pe lot
+          = suprafața confirmată / {GROWTH.pastureM2PerPen} m² × {GROWTH.birdsPerPen} pui.
+        </p>
+        {typeof sp.eroareTeren === "string" && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800">{sp.eroareTeren}</p>}
+        {sp.salvatTeren && <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Trimis. Puii mei măsoară suprafața și o confirmă.</p>}
+        <p className="mt-3 text-sm">
+          {land?.verifiedM2 ? (
+            <>
+              <strong>Confirmată:</strong> {land.verifiedM2.toLocaleString("ro-RO")} m² ⇒ {pensForArea(land.verifiedM2)} țarcuri ⇒ maximum{" "}
+              {pensForArea(land.verifiedM2) * GROWTH.birdsPerPen} pui / lot.
+            </>
+          ) : land?.declaredM2 ? (
+            <><strong>În verificare:</strong> ai declarat {land.declaredM2.toLocaleString("ro-RO")} m²; urmează măsurarea în teren.</>
+          ) : (
+            <><strong>Nedeclarată.</strong> Fără suprafață confirmată nu poți crea loturi.</>
+          )}
+        </p>
+        <form action={declareLandAction} className="mt-3 grid gap-3 sm:grid-cols-3">
+          <input type="hidden" name="farmSlug" value={farm.slug} />
+          <label className="text-sm font-semibold">Suprafața verde (m²)<input name="declaredM2" type="number" min={50} required defaultValue={land?.declaredM2} className={`${inputClasses} mt-1`} /></label>
+          <label className="text-sm font-semibold sm:col-span-2">
+            Actul de proprietate / folosință {land?.proofDocumentId ? "(încărcat; alege altul doar pentru înlocuire)" : ""}
+            <input name="file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic" required={!land?.proofDocumentId} className={`${inputClasses} mt-1`} />
+          </label>
+          <div className="sm:col-span-3"><button className="rounded-lg bg-forest-700 px-4 py-2 text-sm font-semibold text-white">Trimite spre confirmare</button></div>
+        </form>
+      </section>
+
       <h2 id="loturi" className="mt-10 scroll-mt-6 text-2xl font-semibold">Loturi</h2>
       {typeof sp.eroareLot === "string" && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800">{sp.eroareLot}</p>}
       {typeof sp.lotNou === "string" && <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Lotul {sp.lotNou} a fost creat și apare la precomandă.</p>}
@@ -301,19 +336,19 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         <summary className="cursor-pointer text-sm font-semibold">Administrează loturile: lot nou, modificare, închidere</summary>
         <div className="mt-4 space-y-2">
           {lots.map((l) => (
-            <LotAdminRow key={l.code} lot={l} returnTo={backTo} canApprove={user.role === "admin"} />
+            <LotAdminRow key={l.code} lot={l} returnTo={backTo} canApprove={user.role === "admin"} maxPens={limits.pens} />
           ))}
         </div>
         <h3 className="mt-6 mb-2 font-sans text-base font-semibold">Lot nou</h3>
         <p className="mb-3 text-sm text-slate-600">
-          Limitele gospodăriei: maximum <strong>{limits.birdsPerLot}</strong> păsări pe lot și{" "}
+          Limitele gospodăriei: maximum <strong>{limits.pens} țarcuri</strong> ({limits.birdsPerLot} păsări) pe lot, un lot pe rând, și{" "}
           <strong>{limits.birdsPerYear.toLocaleString("ro-RO")}</strong> pe an (în {thisYear}: {usedThisYear.toLocaleString("ro-RO")} folosite)
           {limits.reason ? ` – ${limits.reason}` : ""}. Sacrificarea se face în gospodărie, conform normelor sanitar-veterinare.
         </p>
         {blocked ? (
           <p className="rounded-lg bg-red-50 p-3 text-sm">Crearea loturilor e oprită cât timp gospodăria e {standingLabels[gov!.standing].toLowerCase()}.</p>
         ) : (
-          <NewLotForm farmSlug={farm.slug} returnTo={backTo} needsApproval={user.role !== "admin"} maxPerLot={limits.birdsPerLot} />
+          <NewLotForm farmSlug={farm.slug} returnTo={backTo} needsApproval={user.role !== "admin"} maxPens={limits.pens} />
         )}
       </details>
 

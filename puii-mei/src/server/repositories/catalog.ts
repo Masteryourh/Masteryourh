@@ -114,7 +114,7 @@ function lotCodeFor(farmSlug: string, startDate: string, existing: Set<string>) 
   }
 }
 
-export type NewLot = Pick<Lot, "farmSlug" | "species" | "breed" | "startDate" | "growthDays" | "totalBirds" | "feed" | "processor" | "notes">;
+export type NewLot = Pick<Lot, "farmSlug" | "species" | "breed" | "startDate" | "growthDays" | "totalBirds" | "feed" | "processor" | "notes" | "pens">;
 
 /** Implicit doar loturile aprobate (publice); `{ all: true }` în panouri. */
 type LotScope = { all?: boolean };
@@ -158,7 +158,7 @@ export const lotRepository = {
     return lot;
   },
   /** Modifică un lot; pentru loturile demonstrative se salvează o copie în baza de date. */
-  async update(code: string, patch: Partial<Pick<Lot, "totalBirds" | "startDate" | "growthDays" | "breed" | "feed" | "processor" | "notes" | "closed" | "approval">>) {
+  async update(code: string, patch: Partial<Pick<Lot, "totalBirds" | "startDate" | "growthDays" | "breed" | "feed" | "processor" | "notes" | "closed" | "approval" | "pens" | "penStarts">>) {
     const stored = await store.get<StoredLot>(LOTS, code);
     if (stored) return store.update<StoredLot>(LOTS, code, patch);
     const demo = lots.find((l) => l.code === code);

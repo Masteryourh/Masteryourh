@@ -6,7 +6,9 @@ import { DEFAULT_LIMITS, birdsInYear, effectiveLimits, standingEffects, standing
 import { formatDate } from "@/lib/format";
 import { farmRepository, lotRepository } from "@/server/repositories/catalog";
 import { governanceRepository } from "@/server/repositories/governance";
-import { saveLimitsAction, setStandingAction } from "../../regim-actions";
+import { saveLimitsAction, setStandingAction, verifyLandAction } from "../../regim-actions";
+import { landRepository } from "@/server/repositories/land";
+import { GROWTH, pensForArea } from "@/lib/growth";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Regimul gospodăriei", robots: { index: false, follow: false } };
@@ -24,8 +26,8 @@ export default async function FarmRegimePage({ params, searchParams }: PageProps
   const sp = await searchParams;
   const farm = await farmRepository.bySlug(slug, { includeInactive: true });
   if (!farm) notFound();
-  const [gov, lots] = await Promise.all([governanceRepository.bySlug(slug), lotRepository.byFarm(slug, { all: true })]);
-  const lim = effectiveLimits(gov);
+  const [gov, lots, land] = await Promise.all([governanceRepository.bySlug(slug), lotRepository.byFarm(slug, { all: true }), landRepository.bySlug(slug)]);
+  const lim = effectiveLimits(gov, land);
   const standing = gov?.standing ?? "activa";
   const year = new Date().getFullYear();
   const years = [year, year + 1];
@@ -59,11 +61,33 @@ export default async function FarmRegimePage({ params, searchParams }: PageProps
         ))}
       </section>
 
-      <section className="mt-8 rounded-xl bg-white p-5 ring-1 ring-slate-200">
+      <section id="teren" className="mt-8 rounded-xl bg-white p-5 ring-1 ring-slate-200">
+        <h2 className="text-lg">Suprafața pentru creștere</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Un țarc mobil (4 × 3 m, {GROWTH.birdsPerPen} de pui, mutat zilnic, refacere în 14 zile) are nevoie de ~{GROWTH.pastureM2PerPen} m² de
+          pășune. Fără suprafață confirmată, gospodăria nu poate crea loturi.
+        </p>
+        <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+          <div><dt className="text-slate-500">Declarată de gospodar</dt><dd className="font-semibold">{land?.declaredM2 ? `${land.declaredM2.toLocaleString("ro-RO")} m²` : "—"}</dd></div>
+          <div><dt className="text-slate-500">Actul de proprietate</dt><dd>{land?.proofDocumentId ? <a href={`/fisiere/${land.proofDocumentId}?vezi=1`} target="_blank" rel="noopener noreferrer" className="font-semibold underline">Deschide ↗</a> : "—"}</dd></div>
+          <div><dt className="text-slate-500">Confirmată (măsurată)</dt><dd className="font-semibold">{land?.verifiedM2 ? `${land.verifiedM2.toLocaleString("ro-RO")} m² ⇒ ${pensForArea(land.verifiedM2)} țarcuri × ${GROWTH.birdsPerPen} = ${pensForArea(land.verifiedM2) * GROWTH.birdsPerPen} pui / lot` : "neconfirmată"}</dd></div>
+        </dl>
+        <form action={verifyLandAction} className="mt-4 grid gap-4 sm:grid-cols-3">
+          <input type="hidden" name="slug" value={slug} />
+          <label className="text-sm font-semibold">Suprafața măsurată (m²)<input name="verifiedM2" type="number" min={0} defaultValue={land?.verifiedM2 ?? land?.declaredM2} className={input} /></label>
+          <label className="text-sm font-semibold sm:col-span-2">Observații (măsurătoare, data vizitei)<input name="note" defaultValue={land?.note} className={input} /></label>
+          <label className="flex items-center gap-2 text-sm font-semibold sm:col-span-3">
+            <input type="checkbox" name="allowConcurrentLots" defaultChecked={gov?.allowConcurrentLots} className="h-4 w-4" /> Permite loturi simultane (doar dacă legea permite)
+          </label>
+          <div className="sm:col-span-3"><button className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white">Confirmă suprafața</button></div>
+        </form>
+      </section>
+
+      <section className="mt-6 rounded-xl bg-white p-5 ring-1 ring-slate-200">
         <h2 className="text-lg">Limite de creștere</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Implicit: {DEFAULT_LIMITS.birdsPerYear.toLocaleString("ro-RO")} păsări / an (Ordinul ANSVSA 6/2024, vânzare directă) și{" "}
-          {DEFAULT_LIMITS.birdsPerLot} păsări / lot (vezi <Link href="/admin/legislatie" className="underline">Legislație și surse</Link>). Pune o limită mai mică pentru situații punctuale (suprafață insuficientă,
+          Implicit: {DEFAULT_LIMITS.birdsPerYear.toLocaleString("ro-RO")} păsări / an (Ordinul ANSVSA 6/2024, vânzare directă); pe lot,
+          capacitatea dată de suprafață (acum {lim.birdsPerLot}), plafonată la {DEFAULT_LIMITS.birdsPerLot} (vezi <Link href="/admin/legislatie" className="underline">Legislație și surse</Link>). Pune o limită mai mică pentru situații punctuale (suprafață insuficientă,
           adăpost mic, recomandarea DSV etc.). Lasă gol pentru limita implicită.
         </p>
         <form action={saveLimitsAction} className="mt-4 grid gap-4 sm:grid-cols-2">
