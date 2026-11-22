@@ -50,7 +50,7 @@ export function AlertWatcher({ initial }: { initial: string[] }) {
           </div>
           <p className="mt-1 text-white/80">{a.text}</p>
           <Link href={a.href} onClick={() => setFresh((f) => f.filter((x) => x.id !== a.id))} className="mt-2 inline-block rounded-md bg-amber-300 px-3 py-1 font-semibold text-slate-900">
-            Decide acum
+            {a.kind === "crestere" ? "Vezi jurnalul" : "Decide acum"}
           </Link>
         </div>
       ))}

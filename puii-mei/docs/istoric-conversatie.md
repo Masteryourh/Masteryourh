@@ -61,7 +61,10 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
   gospodărie); regimul gospodăriilor (avertizată / suspendată / exclusă / reactivată); legislație și surse.
   **#24** legislația publică (`/legislatie`, link în footer) + noutăți în panoul gospodarului. **#25** notificări în
   admin pentru cererile de prelungire ale curierilor (banner, număr în meniu, alertă la 30 s, email).
-- **#26** (în lucru): mod luminos / întunecat peste tot (buton soare/lună), eticheta coletului alb-negru;
+- **#26** mod luminos/întunecat + prețuri după modelul de creștere. **#27** modelul „un lot pe rând + țarcuri de 40”,
+  suprafața verificată, alocarea automată. **#28** monitorizarea creșterii: `/cont/gospodar/jurnal` (mutare cu GPS,
+  poză la 7 zile, intervenții, vizite veterinare), `/admin/monitorizare` + alerte, jurnalul în „Comanda mea”.
+- (vechi) **#26**: mod luminos / întunecat peste tot (buton soare/lună), eticheta coletului alb-negru;
   prețuri după modelul de creștere; „țarc” și „pui curățat, gata de gătit”; texte despre creșterea de 60 de zile.
 
 ## Decizii recente (22 nov. 2026)

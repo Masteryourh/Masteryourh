@@ -3,7 +3,7 @@
 Listă de sugestii și pași rămași, adunați din discuții. La expresia **„sugestii uitate”** se citește lista și se
 actualizează (se bifează ce s-a făcut, se adaugă ce apare nou).
 
-_Ultima actualizare: 21 noiembrie 2026_
+_Ultima actualizare: 22 noiembrie 2026_
 
 ## De construit (etapele următoare)
 
@@ -11,6 +11,14 @@ _Ultima actualizare: 21 noiembrie 2026_
       subloturi pe țarcuri pornite la 40 de precomenzi, etapele 0–21–60 zile, greutate 4,8 kg (22 nov. 2026).
       Include **alocarea automată** (fără alegerea lotului de către client) și alegerea clientului „împărțire în
       gospodării” / „aștept o gospodărie pentru toată comanda” când nu încape într-una singură.
+- [x] **Monitorizarea creșterii** (PR #28): jurnalul gospodarului (mutarea zilnică a țarcului cu GPS, intervenții,
+      mortalitate, verificări veterinare), poza la 7 zile, alerte în admin („Monitorizare creștere”), traseul țarcurilor
+      pe hartă și jurnalul vizibil clientului în „Comanda mea”.
+- [ ] **Pagina publică cu cifrele companiei** (bani intrați în gospodării, venituri, cheltuieli, profit, taxe,
+      gospodării, pui buc./kg, cereale) – următorul pas.
+- [ ] **Poziția live a țarcului** pentru client: acum se vede ultima mutare notată (cu GPS); live real ar cere un
+      senzor GPS pe țarc – de discutat.
+- [ ] **Harta suprafeței măsurate** (conturul pășunii desenat la verificarea în teren) – de adăugat peste traseul țarcurilor.
 - [ ] **Investiții cu rambursare în tranșe** de către gospodar (echipamente de creștere și sacrificare). Ritmul ratelor
       (lunar sau la fiecare lot vândut): **nedecis încă** (22 nov. 2026).
 - [ ] **Comenzi pentru congelator** (cantități mari) pe lângă cele pentru consum imediat.
