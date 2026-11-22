@@ -1,7 +1,7 @@
 export const faq = [
   {
     q: "Trebuie să plătesc în avans?",
-    a: "Da, un avans care acoperă puii de o zi și furajul lor (aproximativ 6 kg pentru fiecare pui). Nu e un cost în plus: avansul se scade din prețul total, iar la livrare plătești doar diferența, după greutatea reală. Avansul se plătește direct în contul gospodăriei partenere care îți crește puii, nu către Puii mei.",
+    a: "Da, un avans care acoperă puii de o zi și furajul lor (aproximativ 10 kg pentru fiecare pui: ~6,9 kg în viu la un randament de asimilare de ~70%). Nu e un cost în plus: avansul se scade din prețul total, iar la livrare plătești doar diferența, după greutatea reală. Avansul se plătește direct în contul gospodăriei partenere care îți crește puii, nu către Puii mei.",
   },
   {
     q: "De ce prețul este estimativ?",
@@ -9,7 +9,7 @@ export const faq = [
   },
   {
     q: "Cât durează până primesc puii?",
-    a: "Puii cresc aproximativ 8 săptămâni. Când alegi un lot deschis pentru precomenzi, vezi direct data estimată a disponibilității. Dacă alegi „primul lot disponibil”, precomanda ta intră în cel mai apropiat lot cu locuri libere.",
+    a: "Puii cresc aproximativ 60 de zile: primele 21 la interior, la căldură, apoi pe pășune, în țarcuri mobile mutate zilnic. Când alegi un lot deschis pentru precomenzi, vezi direct data estimată a disponibilității. Dacă alegi „primul lot disponibil”, precomanda ta intră în cel mai apropiat lot cu locuri libere.",
   },
   {
     q: "Unde sunt sacrificați puii?",

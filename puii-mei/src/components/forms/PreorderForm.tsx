@@ -158,7 +158,7 @@ export function PreorderForm({
                 </button>
               ))}
             </div>
-            <Field id="birds" label="Număr de pui" required error={errors.birds} className="mt-5" hint={`Între ${pricing.minBirds} și ${maxBirds} pui. Greutate medie estimată: ${formatNumber(pricing.avgWeightKg)} kg/pui.`}>
+            <Field id="birds" label="Număr de pui" required error={errors.birds} className="mt-5" hint={`Între ${pricing.minBirds} și ${maxBirds} pui. Greutate estimată: ~${formatNumber(pricing.avgWeightKg)} kg / pui curățat, gata de gătit (~${formatNumber(pricing.liveWeightKg)} kg în viu).`}>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setBirds((b) => Math.max(pricing.minBirds, b - 1))} className="h-12 w-12 shrink-0 rounded-2xl border border-forest-900/15 bg-white text-xl font-semibold text-forest-800 hover:bg-forest-50" aria-label="Scade un pui">
                   −
@@ -294,7 +294,7 @@ export function PreorderForm({
           <div className="rounded-3xl bg-forest-900 p-6 text-cream-50 sm:p-8">
             <h2 className="font-display text-2xl font-semibold text-cream-50">Sumar precomandă</h2>
             <dl className="mt-6 space-y-3 text-sm" aria-live="polite">
-              <Row label="Cantitate" value={`${estimate.birds} pui · ~${formatNumber(estimate.estimatedKg)} kg`} />
+              <Row label="Cantitate" value={`${estimate.birds} pui · ~${formatNumber(estimate.estimatedKg)} kg pui curățat`} />
               <Row label="Lot" value={lot ? lot.code : "Primul disponibil"} />
               {lot && <Row label="Disponibil estimat" value={formatDate(lot.availableFrom)} />}
             </dl>

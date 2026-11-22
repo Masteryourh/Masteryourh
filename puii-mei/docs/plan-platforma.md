@@ -18,6 +18,34 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
 - **Extindere**: curcani, rațe, fazani, legume din seră, în funcție de regiune (deocamdată „În curând” + măsurarea
   cererii pe județe).
 
+## 1b. Modelul de creștere (stabilit pe 22 nov. 2026)
+
+- **Terminologie**: spunem **țarc** (nu „cușcă”) și **pui curățat / gata de gătit** (nu „eviscerat”) – în platformă, pe site și în comunicare.
+- **Sistem**: pui pășunați în **țarc mobil de 4 × 3 m**, mutat zilnic pe suprafață nouă; suprafața se reface în
+  **14 zile** ⇒ un țarc are nevoie de ~14 × 12 m² = **~168 m² de pășune** (+ rezervă). **40 de pui / țarc.**
+- **Etape**: 0–21 zile la interior (becuri roșii, pat de rumeguș) → de la **21 de zile** în țarcul de pe pășune →
+  **60 de zile** sacrificare (tradițional, în gospodărie). Ciclu complet 60–70 de zile.
+- **Capacitatea gospodăriei** = numărul de țarcuri pe care le permite terenul × 40 (ex. Mureșan: 5 țarcuri ⇒ 200 pui / lot).
+- **Un lot pe rând** în fiecare gospodărie; lotul următor începe după încheierea celui curent (60–70 zile).
+  Mai multe loturi simultane doar dacă legea permite (de verificat).
+- **Țarcurile ca subloturi**: precomenzile se strâng până la **cel puțin 40 de pui** (un țarc plin) și pornește
+  creșterea acelui țarc; al doilea țarc pornește când se adună încă 40 etc. Pornirile din același lot să nu fie prea
+  distanțate (pui de vârste apropiate).
+- **Greutate**: **~4,8 kg puiul curățat, gata de gătit** (prețul se calculează pe această greutate); curățat ≈ 70% din viu ⇒
+  **~6,9 kg în viu**.
+- **Furaj**: randament de asimilare ~70% ⇒ 6,9 / 0,7 ≈ **9,8 kg furaj / pui** (intră în avans).
+- **Preț la client**: prețul pieței + 20–30% (acum 30 lei/kg + 20% = **36 lei/kg**).
+- **Alocarea precomenzilor (automată)**: clientul **nu alege lotul**; precomanda merge la **primul loc disponibil**.
+  Dacă prima gospodărie disponibilă poate primi **toată comanda**, se alocă acolo. Dacă nu, clientul e **anunțat** și
+  alege: **împărțire** în mai multe gospodării (livrări și plăți separate, câte una pe gospodărie) sau **așteptare**
+  până se găsește / se eliberează o gospodărie în care încape toată comanda.
+- **Investiția în gospodărie** (o dată, amortizată în timp): spațiul pentru 1–21 zile, țarcurile, echipamentele pentru
+  toate etapele și pentru sacrificare (opăritor, deplumator, conuri, masă inox, ladă frigorifică pentru păstrare
+  scurtă). **Gospodarul plătește investiția în tranșe.**
+- **Clienți**: comenzi mici pentru consum imediat și comenzi mari pentru congelator (consum ulterior).
+- **Scop**: venit mai mare în gospodăria țărănească și acces la produse de calitate.
+- **Pe viitor**: orice se produce în gospodărie poate fi precomandat (borcane, afumături, păstrăvi etc.).
+
 ## 2. Implementat (site public + administrare)
 
 - Site: homepage, cum funcționează (cine ce face), gospodării, trasabilitate pe lot, despre noi (intenția și programul
@@ -81,6 +109,10 @@ Document de lucru: tot ce s-a stabilit până acum, ce e implementat și ce urme
 - **Livrări live** (semi-live: se actualizează la fiecare livrare încheiată): cronologia tuturor turelor, alerte
   (temperatură, întârzieri, PIN-uri greșite), cereri de prelungire.
 - **Jurnal complet și nemodificabil** pentru fiecare tură; comparație foto ridicare ↔ primire; raport „Calitate”.
+
+## 3b. Implementat după etapa 2
+- Dashboard închis (gospodar, investitor), registru fiscal (venituri / cheltuieli, ciornă → confirmare), avans = pui
+  de o zi + furaj, limite și regimul gospodăriilor, legislație publică, alerte în admin, mod luminos / întunecat.
 
 ## 4. Etapa 3 – dashboard gospodar
 - Loturi, comenzi, calitate; **registrul de cheltuieli pe lot** cu documente justificative; facturi, avize,

@@ -54,6 +54,37 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
 - **#18** „under construction live”: ramă negru-galben, „UNDER CONSTRUCTION” transparent, etichetă; se scoate cu
   `UNDER_CONSTRUCTION=0`. Pagina `/in-constructie` refăcută.
 
+- **#19** predare (acest fișier). **#20** dashboard închis pentru gospodar și investitor (imagine aeriană Higgsfield,
+  pini pe loturi, cadran, bare, inel). **#21** registru fiscal: venituri + cheltuieli; ciornă → actul adăugat ulterior
+  → „Confirm corectitudinea datelor” (blocare); anulare cu motiv. **#22** greutate 5 kg (înlocuită ulterior).
+  **#23** avansul = puii de o zi + furajul, scăzut din total; limite 10.000 / an și 300 / lot (editabile pe
+  gospodărie); regimul gospodăriilor (avertizată / suspendată / exclusă / reactivată); legislație și surse.
+  **#24** legislația publică (`/legislatie`, link în footer) + noutăți în panoul gospodarului. **#25** notificări în
+  admin pentru cererile de prelungire ale curierilor (banner, număr în meniu, alertă la 30 s, email).
+- **#26** (în lucru): mod luminos / întunecat peste tot (buton soare/lună), eticheta coletului alb-negru;
+  prețuri după modelul de creștere; „țarc” și „pui curățat, gata de gătit”; texte despre creșterea de 60 de zile.
+
+## Decizii recente (22 nov. 2026)
+
+- **Modelul de creștere** e descris în `plan-platforma.md` §1b: țarc mobil 4 × 3 m, 40 de pui / țarc, ~170 m² de
+  pășune / țarc (capacitatea = suprafața dovedită / 170 × 40), un lot pe rând, țarcurile pornesc la câte 40 de
+  precomenzi, la cel mult **7 zile** unul de altul; 0–21 zile la interior, de la 21 pe pășune, sacrificare la 60.
+- **Alocare**: clientul nu alege lotul; primul loc disponibil, automat; dacă nu încape toată comanda într-o
+  gospodărie, clientul alege împărțirea (livrări și plăți separate) sau așteptarea.
+- **Termeni**: „țarc” (nu „cușcă”), „pui curățat, gata de gătit” (nu „eviscerat”).
+- **Prețuri**: 4,8 kg / pui curățat (≈ 70% din ~6,9 kg în viu); furaj ≈ 9,8 kg / pui (asimilare ~70%);
+  prețul pieței 30 lei/kg + 20% = 36 lei/kg; pui de o zi 7 lei, furaj 3,50 lei/kg (orientative, pe gospodărie).
+  Exemplu 10 pui: 1.728 lei total, avans 413 lei, rest 1.315 lei.
+- **Înregistrarea gospodăriei** va cere actul de proprietate al suprafeței; suprafața măsurată în teren devine harta
+  țarcurilor (traseu și poziție live pentru client).
+- **Monitorizare**: gospodarul bifează fiecare mutare și intervenție (alertă în admin dacă lipsește), poză la 7 zile,
+  vizitele veterinare se notează. Transparență totală.
+- **Pagină publică cu cifrele companiei** (bani intrați în gospodării, venituri, cheltuieli, profit, taxe, gospodării,
+  pui buc./kg, cereale).
+- **Coada de lucru**: 1) model de creștere (suprafață → țarcuri, lot unic, țarcuri ca subloturi); 2) monitorizarea
+  creșterii; 3) cifrele publice; 4) dashboard client; 5) navigare clară (breadcrumbs, „Înapoi” explicit);
+  6) română / engleză.
+
 ## Setări și servicii
 
 - Vercel: `DATABASE_URL` (Neon), `ADMIN_USER`, `ADMIN_PASSWORD`; de adăugat `SESSION_SECRET`, `RESEND_API_KEY`,

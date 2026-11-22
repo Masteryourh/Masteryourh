@@ -23,7 +23,7 @@ export async function Label({
     qr(`${origin}/confirmare/${parcel.clientToken}`),
   ]);
   return (
-    <article className="mx-auto w-[15cm] max-w-full break-inside-avoid rounded-xl border-2 border-black bg-white p-[0.35cm] text-black print:mb-[0.5cm] print:rounded-none">
+    <article className="label-paper mx-auto w-[15cm] max-w-full break-inside-avoid rounded-xl border-2 border-black bg-white p-[0.35cm] text-black print:mb-[0.5cm] print:rounded-none">
       <header className="flex items-center justify-between border-b-2 border-black pb-[0.15cm]">
         <div className="flex items-center gap-2">
           <LogoMark className="h-7 w-[40px]" />

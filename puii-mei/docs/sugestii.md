@@ -7,6 +7,15 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 ## De construit (etapele următoare)
 
+- [ ] **Modelul „un lot pe rând + țarcuri de 40”** (vezi `plan-platforma.md` §1b): capacitate din numărul de țarcuri,
+      subloturi pe țarcuri pornite la 40 de precomenzi, etapele 0–21–60 zile, greutate 4,8 kg (22 nov. 2026).
+      Include **alocarea automată** (fără alegerea lotului de către client) și alegerea clientului „împărțire în
+      gospodării” / „aștept o gospodărie pentru toată comanda” când nu încape într-una singură.
+- [ ] **Investiții cu rambursare în tranșe** de către gospodar (echipamente de creștere și sacrificare). Ritmul ratelor
+      (lunar sau la fiecare lot vândut): **nedecis încă** (22 nov. 2026).
+- [ ] **Comenzi pentru congelator** (cantități mari) pe lângă cele pentru consum imediat.
+- [ ] **Alte produse din gospodărie** la precomandă: borcane, afumături, păstrăvi etc.
+
 - [x] **Etapa 3 – gospodar:** registrul de cheltuieli pe lot + documente (SHA-256, verificare admin). Fișierele stau
       deocamdată în baza de date (max. 3,5 MB); pentru volum mare → Vercel Blob.
 - [x] **Etapa 4 – investitor:** investiții, cronologie, contracte descărcabile, transparența gospodăriei susținute.
@@ -45,7 +54,9 @@ _Ultima actualizare: 21 noiembrie 2026_
 
 - [ ] **Datele de plată ale fiecărei gospodării** (titular, IBAN, bancă, preț furaj): Contul meu → Vedere gospodar →
       „Contul pentru avansul de hrană”. Fără ele, clienții nu pot plăti avansul.
-- [ ] **Prețul pe kg și pragul de livrare gratuită** după trecerea la 5 kg / pui (acum 34 lei/kg → ~170 lei/pui;
+- [ ] **Prețul pieței** (acum 30 lei/kg + 20% = 36 lei/kg): de actualizat periodic; surse găsite: industrial ~35 lei/kg,
+      pui de țară ~55–60 lei/kg în București (2026). De făcut editabil din admin.
+- [ ] **Pragul de livrare gratuită** după trecerea la 5 kg / pui (acum 34 lei/kg → ~170 lei/pui;
       livrare gratuită peste 600 lei, adică de la 4 pui) – de confirmat (propus pe 21 nov. 2026, fără răspuns).
 - [ ] **Prețurile implicite din avans:** furaj 3,50 lei/kg și pui de o zi 7 lei/pui sunt orientative
       (`src/lib/pricing.ts`); fiecare gospodărie își setează prețurile reale în panou.
@@ -62,6 +73,9 @@ _Ultima actualizare: 21 noiembrie 2026_
 - [ ] **Modelele de contract** și chitanța pentru avansul de hrană, cu datele firmei.
 
 ## De verificat juridic
+
+- [ ] **Mai multe loturi simultane** în aceeași gospodărie (sau un singur lot pe rând, cu țarcuri pornite eșalonat) –
+      ce permite legea pentru sacrificarea în gospodărie și vânzarea directă (22 nov. 2026).
 
 - [ ] **Limita de păsări** pentru sacrificarea în gospodărie și vânzarea directă: am pus 10.000 / an (Ordinul ANSVSA
       6/2024, de verificat textul final) și 300 / lot (recomandare practică). De confirmat la DSVSA Suceava, plus

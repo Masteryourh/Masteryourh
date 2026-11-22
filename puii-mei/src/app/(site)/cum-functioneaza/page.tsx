@@ -20,7 +20,7 @@ const roles: { who: string; subtitle: string; items: { icon: IconName; title: st
     who: "Gospodăria parteneră",
     subtitle: "Crește, sacrifică și vinde.",
     items: [
-      { icon: "sprout", title: "Creșterea puilor", text: "Adăpost, hrană și îngrijire zilnică, după protocolul comun de creștere." },
+      { icon: "sprout", title: "Creșterea puilor", text: "21 de zile la interior (căldură, rumeguș), apoi pe pășune, în țarcuri mobile de 40 de pui mutate zilnic; sacrificare la 60 de zile." },
       { icon: "shield", title: "Sacrificare tradițională", text: "Fiecare lot este sacrificat în gospodăria în care a crescut, cu respectarea normelor sanitar-veterinare și etichetarea lotului." },
       { icon: "truck", title: "Vânzarea", text: "Vinde direct clientului: încasează avansul (pui de o zi + furaj) și diferența la final, apoi predă puii proaspeți în ziua stabilită." },
     ],

@@ -3,6 +3,7 @@ import { Fredoka, Inter } from "next/font/google";
 import { JsonLd, organizationJsonLd } from "@/lib/seo";
 import { site } from "@/lib/site";
 import "./globals.css";
+import { themeScript } from "@/components/layout/ThemeToggle";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"], display: "swap" });
 const fredoka = Fredoka({ variable: "--font-fredoka", subsets: ["latin", "latin-ext"], display: "swap" });
@@ -44,7 +45,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ro" className={`${inter.variable} ${fredoka.variable}`}>
+    <html lang="ro" className={`${inter.variable} ${fredoka.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-dvh flex-col">
         {children}
         <JsonLd data={organizationJsonLd} />
