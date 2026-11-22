@@ -77,6 +77,10 @@ export interface Lot {
    * (loturile demonstrative și cele create de admin). Până la aprobare, lotul nu e public.
    */
   approval?: { status: "asteapta" | "aprobat" | "respins"; by?: string; at?: string; reason?: string };
+  /** Numărul de țarcuri ale lotului (40 de pui / țarc). Lipsă = totalBirds / 40, rotunjit în sus. */
+  pens?: number;
+  /** Pornirile țarcurilor (puii de o zi intrați în gospodărie), în ordine. */
+  penStarts?: { n: number; date: string; at: string; by: string }[];
   /** Pentru loturile create din panou. */
   createdAt?: string;
   createdBy?: string;
@@ -135,6 +139,13 @@ export interface Preorder {
   trackingToken?: string;
   /** Avansul pentru hrană, plătit de client direct în contul gospodăriei. */
   feedPayment?: FeedPayment;
+  /**
+   * Alocarea automată: „alegere” = nu încape într-o singură gospodărie, clientul alege;
+   * „asteapta” = clientul așteaptă o gospodărie pentru toată comanda; „impartita” = împărțită în părți.
+   */
+  allocation?: { status: "alocata" | "alegere" | "asteapta" | "impartita"; at: string; parts?: string[] };
+  /** Pentru o parte dintr-o comandă împărțită: numărul comenzii inițiale. */
+  parentNumber?: string;
 }
 
 export type FeedPaymentStatus = "de-platit" | "declarata" | "primita";
@@ -464,7 +475,7 @@ export interface StoredFile {
   uploadedBy: string;
 }
 
-export type DocumentCategory = "factura" | "aviz" | "contabil" | "dsv" | "contract" | "altele";
+export type DocumentCategory = "factura" | "aviz" | "contabil" | "dsv" | "contract" | "proprietate" | "altele";
 
 /** Document justificativ (al unei gospodării sau al unei investiții). Nu se șterge; doar se verifică. */
 export interface FarmDocument {

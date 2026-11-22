@@ -31,7 +31,8 @@ export const pricing = {
   /** Preț orientativ al puiului de o zi (lei / pui); fiecare gospodărie își poate seta prețul ei. */
   chickPrice: 7,
   minBirds: 2,
-  maxBirds: 100,
+  /** Comenzile mari (pentru congelator) se pot împărți automat în mai multe gospodării. */
+  maxBirds: 400,
   presets: [4, 8, 12, 20],
   /** Peste acest prag de produs, livrarea devine gratuită. */
   freeDeliveryFrom: 600,

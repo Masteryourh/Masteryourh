@@ -1,3 +1,4 @@
+import { penWindowOpen } from "./growth";
 import type { Lot, LotStageDefinition, LotStageKey, LotStatus } from "./domain";
 import type { Species } from "./products";
 
@@ -114,6 +115,7 @@ export function growthProgress(lot: Lot, now = new Date()) {
 export const isApproved = (lot: Lot) => !lot.approval || lot.approval.status === "aprobat";
 
 export function isOpenForPreorder(lot: Lot, now = new Date()) {
+  if (!penWindowOpen(lot, now)) return false;
   return isApproved(lot) && !lot.closed && lotStatus(lot, now) === "precomenzi-deschise" && availableBirds(lot) > 0;
 }
 

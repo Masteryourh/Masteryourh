@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { declareFeedPayment, ensureTrackingToken } from "@/server/orders";
 import { preorderRepository } from "@/server/repositories/preorders";
 import { notifyOrderEvent } from "@/server/notifications";
+import { chooseWait, processWaitingPreorders, splitPreorder } from "@/server/allocation";
 
 const digits = (s: string) => s.replace(/\D/g, "").slice(-9);
 
@@ -43,7 +44,21 @@ export async function cancelOrderAction(formData: FormData) {
   if (p.status === "noua" && (p.feedPayment?.status ?? "de-platit") === "de-platit") {
     await preorderRepository.updateStatus(p.id, "anulata");
     await notifyOrderEvent(p, "anulata");
+    if (p.lotCode) await processWaitingPreorders();
   }
   revalidatePath("/", "layout");
   redirect(`/comanda/${token}`);
+}
+
+/** Comanda nu încape într-o singură gospodărie: clientul alege împărțirea sau așteptarea. */
+export async function allocationChoiceAction(formData: FormData) {
+  const token = String(formData.get("token") ?? "");
+  const p = await preorderRepository.byTrackingToken(token);
+  if (!p) redirect("/comanda");
+  if (!p.lotCode && p.status !== "anulata") {
+    if (formData.get("choice") === "imparte") await splitPreorder(p);
+    else await chooseWait(p);
+  }
+  revalidatePath("/", "layout");
+  redirect(`/comanda/${token}#alocare`);
 }

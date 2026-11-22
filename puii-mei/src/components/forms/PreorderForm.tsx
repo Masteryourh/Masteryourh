@@ -13,37 +13,30 @@ import { buttonClasses } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Checkbox, Field, Honeypot, fieldA11y, inputClasses } from "./Field";
 
-export interface LotOption {
-  code: string;
-  farmName: string;
-  village: string;
-  availableFrom: string;
-  free: number;
-  /** Prețul furajului setat de gospodărie (lei / kg), dacă există. */
-  feedPricePerKg?: number;
-  /** Prețul puiului de o zi setat de gospodărie (lei / pui), dacă există. */
-  chickPricePerBird?: number;
+/** Capacitatea disponibilă acum (alocarea e automată; clientul nu alege lotul). */
+export interface Capacity {
+  /** Cel mai mare număr de pui care încape acum într-o singură gospodărie. */
+  maxSingle: number;
+  /** Data estimată a primului lot cu loc, dacă există. */
+  nextDate: string | null;
 }
 
 const NO_ADDRESS_ZONES = ["ridicare-personala", "alta-zona"];
 
 export function PreorderForm({
   zones,
-  lots,
+  capacity,
   initialBirds,
-  initialLot,
 }: {
   zones: DeliveryZone[];
-  lots: LotOption[];
+  capacity: Capacity;
   initialBirds?: number;
-  initialLot?: string;
 }) {
   const [state, formAction] = useActionState(submitPreorder, initialPreorderState);
   // Trimitere fără resetarea automată a formularului (ca valorile să rămână după o eroare).
   const [submitting, startSubmit] = useTransition();
   const [birds, setBirds] = useState(initialBirds ?? 8);
   const [zoneId, setZoneId] = useState("");
-  const [lotCode, setLotCode] = useState(lots.some((l) => l.code === initialLot) ? initialLot! : "");
   const [address, setAddress] = useState("");
   const [location, setLocation] = useState<GeoPoint | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
@@ -51,12 +44,11 @@ export function PreorderForm({
   const errors = state.status === "error" ? state.errors : {};
   const values = state.status === "error" ? state.values : {};
   const zone = zones.find((z) => z.id === zoneId) ?? null;
-  const lot = lots.find((l) => l.code === lotCode) ?? null;
   const estimate = estimatePrice(birds, zone);
-  const feed = feedAdvance(Number.isNaN(birds) ? 0 : birds, lot?.feedPricePerKg, lot?.chickPricePerBird);
+  const feed = feedAdvance(Number.isNaN(birds) ? 0 : birds);
   const split = paymentSplit(estimate.total, feed.amount);
   const needsAddress = zoneId !== "" && !NO_ADDRESS_ZONES.includes(zoneId);
-  const maxBirds = lot ? Math.min(lot.free, pricing.maxBirds) : pricing.maxBirds;
+  const maxBirds = pricing.maxBirds;
 
   useEffect(() => {
     if (state.status !== "idle") topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -79,8 +71,31 @@ export function PreorderForm({
           </p>
         </div>
 
+        {r.allocation !== "alocata" && (
+          <div className="mx-auto mt-8 max-w-xl rounded-3xl bg-grain-300/40 p-6 text-sm sm:p-8">
+            <p className="text-xs font-semibold tracking-[0.18em] uppercase">Important</p>
+            {r.allocation === "alegere" ? (
+              <>
+                <p className="mt-2 text-lg font-semibold text-forest-900">Alege cum continuăm</p>
+                <p className="mt-1">
+                  Acum încap cel mult {r.maxSingle} pui într-o singură gospodărie. Poți împărți comanda în mai multe gospodării
+                  (livrări și plăți separate) sau poți aștepta o gospodărie în care încap toți cei {r.birds} pui.
+                </p>
+                <Link href={`/comanda/${r.trackingToken}#alocare`} className={buttonClasses("primary", "md", "mt-4")}>
+                  Alege acum
+                </Link>
+              </>
+            ) : (
+              <p className="mt-2">
+                Acum nu sunt locuri libere. Comanda ta e <strong>în așteptare</strong> și o alocăm automat când se deschide un lot; te
+                anunțăm pe email. Avansul se plătește abia după alocare.
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="mx-auto mt-8 max-w-xl rounded-3xl bg-forest-900 p-6 text-cream-50 sm:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-grain-300">Pasul următor</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-grain-300">{r.allocation === "alocata" ? "Pasul următor" : "După alocare"}</p>
           <p className="mt-2 font-display text-2xl font-semibold text-cream-50">Plătește avansul: puii de o zi + furajul</p>
           <p className="mt-2 text-sm text-cream-100/80">
             Aproximativ <strong className="text-cream-50">{formatLei(r.feedAmount)}</strong>, prin transfer bancar direct în contul gospodăriei.
@@ -105,7 +120,7 @@ export function PreorderForm({
 
         <dl className="mx-auto mt-6 grid max-w-xl gap-4 rounded-3xl p-2 text-left sm:grid-cols-2">
           <Summary label="Cantitate" value={`${r.birds} pui (~${formatNumber(r.estimatedKg)} kg)`} />
-          <Summary label="Lot" value={r.lotCode ?? "Primul lot disponibil"} />
+          <Summary label="Gospodăria · lot" value={r.lotCode ? `${r.farmName ?? ""} · ${r.lotCode}` : r.allocation === "alegere" ? "Alegerea ta: împărțire sau așteptare" : "În așteptare"} />
           <Summary label="Disponibil estimat" value={r.availableFrom ? formatDate(r.availableFrom) : "Se comunică la alocare"} />
           <Summary label="Livrare" value={r.zoneName} />
           <Summary label="Preț total estimat" value={formatLei(r.total)} />
@@ -180,32 +195,32 @@ export function PreorderForm({
             </Field>
           </fieldset>
 
-          {/* 2. Lot */}
+          {/* 2. Gospodăria: alocare automată */}
           <fieldset className="rounded-3xl border border-forest-900/8 bg-white p-6 sm:p-8">
-            <legend className="sr-only">Lot de producție</legend>
-            <StepTitle n={2} title="Din ce lot?" />
-            <p className="mt-2 text-sm text-muted">Alegerea lotului stabilește gospodăria și data estimată a livrării.</p>
-            <div className="mt-5 grid gap-3">
-              <LotRadio checked={lotCode === ""} onChange={() => setLotCode("")} title="Primul lot disponibil" subtitle="Precomanda intră în cel mai apropiat lot cu locuri libere." />
-              {lots.map((l) => (
-                <LotRadio
-                  key={l.code}
-                  checked={lotCode === l.code}
-                  onChange={() => {
-                    setLotCode(l.code);
-                    setBirds((b) => Math.min(b, l.free));
-                  }}
-                  title={
-                    <>
-                      <span className="font-mono">{l.code}</span> · {l.farmName}
-                    </>
-                  }
-                  subtitle={`${l.village} · disponibil estimat ${formatDate(l.availableFrom)} · ${l.free} locuri libere`}
-                />
-              ))}
+            <legend className="sr-only">Gospodăria</legend>
+            <StepTitle n={2} title="Gospodăria o alocăm noi" />
+            <p className="mt-2 text-sm text-muted">
+              Precomanda ta merge automat la primul loc disponibil, într-o gospodărie în care încap toți puii comandați.
+              Fiecare țarc are 40 de pui și pornește când se umple.
+            </p>
+            <div className="mt-4 rounded-2xl bg-forest-50 p-4 text-sm">
+              {capacity.maxSingle >= birds ? (
+                <p>
+                  <strong>Avem loc</strong> pentru {birds} pui într-o singură gospodărie
+                  {capacity.nextDate ? `, disponibili estimat din ${formatDate(capacity.nextDate)}` : ""}.
+                </p>
+              ) : capacity.maxSingle > 0 ? (
+                <p>
+                  Acum încap cel mult <strong>{capacity.maxSingle} pui</strong> într-o singură gospodărie. După trimitere alegi: împărțim
+                  comanda în mai multe gospodării (livrări și plăți separate) sau aștepți o gospodărie pentru toți.
+                </p>
+              ) : (
+                <p>
+                  Acum nu sunt locuri libere. Comanda ta intră <strong>în așteptare</strong> și o alocăm automat când se deschide un lot; te
+                  anunțăm.
+                </p>
+              )}
             </div>
-            <input type="hidden" name="lotCode" value={lotCode} />
-            {errors.lotCode && <p className="mt-2 text-sm font-medium text-red-700">{errors.lotCode}</p>}
           </fieldset>
 
           {/* 3. Livrare */}
@@ -295,8 +310,7 @@ export function PreorderForm({
             <h2 className="font-display text-2xl font-semibold text-cream-50">Sumar precomandă</h2>
             <dl className="mt-6 space-y-3 text-sm" aria-live="polite">
               <Row label="Cantitate" value={`${estimate.birds} pui · ~${formatNumber(estimate.estimatedKg)} kg pui curățat`} />
-              <Row label="Lot" value={lot ? lot.code : "Primul disponibil"} />
-              {lot && <Row label="Disponibil estimat" value={formatDate(lot.availableFrom)} />}
+              <Row label="Gospodăria" value="Alocată automat" />
             </dl>
 
             {/* 1. Prețul total */}
@@ -362,23 +376,6 @@ function StepTitle({ n, title }: { n: number; title: string }) {
       <span className="flex h-8 w-8 items-center justify-center rounded-full bg-grain-300 font-sans text-sm text-forest-900">{n}</span>
       {title}
     </h2>
-  );
-}
-
-function LotRadio({ checked, onChange, title, subtitle }: { checked: boolean; onChange: () => void; title: React.ReactNode; subtitle: string }) {
-  return (
-    <label
-      className={cn(
-        "flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition",
-        checked ? "border-forest-700 bg-forest-50" : "border-forest-900/12 hover:border-forest-700/40",
-      )}
-    >
-      <input type="radio" name="lotChoice" checked={checked} onChange={onChange} className="mt-1 h-4 w-4 accent-forest-700" />
-      <span>
-        <span className="block font-semibold text-forest-900">{title}</span>
-        <span className="mt-0.5 block text-sm text-muted">{subtitle}</span>
-      </span>
-    </label>
   );
 }
 

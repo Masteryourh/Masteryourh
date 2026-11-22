@@ -68,8 +68,8 @@ export default async function LotPage({ params }: PageProps<"/trasabilitate/[cod
               </div>
             </div>
             {isOpenForPreorder(lot) && (
-              <ButtonLink href={`/precomanda?lot=${lot.code}`} size="lg">
-                Rezervă din acest lot
+              <ButtonLink href="/precomanda" size="lg">
+                Fă o precomandă
               </ButtonLink>
             )}
           </div>

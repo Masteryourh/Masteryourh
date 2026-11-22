@@ -9,6 +9,7 @@ import { parcelRepository } from "@/server/repositories/delivery";
 import { normalizeLotCode } from "@/lib/lots";
 import { site } from "@/lib/site";
 import { notifyFarm, notifyOrderEvent } from "@/server/notifications";
+import { processWaitingPreorders } from "@/server/allocation";
 
 const allowed: PreorderStatus[] = ["noua", "confirmata", "alocata-lot", "in-livrare", "livrata", "anulata"];
 
@@ -22,6 +23,7 @@ export async function updatePreorderStatus(formData: FormData) {
   if (updated && before?.status !== status && (status === "confirmata" || status === "livrata" || status === "anulata")) {
     await notifyOrderEvent(updated, status);
   }
+  if (status === "anulata") await processWaitingPreorders();
   revalidatePath("/", "layout");
 }
 

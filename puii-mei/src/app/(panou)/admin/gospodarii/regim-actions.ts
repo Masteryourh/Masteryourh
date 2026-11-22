@@ -9,6 +9,9 @@ import { notifyFarm } from "@/server/notifications";
 import { farmRepository } from "@/server/repositories/catalog";
 import { governanceRepository } from "@/server/repositories/governance";
 import { userRepository } from "@/server/repositories/users";
+import { landRepository } from "@/server/repositories/land";
+import { pensForArea, GROWTH } from "@/lib/growth";
+import { processWaitingPreorders } from "@/server/allocation";
 
 const t = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const page = (slug: string, q: string) => `/admin/gospodarii/${encodeURIComponent(slug)}/regim?${q}`;
@@ -96,6 +99,35 @@ export async function setStandingAction(formData: FormData) {
     standingReason: reason,
     events: [...g.events, { at: new Date().toISOString(), by: `${admin.name} (admin)`, action: `Stare: ${standingLabels[standing]}`, reason }],
   });
+  refresh();
+  redirect(page(slug, "salvat=1"));
+}
+
+/** Adminul confirmă suprafața măsurată în teren (sau o corectează) și, opțional, permite loturi simultane. */
+export async function verifyLandAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const slug = t(formData, "slug");
+  const m2 = Math.round(Number(t(formData, "verifiedM2").replace(",", ".")));
+  if (!(m2 >= 0 && m2 <= 1_000_000)) redirect(page(slug, `eroare=${encodeURIComponent("Suprafața nu e validă.")}`));
+  const land = (await landRepository.bySlug(slug)) ?? { id: slug };
+  await landRepository.save({ ...land, id: slug, verifiedM2: m2 || undefined, verifiedAt: new Date().toISOString(), verifiedBy: `${admin.name} (admin)`, note: t(formData, "note") || undefined });
+  const g = await current(slug);
+  const concurrent = formData.get("allowConcurrentLots") === "on";
+  const pens = pensForArea(m2);
+  await governanceRepository.save({
+    ...g,
+    allowConcurrentLots: concurrent,
+    events: [
+      ...g.events,
+      {
+        at: new Date().toISOString(),
+        by: `${admin.name} (admin)`,
+        action: `Suprafață confirmată: ${m2} m² ⇒ ${pens} țarcuri × ${GROWTH.birdsPerPen} = ${pens * GROWTH.birdsPerPen} pui / lot${concurrent ? " · loturi simultane permise" : ""}`,
+        reason: t(formData, "note") || "Măsurată în teren",
+      },
+    ],
+  });
+  await processWaitingPreorders();
   refresh();
   redirect(page(slug, "salvat=1"));
 }

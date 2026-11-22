@@ -15,7 +15,9 @@ import { feedFor, feedStatusOf, orderFarm } from "@/server/orders";
 import { preorderRepository } from "@/server/repositories/preorders";
 import { zoneRepository } from "@/server/repositories/catalog";
 import { parcelRepository, tourRepository } from "@/server/repositories/delivery";
-import { cancelOrderAction, declarePaymentAction } from "../actions";
+import { allocationChoiceAction, cancelOrderAction, declarePaymentAction } from "../actions";
+import { lotRepository as lotsRepo } from "@/server/repositories/catalog";
+import { sellableBirds } from "@/lib/growth";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Comanda mea", robots: { index: false, follow: false } };
@@ -36,6 +38,14 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
   ]);
   const tour = parcel?.tourId ? await tourRepository.byId(parcel.tourId) : null;
   const feed = feedFor(order, payment);
+  // Alocare: locurile disponibile acum și părțile comenzii (dacă a fost împărțită).
+  const roomLots = (await lotsRepo.openForPreorder()).filter((l) => sellableBirds(l) > 0);
+  const maxSingle = Math.max(0, ...roomLots.map((l) => sellableBirds(l)));
+  const totalFree = roomLots.reduce((s, l) => s + sellableBirds(l), 0);
+  const rootNumber = order.parentNumber ?? order.number;
+  const siblings = (await preorderRepository.list())
+    .filter((x) => x.number === rootNumber || x.parentNumber === rootNumber)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const feedStatus = feedStatusOf(order);
   const cancelled = order.status === "anulata";
   const delivered = order.status === "livrata" || Boolean(parcel?.delivered);
@@ -79,6 +89,71 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
           <p role="alert" className="rounded-2xl bg-red-50 p-4 font-semibold text-red-800">
             Comanda a fost anulată. Pentru întrebări, scrie-ne la {site.company.email}.
           </p>
+        )}
+
+        {/* Alocarea: comanda nu încape într-o singură gospodărie */}
+        {!cancelled && !order.lotCode && (order.allocation?.status === "alegere" || order.allocation?.status === "asteapta") && (
+          <section id="alocare" className="scroll-mt-28 rounded-3xl bg-grain-300/40 p-6 sm:p-8">
+            {order.allocation.status === "alegere" ? (
+              <>
+                <h2 className="text-2xl font-semibold">Alege cum continuăm</h2>
+                <p className="mt-2">
+                  Acum nu există o gospodărie cu loc pentru toți cei {order.birds} pui (încap cel mult {maxSingle} într-una). Alegi:
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-semibold">Comanda ta e în așteptare</h2>
+                <p className="mt-2">
+                  Așteptăm o gospodărie în care să încapă toți cei {order.birds} pui; o alocăm automat și te anunțăm. Avansul se
+                  plătește abia după alocare.{totalFree > 0 ? ` Dacă te grăbești, o poți împărți acum (sunt ${totalFree} locuri libere în total).` : ""}
+                </p>
+              </>
+            )}
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {totalFree > 0 && (
+                <form action={allocationChoiceAction} className="rounded-2xl bg-white p-4">
+                  <input type="hidden" name="token" value={token} />
+                  <input type="hidden" name="choice" value="imparte" />
+                  <p className="font-semibold">Împarte comanda</p>
+                  <p className="mt-1 text-sm text-muted">În mai multe gospodării: fiecare parte are livrarea, avansul și pagina ei.</p>
+                  <button className={buttonClasses("primary", "md", "mt-3")}>Împarte</button>
+                </form>
+              )}
+              {order.allocation.status === "alegere" && (
+                <form action={allocationChoiceAction} className="rounded-2xl bg-white p-4">
+                  <input type="hidden" name="token" value={token} />
+                  <input type="hidden" name="choice" value="asteapta" />
+                  <p className="font-semibold">Aștept o gospodărie pentru toți</p>
+                  <p className="mt-1 text-sm text-muted">Comanda rămâne întreagă; o alocăm automat când apare loc.</p>
+                  <button className={buttonClasses("secondary", "md", "mt-3")}>Aștept</button>
+                </form>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Părțile unei comenzi împărțite */}
+        {siblings.length > 1 && (
+          <section className="rounded-3xl bg-white p-6 ring-1 ring-forest-900/10 sm:p-8">
+            <h2 className="text-2xl font-semibold">Comanda e împărțită în {siblings.length} părți</h2>
+            <p className="mt-1 text-sm text-muted">Fiecare parte are gospodăria, avansul și livrarea ei.</p>
+            <ul className="mt-4 divide-y divide-forest-900/8">
+              {siblings.map((x) => (
+                <li key={x.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
+                  <span>
+                    <span className="font-mono font-semibold">{x.number}</span> · {x.birds} pui ·{" "}
+                    {x.lotCode ? `lot ${x.lotCode}` : "în așteptare"}
+                  </span>
+                  {x.id === order.id ? (
+                    <span className="text-muted">(aceasta)</span>
+                  ) : (
+                    x.trackingToken && <Link href={`/comanda/${x.trackingToken}`} className="font-semibold text-forest-700 underline">Deschide</Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
         {/* Plata hranei */}
