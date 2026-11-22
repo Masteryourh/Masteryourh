@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PreorderForm } from "@/components/forms/PreorderForm";
+import { currentPricePerKg } from "@/server/repositories/settings";
 import { lotRepository, zoneRepository } from "@/server/repositories/catalog";
 import { availabilityDate } from "@/lib/lots";
 import { sellableBirds } from "@/lib/growth";
@@ -34,7 +35,7 @@ export default async function PreorderPage({ searchParams }: PageProps<"/precoma
         intro="Completezi în 2 minute. Plătești acum un avans – puii de o zi și furajul lor (~10 kg / pui) – direct în contul gospodăriei. Avansul se scade din prețul total; la livrare plătești doar diferența, după greutatea reală."
       />
       <Container className="py-12 sm:py-16">
-        <PreorderForm zones={zones} capacity={capacity} initialBirds={birdsParam >= 2 && birdsParam <= pricing.maxBirds ? birdsParam : undefined} />
+        <PreorderForm zones={zones} capacity={capacity} pricePerKg={await currentPricePerKg()} initialBirds={birdsParam >= 2 && birdsParam <= pricing.maxBirds ? birdsParam : undefined} />
       </Container>
     </>
   );

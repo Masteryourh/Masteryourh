@@ -87,7 +87,8 @@ export async function splitPreorder(p: Preorder) {
   for (const [i, part] of plan.entries()) {
     const base = {
       birds: part.birds,
-      estimate: estimatePrice(part.birds, zone),
+      // Părțile păstrează prețul pe kg de la plasarea comenzii.
+      estimate: estimatePrice(part.birds, zone, p.estimate.pricePerKg),
       parentNumber: p.number,
     };
     let piece: Preorder | null;

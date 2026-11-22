@@ -27,10 +27,13 @@ export function PreorderForm({
   zones,
   capacity,
   initialBirds,
+  pricePerKg = pricing.pricePerKg,
 }: {
   zones: DeliveryZone[];
   capacity: Capacity;
   initialBirds?: number;
+  /** Prețul curent pe kg (setat din admin). */
+  pricePerKg?: number;
 }) {
   const [state, formAction] = useActionState(submitPreorder, initialPreorderState);
   // Trimitere fără resetarea automată a formularului (ca valorile să rămână după o eroare).
@@ -44,7 +47,7 @@ export function PreorderForm({
   const errors = state.status === "error" ? state.errors : {};
   const values = state.status === "error" ? state.values : {};
   const zone = zones.find((z) => z.id === zoneId) ?? null;
-  const estimate = estimatePrice(birds, zone);
+  const estimate = estimatePrice(birds, zone, pricePerKg);
   const feed = feedAdvance(Number.isNaN(birds) ? 0 : birds);
   const split = paymentSplit(estimate.total, feed.amount);
   const needsAddress = zoneId !== "" && !NO_ADDRESS_ZONES.includes(zoneId);

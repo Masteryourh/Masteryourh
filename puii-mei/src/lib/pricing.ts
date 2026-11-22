@@ -38,16 +38,21 @@ export const pricing = {
   freeDeliveryFrom: 600,
 } as const;
 
-export function estimatePrice(birds: number, zone?: DeliveryZone | null): PriceEstimate {
+/** Prețul pe kg pentru client = prețul pieței × (1 + adaos%). */
+export const clientPricePerKg = (marketPricePerKg: number, markupPct: number) =>
+  Math.round(marketPricePerKg * (1 + markupPct / 100) * 100) / 100;
+
+/** `pricePerKg`: prețul curent setat din admin (implicit cel din cod). */
+export function estimatePrice(birds: number, zone?: DeliveryZone | null, pricePerKg: number = pricing.pricePerKg): PriceEstimate {
   const safeBirds = Math.max(0, Math.floor(birds));
   const estimatedKg = round(safeBirds * pricing.avgWeightKg, 1);
-  const productValue = round(estimatedKg * pricing.pricePerKg, 2);
+  const productValue = round(estimatedKg * pricePerKg, 2);
   const deliveryFee =
     !zone || productValue >= pricing.freeDeliveryFrom ? 0 : zone.fee;
   return {
     birds: safeBirds,
     avgWeightKg: pricing.avgWeightKg,
-    pricePerKg: pricing.pricePerKg,
+    pricePerKg,
     estimatedKg,
     productValue,
     deliveryFee,
