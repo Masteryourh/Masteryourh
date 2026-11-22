@@ -59,6 +59,9 @@ export const expenseRepository = {
   async create(e: Omit<Expense, "id" | "createdAt">): Promise<Expense> {
     return store.append(EXPENSES, { ...e, id: randomUUID(), createdAt: new Date().toISOString() });
   },
+  async list(): Promise<Expense[]> {
+    return (await store.list<Expense>(EXPENSES)).sort(byDateDesc);
+  },
   async byFarm(slug: string): Promise<Expense[]> {
     return (await store.list<Expense>(EXPENSES)).filter((e) => e.farmSlug === slug).sort(byDateDesc);
   },
