@@ -145,5 +145,6 @@ export function lotCodeFor(village: string, startDate: string, existing: Set<str
 }
 
 export function normalizeLotCode(input: string) {
-  return input.trim().toUpperCase().replace(/\s+/g, "");
+  // Liniuțele lungi (– —) puse automat de telefon devin cratimă.
+  return input.trim().toUpperCase().replace(/\s+/g, "").replace(/[\u2010-\u2015\u2212]/g, "-");
 }

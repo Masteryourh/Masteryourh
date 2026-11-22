@@ -7,7 +7,7 @@ export function LotLookup({ defaultValue, error, dark = false }: { defaultValue?
   return (
     <form action="/trasabilitate" method="get" role="search" className="w-full max-w-xl">
       <label htmlFor="cod-lot" className={cn("mb-2 block text-sm font-medium", dark ? "text-cream-100" : "text-forest-900")}>
-        Codul lotului (de pe eticheta produsului sau din confirmarea comenzii)
+        Codul lotului sau numărul precomenzii
       </label>
       <div className="flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1">
@@ -16,7 +16,7 @@ export function LotLookup({ defaultValue, error, dark = false }: { defaultValue?
             id="cod-lot"
             name="cod"
             defaultValue={defaultValue}
-            placeholder="ex. MS-2026-01"
+            placeholder="ex. MS-2026-01 sau PM2611-B83BD"
             autoComplete="off"
             required
             aria-invalid={error ? true : undefined}
