@@ -8,7 +8,9 @@ import { formatDate, formatLei } from "@/lib/format";
 import { farmRepository } from "@/server/repositories/catalog";
 import { documentRepository, investmentRepository } from "@/server/repositories/documents";
 import { userRepository } from "@/server/repositories/users";
-import { addInvestmentEventAction, updateInvestmentAction, uploadInvestmentDocumentAction } from "../actions";
+import { addInvestmentEventAction, addRepaymentAction, setRepaymentRateAction, updateInvestmentAction, uploadInvestmentDocumentAction } from "../actions";
+import { RepaymentBox } from "@/components/documents/RepaymentBox";
+import { lotRepository } from "@/server/repositories/catalog";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Investiție", robots: { index: false, follow: false } };
@@ -22,6 +24,7 @@ export default async function AdminInvestmentPage({ params, searchParams }: Page
   if (!inv) notFound();
   const [investor, farms, docs] = await Promise.all([userRepository.byId(inv.investorId), farmRepository.listAll(), documentRepository.byInvestment(inv.id)]);
   const today = new Date().toISOString().slice(0, 10);
+  const farmLots = inv.farmSlug ? await lotRepository.byFarm(inv.farmSlug, { all: true }) : [];
 
   return (
     <Container className="py-8">
@@ -65,6 +68,33 @@ export default async function AdminInvestmentPage({ params, searchParams }: Page
           </form>
           <div className="mt-5"><InvestmentTimeline investment={inv} /></div>
         </div>
+      </div>
+
+      <h2 id="rambursare" className="mt-10 scroll-mt-6 text-lg">Rambursarea de către gospodar (la fiecare lot vândut)</h2>
+      <div className="mt-3 max-w-4xl">
+        <RepaymentBox investment={inv}>
+          <form action={setRepaymentRateAction} className="mt-4 flex flex-wrap items-end gap-2 rounded-lg bg-slate-50 p-3">
+            <input type="hidden" name="id" value={inv.id} />
+            <label className="text-xs font-semibold">Suma reținută pe pui livrat (lei; gol = de stabilit)
+              <input name="perBird" type="number" step="0.5" min="0" max="500" defaultValue={inv.repayment?.perBird} className={`${input} max-w-40`} />
+            </label>
+            <button className="rounded-lg bg-slate-800 px-3 py-2 text-sm font-semibold text-white">Salvează rata</button>
+          </form>
+          <form action={addRepaymentAction} className="mt-3 grid gap-3 rounded-lg bg-slate-50 p-3 sm:grid-cols-3">
+            <input type="hidden" name="id" value={inv.id} />
+            <label className="text-xs font-semibold">Data<input name="date" type="date" required defaultValue={today} className={input} /></label>
+            <label className="text-xs font-semibold">Lotul vândut
+              <select name="lotCode" className={input} defaultValue="">
+                <option value="">—</option>
+                {farmLots.map((l) => <option key={l.code} value={l.code}>{l.code}</option>)}
+              </select>
+            </label>
+            <label className="text-xs font-semibold">Pui livrați<input name="birds" type="number" min="1" className={input} /></label>
+            <label className="text-xs font-semibold">Suma (lei){inv.repayment?.perBird ? " – gol = pui × rată" : ""}<input name="amount" type="number" step="0.01" min="0" className={input} /></label>
+            <label className="text-xs font-semibold sm:col-span-2">Observații<input name="note" placeholder="Ex. ordin de plată nr. 15" className={input} /></label>
+            <button className="justify-self-start rounded-lg bg-forest-700 px-3 py-2 text-sm font-semibold text-white">Înregistrează rata</button>
+          </form>
+        </RepaymentBox>
       </div>
 
       <h2 id="documente" className="mt-10 scroll-mt-6 text-lg">Contracte și acte</h2>

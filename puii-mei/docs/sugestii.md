@@ -20,8 +20,9 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [ ] **Poziția live a țarcului** pentru client: acum se vede ultima mutare notată (cu GPS); live real ar cere un
       senzor GPS pe țarc – de discutat.
 - [ ] **Harta suprafeței măsurate** (conturul pășunii desenat la verificarea în teren) – de adăugat peste traseul țarcurilor.
-- [ ] **Investiții cu rambursare în tranșe** de către gospodar (echipamente de creștere și sacrificare). Ritmul ratelor
-      (lunar sau la fiecare lot vândut): **nedecis încă** (22 nov. 2026).
+- [x] **Investiții cu rambursare** de către gospodar, la fiecare lot vândut (PR #35): rata pe pui livrat se setează pe
+      fiecare investiție; ratele se înregistrează pe lot; progresul îl văd adminul, investitorul și gospodarul.
+- [ ] **Suma reținută pe pui** la rambursare: **de stabilit** (22 nov. 2026).
 - [ ] **Comenzi pentru congelator** (cantități mari) pe lângă cele pentru consum imediat.
 - [ ] **Alte produse din gospodărie** la precomandă: borcane, afumături, păstrăvi etc.
 
@@ -32,8 +33,8 @@ _Ultima actualizare: 22 noiembrie 2026_
       anularea precomenzii de către client.
 - [x] **Notificări pe email** (client, gospodar, admin) – pleacă doar după configurarea Resend.
 - [ ] **WhatsApp Business API** pentru mesaje automate (acum: linkuri WhatsApp manuale).
-- [ ] **Mesaj pe pagina de precomandă** cât timp site-ul e „under construction live”: „Comenzile se confirmă după
-      lansare” (propus pe 21 nov. 2026, fără răspuns).
+- [x] **Mesaj pe pagina de precomandă** cât timp site-ul e în construcție: „Comenzile se confirmă după lansare” (PR #35;
+      dispare cu `UNDER_CONSTRUCTION=0`).
 - [x] **Dashboard închis (stil „aerial + sticlă”) pentru gospodar și investitor**; adminul rămâne simplu.
 - [x] **„Comanda mea” în același stil de dashboard** (PR #30): gospodăria de sus cu țarcurile („Puii tăi · țarcul N”),
       cadranul creșterii, avans / rest la livrare, drumul comenzii în 7 pași, poza săptămânii.
@@ -73,7 +74,7 @@ _Ultima actualizare: 22 noiembrie 2026_
       „Contul pentru avansul de hrană”. Fără ele, clienții nu pot plăti avansul.
 - [x] **Prețul pieței editabil din admin** (PR #33): Admin → Prețuri (piață + adaos, cu istoric). Implicit 30 lei/kg + 20%
       = 36 lei/kg; de actualizat periodic (surse: industrial ~35 lei/kg, pui de țară ~55–60 lei/kg în București, 2026).
-- [ ] **Pragul de livrare gratuită** (acum 600 lei): de confirmat; se schimbă din Admin → Zone de livrare.
+- [x] **Fără livrare gratuită** (decizie 22 nov. 2026); pragul se poate pune oricând din Admin → Zone de livrare.
 - [ ] **Prețurile implicite din avans:** furaj 3,50 lei/kg și pui de o zi 7 lei/pui sunt orientative
       (`src/lib/pricing.ts`); fiecare gospodărie își setează prețurile reale în panou.
 

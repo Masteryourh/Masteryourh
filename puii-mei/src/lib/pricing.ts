@@ -35,7 +35,8 @@ export const pricing = {
   maxBirds: 400,
   presets: [4, 8, 12, 20],
   /** Peste acest prag de produs, livrarea devine gratuită. */
-  freeDeliveryFrom: 600,
+  /** Pragul de livrare gratuită; 0 = fără livrare gratuită (decizie 22 nov. 2026). Se schimbă din Admin → Zone. */
+  freeDeliveryFrom: 0,
 } as const;
 
 /** Prețul pe kg pentru client = prețul pieței × (1 + adaos%). */

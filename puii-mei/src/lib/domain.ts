@@ -560,6 +560,22 @@ export interface Investment {
   /** Randament / condiții, pe scurt (ex. „8% pe an, plătit trimestrial”). */
   terms: string;
   events: InvestmentEvent[];
+  /**
+   * Rambursarea de către gospodar, la fiecare lot vândut. `perBird` = suma reținută pe pui livrat
+   * (lipsă = încă de stabilit). Ratele se înregistrează de admin, pe lot.
+   */
+  repayment?: { perBird?: number; payments: RepaymentPayment[] };
   createdAt: string;
   createdBy: string;
+}
+
+export interface RepaymentPayment {
+  id: string;
+  at: string;
+  date: string;
+  lotCode?: string;
+  birds?: number;
+  amount: number;
+  note?: string;
+  by: string;
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PreorderForm } from "@/components/forms/PreorderForm";
+import { constructionFrameEnabled } from "@/components/layout/ConstructionFrame";
 import { currentPriceParams } from "@/server/repositories/settings";
 import { lotRepository, zoneRepository } from "@/server/repositories/catalog";
 import { availabilityDate } from "@/lib/lots";
@@ -35,6 +36,15 @@ export default async function PreorderPage({ searchParams }: PageProps<"/precoma
         intro="Completezi în 2 minute. Plătești acum un avans – puii de o zi și furajul lor (~10 kg / pui) – direct în contul gospodăriei. Avansul se scade din prețul total; la livrare plătești doar diferența, după greutatea reală."
       />
       <Container className="py-12 sm:py-16">
+        {constructionFrameEnabled() && (
+          <div role="note" className="mb-8 rounded-2xl border-2 border-[#f5c400] bg-[#fff6c7] p-4 text-sm text-[#3d3200] sm:p-5">
+            <p className="font-semibold">Site în construcție: comenzile se confirmă după lansare.</p>
+            <p className="mt-1">
+              Poți trimite precomanda acum: o înregistrăm și îți păstrăm locul. Confirmarea, alocarea pe gospodărie și plata
+              avansului vin după lansare; te anunțăm pe email și telefon. Până atunci nu plătești nimic.
+            </p>
+          </div>
+        )}
         <PreorderForm zones={zones} capacity={capacity} pricePerKg={params.pricePerKg} freeDeliveryFrom={params.freeDeliveryFrom} initialBirds={birdsParam >= 2 && birdsParam <= pricing.maxBirds ? birdsParam : undefined} />
       </Container>
     </>
