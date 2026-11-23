@@ -112,9 +112,10 @@ _Ultima actualizare: 22 noiembrie 2026_
 ## Securitate (de reparat)
 
 - [x] **PIN-ul clientului ocolibil prin cereri simultane** (V-01/V-02) – reparat în #56 (SEC-007).
-- [ ] **Schimbarea IBAN-ului gospodăriei fără protecții** (V-04 / CG-03): **decis de PO 23.11.2026: varianta (b)**
-      (MFA + 24 h + notificare + confirmare telefonică de la PUII MEI; CLAUDE-03 §6.1). De implementat; primul pas propus,
-      fără MFA: notificare + jurnal + IBAN nou inactiv până la confirmarea telefonică din admin.
+- [x] **Schimbarea IBAN-ului gospodăriei** (CG-03, varianta b): etapa 1 (fără MFA) în PR #61 — contul nou activ doar după
+      apelul de confirmare și 24 h; „Nu am cerut eu”; jurnal (ADR-009).
+- [ ] **IBAN, etapa 2** (ADR-009, 23 nov. 2026): MFA la cerere; expirarea cererii după 5 zile lucrătoare fără apel
+      [PROPUS]; verificarea titularului la bancă; aceeași protecție la schimbarea numărului de telefon al gospodarului.
 - [x] **Supra-rezervarea locurilor** (CG-04) – reparat în PR #59 (registru de locuri atomic + reconciliere, teste E2E).
       Perioada de grație pentru o rezervare rămasă fără comandă: 10 minute [PROPUS].
 - [ ] **Alertele de expirare a documentelor** (decis de PO 23.11.2026: compania anunță gospodarul din timp): în cod,
