@@ -205,7 +205,7 @@ neconectată, se șterge — D-11). Alternativă acceptabilă: Prisma cu migraț
 > concizie și sunt obligatorii pe fiecare tabel mutabil.
 >
 > **Verificat:** toate blocurile SQL din acest capitol (cu `/* audit */` expandat) au rulat fără erori pe PostgreSQL 16,
-> într-o bază goală: 13 scheme, 68 de tabele (23 nov. 2026).
+> într-o bază goală: 12 scheme, 68 de tabele (23 nov. 2026).
 
 ### 8.1 identity
 
