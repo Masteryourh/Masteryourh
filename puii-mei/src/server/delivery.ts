@@ -173,14 +173,22 @@ export type DriverData = { name: string; phone: string; plate: string; vehicleTy
 
 /**
  * Verifică un PIN de curier și ține contorul de încercări într-o singură operație atomică pe tură:
- * blocajul și limita de încercări se respectă și la cereri simultane.
+ * blocajul și limita de încercări se respectă și la cereri simultane. `onMatch` = modificările turei la PIN corect,
+ * scrise în ACEEAȘI tranzacție (ex. împerecherea: PIN-ul de ridicare devine „folosit” o singură dată).
  */
-async function countPinAttempt(tourId: string, matches: (t: Tour) => boolean | Promise<boolean>, resetOnSuccess = false) {
-  type R = { ok: boolean; counted: boolean; failed: number; locked: boolean };
+async function countPinAttempt(
+  tourId: string,
+  matches: (t: Tour) => boolean | Promise<boolean>,
+  { resetOnSuccess = false, onMatch }: { resetOnSuccess?: boolean; onMatch?: (t: Tour) => Partial<Tour> } = {},
+) {
+  type R = { ok: boolean; counted: boolean; failed: number; locked: boolean; tour?: Tour };
   return store.transact<Tour, R>("tours", tourId, async (t) => {
     if (!t) return { result: { ok: false, counted: false, failed: 0, locked: false } };
     if (t.locked) return { result: { ok: false, counted: false, failed: t.failedPins, locked: true } };
-    if (await matches(t)) return { patch: resetOnSuccess ? { failedPins: 0 } : undefined, result: { ok: true, counted: false, failed: 0, locked: false } };
+    if (await matches(t)) {
+      const patch: Partial<Tour> = { ...(resetOnSuccess ? { failedPins: 0 } : {}), ...(onMatch ? onMatch(t) : {}) };
+      return { patch: Object.keys(patch).length ? patch : undefined, result: { ok: true, counted: false, failed: 0, locked: false, tour: { ...t, ...patch } } };
+    }
     const failed = t.failedPins + 1;
     const locked = failed >= DELIVERY.maxPinAttempts;
     return { patch: { failedPins: failed, locked }, result: { ok: false, counted: true, failed, locked } };
@@ -192,18 +200,27 @@ export async function pairWithPickupPin(tour: Tour, pin: string, driver: DriverD
   if (tour.status === "incheiata" || tour.status === "anulata") return { ok: false as const, error: "Tura nu mai este activă." };
   if (tour.locked) return { ok: false as const, error: "Accesul este blocat. Cere gospodarului să-l deblocheze." };
   if (tour.courier?.personalPinHash) return { ok: false as const, error: "Tura are deja un curier. Intră cu PIN-ul tău personal." };
-  // Verificare + contor atomic (repară V-02: cererile simultane nu ocolesc limita); comparare în timp constant.
-  const check = await countPinAttempt(tour.id, (t) => !t.pickupPinUsed && safeEqual(pin, t.pickupPin));
+  // Verificare + contor + împerechere într-o singură tranzacție: PIN-ul de ridicare se poate folosi o singură dată,
+  // chiar și la cereri simultane (altfel doi curieri ar fi primit amândoi acces cu aceeași versiune de sesiune).
+  const check = await countPinAttempt(
+    tour.id,
+    (t) => t.status !== "incheiata" && t.status !== "anulata" && !t.pickupPinUsed && !t.courier?.personalPinHash && safeEqual(pin, t.pickupPin),
+    {
+      onMatch: (t) => ({
+        courier: { ...driver, pairedAt: new Date().toISOString(), pairedBy: "pin" as const, sessionVersion: (t.courier?.sessionVersion ?? 0) + 1 },
+        pickupPinUsed: true,
+        failedPins: 0,
+      }),
+    },
+  );
   if (!check.ok) {
     if (check.counted) {
       await log(tour, "pin-gresit", driver.name || "Necunoscut", `PIN de ridicare greșit (${check.failed}/${DELIVERY.maxPinAttempts}).`, { alert: check.locked });
     }
-    return { ok: false as const, error: check.locked ? "Prea multe încercări. Accesul a fost blocat." : "PIN greșit." };
+    return { ok: false as const, error: check.locked ? (check.counted ? "Prea multe încercări. Accesul a fost blocat." : "Accesul este blocat. Cere gospodarului să-l deblocheze.") : "PIN greșit." };
   }
-  const courier = { ...driver, pairedAt: new Date().toISOString(), pairedBy: "pin" as const, sessionVersion: (tour.courier?.sessionVersion ?? 0) + 1 };
-  const updated = await tourRepository.update(tour.id, { courier, pickupPinUsed: true, failedPins: 0 });
   await log(tour, "imperechere", `${driver.name} (curier)`, `Curier împerecheat cu PIN-ul de ridicare. Mașina ${driver.plate}.`);
-  return { ok: true as const, tour: updated! };
+  return { ok: true as const, tour: check.tour! };
 }
 
 export async function requestPin(tour: Tour, driver: DriverData) {
@@ -213,24 +230,28 @@ export async function requestPin(tour: Tour, driver: DriverData) {
   return request;
 }
 
-/** Gospodarul (sau adminul) confirmă cererea curierului. */
+/** Gospodarul (sau adminul) confirmă cererea curierului. Atomic: o cerere se decide o singură dată. */
 export async function decidePinRequest(tourId: string, requestId: string, approve: boolean, user: User) {
   const tour = await tourRepository.byId(tourId);
   if (!tour || !canManageFarm(user, tour.farmSlug)) throw new Error("Neautorizat");
-  if (!tour.pinRequest || tour.pinRequest.id !== requestId || tour.pinRequest.status !== "asteapta") throw new Error("Cererea nu mai este valabilă");
-  await tourRepository.update(tour.id, { pinRequest: { ...tour.pinRequest, status: approve ? "aprobata" : "respinsa" } });
+  const decided = await store.transact<Tour, boolean>("tours", tour.id, (t) => {
+    if (!t?.pinRequest || t.pinRequest.id !== requestId || t.pinRequest.status !== "asteapta") return { result: false };
+    return { patch: { pinRequest: { ...t.pinRequest, status: approve ? "aprobata" : "respinsa" } }, result: true };
+  });
+  if (!decided) throw new Error("Cererea nu mai este valabilă");
   await log(tour, "cerere-pin", actorOf(user), approve ? "Gospodarul a confirmat ridicarea pentru curier." : "Cererea curierului a fost respinsă.");
 }
 
-/** Curierul a cerut PIN-ul și gospodarul a confirmat: împerechere. */
+/** Curierul a cerut PIN-ul și gospodarul a confirmat: împerechere (atomică, o singură dată pe cerere). */
 export async function pairByApprovedRequest(tour: Tour, requestId: string) {
-  if (!tour.pinRequest || tour.pinRequest.id !== requestId || tour.pinRequest.status !== "aprobata") return null;
-  if (tour.courier?.personalPinHash) return null;
-  const { name, phone, plate, vehicleType, atp } = tour.pinRequest;
-  const driver: DriverData = { name, phone, plate, vehicleType, atp };
-  const courier = { ...driver, pairedAt: new Date().toISOString(), pairedBy: "confirmare" as const, sessionVersion: (tour.courier?.sessionVersion ?? 0) + 1 };
-  const updated = await tourRepository.update(tour.id, { courier, pickupPinUsed: true, pinRequest: undefined, failedPins: 0 });
-  await log(tour, "imperechere", `${driver.name} (curier)`, `Curier împerecheat prin confirmarea gospodarului. Mașina ${driver.plate}.`);
+  const updated = await store.transact<Tour, Tour | null>("tours", tour.id, (t) => {
+    if (!t?.pinRequest || t.pinRequest.id !== requestId || t.pinRequest.status !== "aprobata" || t.courier?.personalPinHash) return { result: null };
+    const { name, phone, plate, vehicleType, atp } = t.pinRequest;
+    const courier = { name, phone, plate, vehicleType, atp, pairedAt: new Date().toISOString(), pairedBy: "confirmare" as const, sessionVersion: (t.courier?.sessionVersion ?? 0) + 1 };
+    const patch: Partial<Tour> = { courier, pickupPinUsed: true, pinRequest: undefined, failedPins: 0 };
+    return { patch, result: { ...t, ...patch } };
+  });
+  if (updated?.courier) await log(tour, "imperechere", `${updated.courier.name} (curier)`, `Curier împerecheat prin confirmarea gospodarului. Mașina ${updated.courier.plate}.`);
   return updated;
 }
 
@@ -243,13 +264,13 @@ export async function setPersonalPin(tour: Tour, pin: string) {
 export async function loginWithPersonalPin(tour: Tour, pin: string) {
   if (tour.locked) return { ok: false as const, error: "Accesul este blocat. Cere gospodarului să-l deblocheze." };
   if (!tour.courier?.personalPinHash) return { ok: false as const, error: "Tura nu are încă un curier." };
-  const check = await countPinAttempt(tour.id, async (t) => Boolean(t.courier?.personalPinHash && (await verifyPassword(pin, t.courier.personalPinHash))), true);
+  const check = await countPinAttempt(tour.id, async (t) => Boolean(t.courier?.personalPinHash && (await verifyPassword(pin, t.courier.personalPinHash))), { resetOnSuccess: true });
   if (check.ok) {
     await log(tour, "reintrare", courierActor(tour), "Curierul a reintrat cu PIN-ul personal.");
-    return { ok: true as const };
+    return { ok: true as const, sessionVersion: check.tour!.courier!.sessionVersion };
   }
   if (check.counted) await log(tour, "pin-gresit", "Necunoscut", `PIN personal greșit (${check.failed}/${DELIVERY.maxPinAttempts}).`, { alert: check.locked });
-  return { ok: false as const, error: check.locked ? "Prea multe încercări. Accesul a fost blocat." : "PIN greșit." };
+  return { ok: false as const, error: check.locked ? (check.counted ? "Prea multe încercări. Accesul a fost blocat." : "Accesul este blocat. Cere gospodarului să-l deblocheze.") : "PIN greșit." };
 }
 
 /** Deblocare (PIN-uri greșite) sau resetarea completă a accesului curierului. */
