@@ -218,13 +218,13 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
                 și suma exactă. Te anunțăm și telefonic.
               </p>
             )}
-            {farm && !payment && (
+            {farm && !payment?.iban && (
               <p className="mt-5 rounded-2xl bg-cream-100 p-4 text-sm">
-                Gospodăria {farm.name} își completează datele de plată. Revino pe această pagină în curând; te anunțăm și telefonic.
+                Gospodăria {farm.name} își completează datele de plată (contul se verifică de PUII MEI înainte să apară aici). Revino pe această pagină în curând; te anunțăm și telefonic.
               </p>
             )}
 
-            {farm && payment && (
+            {farm && payment?.iban && (
               <>
                 <p className="mt-6 text-sm text-muted">Suma de plătit</p>
                 <p className="font-display text-4xl font-semibold text-forest-900">{formatLei(feed.amount)}</p>

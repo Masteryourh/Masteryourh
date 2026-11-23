@@ -1,5 +1,6 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import type { PreorderStatus } from "@/lib/domain";
 import { requireAdmin } from "@/server/auth";
@@ -11,6 +12,7 @@ import { site } from "@/lib/site";
 import { notifyFarm, notifyOrderEvent } from "@/server/notifications";
 import { processWaitingPreorders } from "@/server/allocation";
 import { releaseSeats, reserveSeats } from "@/server/seats";
+import { confirmIbanByPhone, rejectIban } from "@/server/iban";
 
 const allowed: PreorderStatus[] = ["noua", "confirmata", "alocata-lot", "in-livrare", "livrata", "anulata"];
 
@@ -57,4 +59,21 @@ export async function updatePreorderLot(formData: FormData) {
   }
   if (parcel && lot) await parcelRepository.update(id, { lotCode: lot.code, farmSlug: lot.farmSlug });
   revalidatePath("/", "layout");
+}
+
+/** Confirmarea telefonică a unei schimbări de IBAN (altă persoană decât cea care a cerut-o, la un număr cunoscut). */
+export async function confirmIbanAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const farmSlug = String(formData.get("farmSlug") ?? "");
+  const r = await confirmIbanByPhone(admin, farmSlug, String(formData.get("changeId") ?? ""), String(formData.get("phone") ?? ""), String(formData.get("note") ?? "").trim() || undefined);
+  revalidatePath("/", "layout");
+  redirect(`/admin?${r.ok ? `ibanConfirmat=${encodeURIComponent(farmSlug)}` : `eroareIban=${encodeURIComponent(r.error)}`}#iban`);
+}
+
+export async function rejectIbanAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const farmSlug = String(formData.get("farmSlug") ?? "");
+  const r = await rejectIban(admin, farmSlug, String(formData.get("changeId") ?? ""), String(formData.get("reason") ?? ""));
+  revalidatePath("/", "layout");
+  redirect(`/admin?${r.ok ? `ibanRespins=${encodeURIComponent(farmSlug)}` : `eroareIban=${encodeURIComponent(r.error)}`}#iban`);
 }

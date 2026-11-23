@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { requireRole } from "@/server/auth";
 import { canManageFarm } from "@/server/delivery";
 import { setFeedReceived } from "@/server/orders";
-import { farmPaymentRepository, normalizeIban } from "@/server/repositories/farm-payments";
+import { normalizeIban } from "@/server/repositories/farm-payments";
+import { reportUnrequested, savePaymentDetails } from "@/server/iban";
 
 const refresh = () => {
   revalidatePath("/cont/gospodar", "layout");
@@ -31,18 +32,26 @@ export async function saveFarmPaymentAction(formData: FormData) {
   else if (!(price > 0 && price < 50)) error = "Prețul furajului trebuie să fie între 0 și 50 lei / kg.";
   else if (!(chick > 0 && chick < 100)) error = "Prețul puiului de o zi trebuie să fie între 0 și 100 lei.";
   if (error) redirect(`${back}eroarePlata=${encodeURIComponent(error)}#plata-hrana`);
-  await farmPaymentRepository.save({
-    id: farmSlug,
-    holder,
-    iban: iban!,
-    bank,
-    feedPricePerKg: Math.round(price * 100) / 100,
-    chickPricePerBird: Math.round(chick * 100) / 100,
-    updatedAt: new Date().toISOString(),
-    updatedBy: `${user.name} (${user.role})`,
-  });
+  // Prețurile se schimbă imediat; un cont bancar nou intră în verificare (clienții văd contul activ până la confirmare).
+  const change = await savePaymentDetails(
+    user,
+    farmSlug,
+    { holder, iban: iban!, bank },
+    { feedPricePerKg: Math.round(price * 100) / 100, chickPricePerBird: Math.round(chick * 100) / 100 },
+  );
   refresh();
-  redirect(`${back}salvatPlata=1#plata-hrana`);
+  redirect(`${back}${change && change.status === "in-verificare" ? "ibanVerificare=1" : "salvatPlata=1"}#plata-hrana`);
+}
+
+/** „Nu am cerut eu”: anulează cererea de schimbare a contului și blochează contul care a cerut-o. */
+export async function reportUnrequestedIbanAction(formData: FormData) {
+  const user = await requireRole(["gospodar"]);
+  const farmSlug = String(formData.get("farmSlug") ?? "");
+  const back = `/cont/gospodar${user.role === "admin" ? `?gospodarie=${encodeURIComponent(farmSlug)}&` : "?"}`;
+  if (!canManageFarm(user, farmSlug)) throw new Error("Neautorizat");
+  const r = await reportUnrequested(user, farmSlug, String(formData.get("changeId") ?? ""));
+  refresh();
+  redirect(`${back}${r.ok ? "ibanAnulat=1" : `eroarePlata=${encodeURIComponent(r.error)}`}#plata-hrana`);
 }
 
 /** Confirmă (sau anulează confirmarea) primirii avansului pentru hrană. */
