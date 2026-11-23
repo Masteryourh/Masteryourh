@@ -189,6 +189,8 @@ export interface FarmPaymentDetails {
   chickPricePerBird?: number;
   updatedAt: string;
   updatedBy: string;
+  /** Cererea de schimbare a contului (în verificare sau ultima tratată). Clienții văd doar contul de mai sus. */
+  ibanChange?: import("../server/iban-core").IbanChange;
 }
 
 /* ------------------------------------------------------------------ */

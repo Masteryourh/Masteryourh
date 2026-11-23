@@ -16,7 +16,8 @@ import { inputClasses } from "@/components/forms/Field";
 import { FeedCell } from "@/components/orders/FeedCell";
 import { feedAdvance, pricing } from "@/lib/pricing";
 import { farmPaymentRepository } from "@/server/repositories/farm-payments";
-import { saveFarmPaymentAction } from "./plati-actions";
+import { reportUnrequestedIbanAction, saveFarmPaymentAction } from "./plati-actions";
+import { maskIban } from "@/server/iban-core";
 import { LotAdminRow, NewLotForm } from "@/components/lots/LotForms";
 import { AerialMap, Bars, FARM_SPOTS, Gauge, Glass, GlassTitle, Metric, Pill, Ring } from "@/components/panel/Dash";
 import { expenseCategoryLabels } from "@/lib/documents";
@@ -422,10 +423,45 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
       </p>
       {typeof sp.eroarePlata === "string" && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800">{sp.eroarePlata}</p>}
       {sp.salvatPlata && <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Datele de plată au fost salvate.</p>}
-      {!payment && (
-        <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-          Completează datele, altfel clienții nu pot plăti avansul.
+      <p className="mt-2 max-w-2xl text-sm text-muted">
+        Pentru siguranța banilor, un cont bancar nou nu se folosește imediat: PUII MEI te sună la numărul tău cunoscut ca să
+        confirmi, iar contul nou devine activ după 24 de ore. Prețurile se schimbă imediat.
+      </p>
+      {sp.ibanVerificare && (
+        <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm font-medium text-amber-900">
+          Cererea de schimbare a contului a fost înregistrată. Te sună PUII MEI ca să confirmi; până atunci clienții plătesc în contul vechi.
         </p>
+      )}
+      {sp.ibanAnulat && <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Cererea a fost anulată, iar PUII MEI a fost anunțat.</p>}
+      {!payment?.iban && (
+        <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+          Clienții nu pot plăti avansul până nu există un cont verificat. Completează datele; te sună PUII MEI să le confirmi.
+        </p>
+      )}
+      {payment?.iban && (
+        <p className="mt-3 text-sm">
+          Contul activ (pe care îl văd clienții): <strong>{payment.holder}</strong> · <span className="font-mono">{payment.iban.replace(/(.{4})/g, "$1 ").trim()}</span>
+          {payment.bank ? ` · ${payment.bank}` : ""}
+        </p>
+      )}
+      {(payment?.ibanChange?.status === "in-verificare" || payment?.ibanChange?.status === "confirmat") && (
+        <div id="iban-cerere" role="status" className="mt-3 max-w-3xl rounded-2xl bg-amber-50 p-4 text-sm text-amber-950 ring-1 ring-amber-300">
+          <p>
+            <strong>Schimbare de cont în verificare:</strong> {maskIban(payment.ibanChange.iban)} ({payment.ibanChange.holder}), cerută de{" "}
+            {payment.ibanChange.requestedBy} la {formatDate(payment.ibanChange.requestedAt)}.
+          </p>
+          <p className="mt-1">
+            {payment.ibanChange.status === "in-verificare"
+              ? "Așteaptă apelul de confirmare de la PUII MEI."
+              : `Confirmată telefonic; devine activă la ${new Date(payment.ibanChange.activatesAfter).toLocaleString("ro-RO", { timeZone: "Europe/Bucharest" })}.`}{" "}
+            Până atunci clienții plătesc în contul activ.
+          </p>
+          <form action={reportUnrequestedIbanAction} className="mt-3">
+            <input type="hidden" name="farmSlug" value={farm.slug} />
+            <input type="hidden" name="changeId" value={payment.ibanChange.id} />
+            <button className="rounded-lg bg-red-700 px-3 py-1.5 font-semibold text-white">Nu am cerut eu – anulează</button>
+          </form>
+        </div>
       )}
       <form action={saveFarmPaymentAction} className="mt-4 grid max-w-3xl gap-4 rounded-2xl bg-white p-5 ring-1 ring-forest-900/10 sm:grid-cols-2">
         <input type="hidden" name="farmSlug" value={farm.slug} />

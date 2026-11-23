@@ -66,7 +66,7 @@ export default async function ContractPage({ params }: PageProps<"/comanda/[toke
           <Party title="1. Beneficiarul (clientul)" rows={[["Nume", order.customer.name], ["Telefon", order.customer.phone], ["Email", order.customer.email]]} />
           <Party
             title="2. Crescătorul (gospodăria)"
-            rows={[["Gospodăria", farm?.name ?? "se alocă"], ["Titular", payment?.holder ?? farm?.owner ?? ""], ["Localitatea", farm ? `${farm.village}, jud. ${farm.county}` : ""], ["Înregistrare sanitar-veterinară", farm?.veterinaryRegistration ?? ""]]}
+            rows={[["Gospodăria", farm?.name ?? "se alocă"], ["Titular", payment?.holder || farm?.owner || ""], ["Localitatea", farm ? `${farm.village}, jud. ${farm.county}` : ""], ["Înregistrare sanitar-veterinară", farm?.veterinaryRegistration ?? ""]]}
           />
           <Party title="3. Consultantul" rows={[["Companie", c.legalName], ["CUI", c.cui === "—" ? "" : c.cui], ["Reg. Com.", c.regCom === "—" ? "" : c.regCom], ["Platforma", "Puii mei (puiimei.ro)"]]} />
         </section>

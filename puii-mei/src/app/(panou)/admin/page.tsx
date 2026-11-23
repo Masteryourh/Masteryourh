@@ -8,7 +8,7 @@ import { availableBirds, lotStatus } from "@/lib/lots";
 import { sellableBirds } from "@/lib/growth";
 import { formatDate, formatLei } from "@/lib/format";
 import type { PreorderStatus } from "@/lib/domain";
-import { updatePreorderLot, updatePreorderStatus } from "./actions";
+import { confirmIbanAction, rejectIbanAction, updatePreorderLot, updatePreorderStatus } from "./actions";
 import { storageKind } from "@/server/db/store";
 import { seatViolations } from "@/server/seats";
 import { FeedCell } from "@/components/orders/FeedCell";
@@ -29,7 +29,8 @@ const statusLabels: Record<PreorderStatus, string> = {
   anulata: "Anulată",
 };
 
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
+  const sp = await searchParams;
   const [preorders, messages, lots, farms, zones] = await Promise.all([
     preorderRepository.list(),
     contactRepository.list(),
@@ -44,6 +45,9 @@ export default async function AdminPage() {
   );
   const zoneName = new Map(zones.map((z) => [z.id, z.name]));
   const seatProblems = await seatViolations();
+  const ibanPending = [...payments.values()]
+    .filter((p) => p.ibanChange && (p.ibanChange.status === "in-verificare" || p.ibanChange.status === "confirmat"))
+    .map((p) => ({ farmSlug: p.id, change: p.ibanChange!, active: p.iban }));
   const active = preorders.filter((p) => p.status !== "anulata");
   const totalBirds = active.reduce((s, p) => s + p.birds, 0);
   const totalValue = active.reduce((s, p) => s + p.estimate.total, 0);
@@ -62,6 +66,64 @@ export default async function AdminPage() {
           <strong>Loturi cu mai multe locuri ocupate decât au:</strong>{" "}
           {seatProblems.map((v) => `${v.lot} (${v.used} / ${v.capacity})`).join(", ")}. Mută sau anulează comenzi până la capacitate.
         </p>
+      )}
+      {(ibanPending.length > 0 || sp.eroareIban || sp.ibanConfirmat || sp.ibanRespins) && (
+        <section id="iban" className="mt-6 scroll-mt-6 rounded-2xl bg-amber-50 p-5 ring-1 ring-amber-300">
+          <h2 className="text-lg font-semibold text-amber-950">Schimbări de cont bancar în verificare</h2>
+          <p className="mt-1 text-sm text-amber-950">
+            Sună gospodarul <strong>doar la un număr din listă</strong> (cunoscut dinainte de cerere), citește-i contul nou și
+            confirmă numai dacă îl recunoaște. Confirmarea o face altă persoană decât cea care a cerut schimbarea. Contul nou
+            devine vizibil clienților după confirmare și după 24 de ore de la cerere.
+          </p>
+          {typeof sp.eroareIban === "string" && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800">{sp.eroareIban}</p>}
+          {typeof sp.ibanConfirmat === "string" && <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Confirmarea telefonică pentru {farmName.get(sp.ibanConfirmat) ?? sp.ibanConfirmat} a fost înregistrată.</p>}
+          {typeof sp.ibanRespins === "string" && <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-900">Cererea pentru {farmName.get(sp.ibanRespins) ?? sp.ibanRespins} a fost respinsă.</p>}
+          {ibanPending.map(({ farmSlug, change, active }) => (
+            <div key={change.id} className="mt-4 rounded-xl bg-white p-4 text-sm ring-1 ring-forest-900/10" data-iban-cerere={farmSlug}>
+              <p className="font-semibold">{farmName.get(farmSlug) ?? farmSlug}</p>
+              <p className="mt-1">
+                Cont nou: <strong>{change.holder}</strong> · <span className="font-mono">{change.iban.replace(/(.{4})/g, "$1 ").trim()}</span>
+                {change.bank ? ` · ${change.bank}` : ""}
+              </p>
+              <p className="text-muted">
+                Contul activ acum: {active ? <span className="font-mono">{active.replace(/(.{4})/g, "$1 ").trim()}</span> : "niciunul (primul cont)"} · cerut de {change.requestedBy}, {formatDate(change.requestedAt)}
+              </p>
+              {change.status === "confirmat" ? (
+                <p className="mt-2 font-medium text-forest-800">
+                  Confirmat telefonic de {change.phoneCheck?.by} ({change.phoneCheck?.phone}); devine activ la{" "}
+                  {new Date(change.activatesAfter).toLocaleString("ro-RO", { timeZone: "Europe/Bucharest" })}.
+                </p>
+              ) : change.knownPhones.length === 0 ? (
+                <p className="mt-2 font-medium text-red-800">Gospodăria nu are niciun număr de telefon cunoscut: completează-l la Utilizatori, apoi gospodarul trimite din nou cererea.</p>
+              ) : (
+                <form action={confirmIbanAction} className="mt-3 flex flex-wrap items-end gap-2">
+                  <input type="hidden" name="farmSlug" value={farmSlug} />
+                  <input type="hidden" name="changeId" value={change.id} />
+                  <label className="text-xs font-semibold">
+                    Numărul sunat
+                    <select name="phone" className="mt-1 block rounded-lg border border-forest-900/15 px-2 py-1">
+                      {change.knownPhones.map((p) => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </label>
+                  <label className="text-xs font-semibold">
+                    Notă (opțional)
+                    <input name="note" className="mt-1 block rounded-lg border border-forest-900/15 px-2 py-1" />
+                  </label>
+                  <button className="rounded-lg bg-forest-700 px-3 py-1.5 font-semibold text-white">Am sunat: gospodarul confirmă</button>
+                </form>
+              )}
+              <form action={rejectIbanAction} className="mt-2 flex flex-wrap items-end gap-2">
+                <input type="hidden" name="farmSlug" value={farmSlug} />
+                <input type="hidden" name="changeId" value={change.id} />
+                <label className="text-xs font-semibold">
+                  Motivul respingerii
+                  <input name="reason" required minLength={3} className="mt-1 block rounded-lg border border-forest-900/15 px-2 py-1" />
+                </label>
+                <button className="rounded-lg px-3 py-1.5 font-semibold text-red-800 ring-1 ring-red-300">Respinge</button>
+              </form>
+            </div>
+          ))}
+        </section>
       )}
       {storageKind === "postgres" && (
         <p className="mt-4 text-sm text-forest-700">Datele sunt salvate în baza de date PostgreSQL.</p>
