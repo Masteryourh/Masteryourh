@@ -74,6 +74,9 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
   PIN (6 cifre, SMS / email / manual din admin, valabil 24 h); contractul de creștere tripartit (model); cifrele comenzii;
   total avansuri primite la gospodar. **#39** comenzile din fiecare țarc. **#40** panoul clientului
   separat de site (`app/(client)`): bară proprie (Panou, Plăți, Cifre, Jurnal, Livrare, Contract, Ieșire), fără meniul site-ului.
+- **SEC-007** (ramură `claude/sec-007-pin-atomic`): PIN-urile clientului și ale curierului se verifică atomic
+  (`store.transact`, SELECT … FOR UPDATE) – repară V-01/V-02 din `CLAUDE-VERIFICATION-V1`; limite persistente pe IP
+  (colecția `rate-limits`): 30 cereri PIN/zi, 30 verificări/oră; 5 cereri PIN/comandă/zi; test E2E `e2e/security.spec.ts`.
 - (vechi) **#26**: mod luminos / întunecat peste tot (buton soare/lună), eticheta coletului alb-negru;
   prețuri după modelul de creștere; „țarc” și „pui curățat, gata de gătit”; texte despre creșterea de 60 de zile.
 
