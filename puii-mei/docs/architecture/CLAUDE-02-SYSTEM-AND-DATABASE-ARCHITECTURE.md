@@ -447,11 +447,18 @@ create table program.program_versions (     -- parametrii versionați (AR-06)
   approved_at  timestamptz,
   unique (program_id, version)
 );
--- Exemplu params pentru PUI_PASUNE_60 [CONFIRMAT ca ipoteze operaționale, SC-019]:
+-- Exemplu params pentru PUI_PASUNE_60. Valorile operaționale sunt [CONFIRMAT ca ipoteze] (SC-019); cele
+-- zootehnice sunt parametri SEPARAȚI, fiecare cu statutul validării (vezi CLAUDE-VERIFICATION-V1 §3):
 -- { "birds_per_pen": 40, "pasture_m2_per_pen": 170, "growth_days": 60, "indoor_days": 21,
---   "pen_start_window_days": 7, "carcass_kg": 4.8, "carcass_yield": 0.70, "feed_kg_per_bird": 9.8,
---   "move_alert_days": 2, "photo_interval_days": 7, "one_lot_at_a_time": true,
---   "limits": { "birds_per_year": 10000, "birds_per_lot": 300 } }
+--   "pen_start_window_days": 7, "move_alert_days": 2, "photo_interval_days": 7, "one_lot_at_a_time": true,
+--   "limits": { "birds_per_year": 10000, "birds_per_lot": 300 },
+--   "zootech": {
+--     "target_carcass_kg":   { "value": 4.8,  "status": "ipoteza_nevalidata" },
+--     "carcass_yield":       { "value": 0.70, "status": "ipoteza_nevalidata" },   -- randament la sacrificare (carcasă / viu)
+--     "fcr_kg_feed_per_kg_live": { "value": null, "status": "de_stabilit_zootehnic" }  -- conversia furajului (FCR)
+--   } }
+-- Furajul / pui se CALCULEAZĂ = (target_carcass_kg / carcass_yield) × fcr; nu se mai stochează „9,8 kg” și nici
+-- „asimilare 70%” (care confunda randamentul la sacrificare cu conversia furajului).
 
 create table program.household_programs (   -- gospodăria înscrisă într-un program
   id            uuid primary key,

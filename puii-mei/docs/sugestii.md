@@ -103,6 +103,18 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [ ] **Datele companiei** în `src/lib/site.ts`: CUI, nr. Reg. Com., adresă, telefon (acum `+40 700 000 000`).
 - [ ] **Modelele de contract** și chitanța pentru avansul de hrană, cu datele firmei.
 
+## Securitate (de reparat)
+
+- [ ] **PIN-ul clientului ocolibil prin cereri simultane** (găsit 23 nov. 2026, CLAUDE-VERIFICATION-V1 V-01): 20 de PIN-uri
+      greșite trimise deodată au fost toate verificate. Reparație propusă: verificare + contor într-o operație atomică,
+      limite pe zi și pe IP; același tipar la PIN-ul curierului (V-02). Așteaptă aprobarea PO.
+- [ ] **Schimbarea IBAN-ului gospodăriei fără protecții** (V-04): MFA, întârziere 24 h, notificare.
+
+## De verificat zootehnic
+
+- [ ] **Furajul pe pui** (9,8 kg, „asimilare 70%”) e probabil subestimat: FCR implicit ≈ 1,43; la pui cu creștere lentă
+      FCR-ul e de obicei 2,5–3,5 (≈ 17–24 kg / pui). Afectează avansul și costul lotului (ADR-008).
+
 ## De verificat juridic
 
 - [ ] **Onorariul PUII MEI = 10% din (venituri − cheltuieli)** per lot (decizie 23 nov. 2026, ADR-001): de definit cu
