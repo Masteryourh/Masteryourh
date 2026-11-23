@@ -10,6 +10,7 @@ import { formatDate, formatLei } from "@/lib/format";
 import type { PreorderStatus } from "@/lib/domain";
 import { updatePreorderLot, updatePreorderStatus } from "./actions";
 import { storageKind } from "@/server/db/store";
+import { seatViolations } from "@/server/seats";
 import { FeedCell } from "@/components/orders/FeedCell";
 import { CopyButton } from "@/components/orders/CopyButton";
 import { feedAdvance } from "@/lib/pricing";
@@ -42,6 +43,7 @@ export default async function AdminPage() {
     (await Promise.all(farms.map((f) => farmPaymentRepository.bySlug(f.slug)))).filter((x) => x !== null).map((x) => [x.id, x]),
   );
   const zoneName = new Map(zones.map((z) => [z.id, z.name]));
+  const seatProblems = await seatViolations();
   const active = preorders.filter((p) => p.status !== "anulata");
   const totalBirds = active.reduce((s, p) => s + p.birds, 0);
   const totalValue = active.reduce((s, p) => s + p.estimate.total, 0);
@@ -53,6 +55,12 @@ export default async function AdminPage() {
         <p role="alert" className="mt-6 rounded-2xl bg-grain-300/40 p-4 text-sm text-forest-900">
           <strong>Stocare temporară.</strong> Precomenzile se păstrează doar în memoria temporară a serverului și se pot
           pierde. Conectează o bază de date PostgreSQL (Vercel → Storage → Neon) ca să le salvezi permanent.
+        </p>
+      )}
+      {seatProblems.length > 0 && (
+        <p role="alert" className="mt-6 rounded-2xl bg-red-50 p-4 text-sm text-red-900">
+          <strong>Loturi cu mai multe locuri ocupate decât au:</strong>{" "}
+          {seatProblems.map((v) => `${v.lot} (${v.used} / ${v.capacity})`).join(", ")}. Mută sau anulează comenzi până la capacitate.
         </p>
       )}
       {storageKind === "postgres" && (

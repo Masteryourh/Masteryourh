@@ -1,77 +1,78 @@
 import "server-only";
 import { store } from "./db/store";
-import { lotSeatBasis } from "./repositories/catalog";
+import { lotSeatCapacity } from "./repositories/catalog";
+import { emptyLedger, reconcile, release, reserve, seatViolation, setCapacity, type PreorderSnapshot, type SeatLedger } from "./seats-core";
 
 /**
- * Registrul de locuri al fiecărui lot (CG-04): cine ocupă câte locuri. Fiecare rezervare citește, verifică și scrie
- * registrul într-o singură tranzacție (`store.transact`: SELECT … FOR UPDATE pe Postgres), deci cererile simultane nu
- * pot ocupa mai multe locuri decât are lotul. Toate căile care pun sau scot o precomandă de pe un lot trec pe aici.
+ * Registrul de locuri al fiecărui lot (CG-04), colecția `lot-seats`. Fiecare operație citește, verifică și scrie
+ * registrul într-o singură tranzacție (`store.transact`: SELECT … FOR UPDATE pe Postgres, lacăt pe fișiere JSON), deci
+ * cererile simultane nu pot ocupa mai multe locuri decât are lotul. Logica (inclusiv reconcilierea cu precomenzile)
+ * e în `seats-core.ts`, testată unitar.
  *
- * Registrul se creează la prima folosire, din precomenzile deja alocate. Dacă rămâne în urmă (ex. o anulare fără
- * eliberare), greșește spre siguranță: un loc rămâne ocupat, nu se vinde de două ori; la următoarea rezervare,
- * precomenzile anulate sau mutate pe alt lot sunt scoase.
+ * Fără blocaje la pool-ul de 3 conexiuni: funcția din tranzacție nu face nicio altă interogare (imaginea precomenzilor
+ * și capacitatea se citesc ÎNAINTE), deci cine ține rândul blocat nu are nevoie de o a doua conexiune.
  */
 const SEATS = "lot-seats";
-type SeatLedger = { id: string; capacity: number; allocations: Record<string, number>; updatedAt: string };
 
-const used = (a: Record<string, number>) => Object.values(a).reduce((s, n) => s + n, 0);
-
-async function initial(code: string): Promise<{ ledger: SeatLedger; stale: string[]; baseReserved: number } | null> {
-  const basis = await lotSeatBasis(code);
-  if (!basis) return null;
-  return {
-    ledger: { id: code, capacity: basis.capacity, allocations: basis.allocations, updatedAt: new Date().toISOString() },
-    stale: basis.stale,
-    baseReserved: basis.baseReserved,
-  };
+async function snapshot(): Promise<PreorderSnapshot> {
+  return store.list<{ id: string; lotCode: string | null; birds: number; status: string }>("preorders");
 }
 
-/** Ocupă `birds` locuri pe lot pentru precomandă. `false` = nu mai e loc (nimic nu se schimbă). Idempotent. */
+/** Ocupă `birds` locuri pe lot pentru precomandă. `false` = nu mai e loc (registrul nu primește precomanda). */
 export async function reserveSeats(code: string, preorderId: string, birds: number): Promise<boolean> {
-  const init = await initial(code);
-  if (!init) return false;
+  const [cap, snap] = await Promise.all([lotSeatCapacity(code), snapshot()]);
+  if (!cap) return false;
+  const now = new Date();
   return store.transact<SeatLedger, boolean>(
     SEATS,
     code,
     (cur) => {
-      const ledger = cur ?? init.ledger;
-      const alloc = { ...ledger.allocations };
-      for (const id of init.stale) if (id !== preorderId) delete alloc[id];
-      delete alloc[preorderId];
-      if (used(alloc) + birds > ledger.capacity) return { result: false };
-      alloc[preorderId] = birds;
-      return { patch: { allocations: alloc, updatedAt: new Date().toISOString() }, result: true };
+      const r = reserve(cur ?? emptyLedger(code, cap.capacity, now), snap, preorderId, birds, now);
+      return { patch: r.ledger, result: r.ok };
     },
-    init.ledger,
+    emptyLedger(code, cap.capacity, now),
   );
 }
 
 /** Eliberează locurile precomenzii (anulare, mutare pe alt lot). */
 export async function releaseSeats(code: string, preorderId: string): Promise<void> {
   await store.transact<SeatLedger, void>(SEATS, code, (cur) => {
-    if (!cur || !(preorderId in cur.allocations)) return { result: undefined };
-    const alloc = { ...cur.allocations };
-    delete alloc[preorderId];
-    return { patch: { allocations: alloc, updatedAt: new Date().toISOString() }, result: undefined };
+    const next = cur ? release(cur, preorderId, new Date()) : null;
+    return { patch: next ?? undefined, result: undefined };
   });
 }
 
 /** Schimbă numărul total de păsări al lotului; refuză dacă ar rămâne sub locurile deja ocupate. */
 export async function setLotCapacity(code: string, totalBirds: number): Promise<{ ok: true } | { ok: false; used: number }> {
-  const init = await initial(code);
-  if (!init) return { ok: true };
-  const capacity = Math.max(0, totalBirds - init.baseReserved);
+  const [cap, snap] = await Promise.all([lotSeatCapacity(code, totalBirds), snapshot()]);
+  if (!cap) return { ok: true };
+  const now = new Date();
   return store.transact<SeatLedger, { ok: true } | { ok: false; used: number }>(
     SEATS,
     code,
     (cur) => {
-      const ledger = cur ?? init.ledger;
-      const alloc = { ...ledger.allocations };
-      for (const id of init.stale) delete alloc[id];
-      const u = used(alloc);
-      if (u > capacity) return { result: { ok: false, used: u + init.baseReserved } };
-      return { patch: { capacity, allocations: alloc, updatedAt: new Date().toISOString() }, result: { ok: true } };
+      const r = setCapacity(cur ?? emptyLedger(code, cap.capacity, now), snap, cap.capacity, now);
+      return { patch: r.ledger, result: r.ok ? { ok: true } : { ok: false, used: r.used + cap.baseReserved } };
     },
-    init.ledger,
+    emptyLedger(code, cap.capacity, now),
   );
+}
+
+/**
+ * Verificarea invariantului `ocupat ≤ capacitate` pe toate loturile cu comenzi, din registru reconciliat cu precomenzile
+ * de acum (prinde și depășirile din date istorice). Doar raport: nu modifică nimic.
+ */
+export async function seatViolations() {
+  const [ledgers, snap] = await Promise.all([store.list<SeatLedger>(SEATS), snapshot()]);
+  const byCode = new Map(ledgers.map((l) => [l.id, l]));
+  const codes = new Set([...byCode.keys(), ...snap.filter((p) => p.lotCode && p.status !== "anulata").map((p) => p.lotCode!)]);
+  const now = new Date();
+  const out = [];
+  for (const code of codes) {
+    const cap = await lotSeatCapacity(code);
+    if (!cap) continue;
+    const v = seatViolation(reconcile({ ...(byCode.get(code) ?? emptyLedger(code, cap.capacity, now)), capacity: cap.capacity }, snap, now));
+    if (v) out.push(v);
+  }
+  return out;
 }
