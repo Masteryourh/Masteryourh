@@ -7,6 +7,7 @@ import { notifyFarm, notifyOrderEvent } from "./notifications";
 import { lotRepository, zoneRepository } from "./repositories/catalog";
 import { deliverySettingsRepository } from "./repositories/settings";
 import { preorderRepository } from "./repositories/preorders";
+import { releaseSeats, reserveSeats } from "./seats";
 
 /**
  * Alocarea automată a precomenzilor (docs/plan-platforma.md §1b): clientul nu alege lotul;
@@ -31,6 +32,30 @@ async function assign(p: Preorder, lot: Lot) {
   return updated;
 }
 
+/**
+ * Alocare cu rezervare atomică (CG-04): întâi se ocupă locurile în registrul lotului, apoi se scrie lotul pe
+ * precomandă. Dacă între timp locurile au fost luate de altă cerere, întoarce null.
+ */
+async function tryAssign(p: Preorder, lot: Lot): Promise<Preorder | null> {
+  if (!(await reserveSeats(lot.code, p.id, p.birds))) return null;
+  try {
+    const updated = await assign(p, lot);
+    if (!updated) await releaseSeats(lot.code, p.id);
+    return updated;
+  } catch (err) {
+    await releaseSeats(lot.code, p.id);
+    throw err;
+  }
+}
+
+/** Primul lot deschis în care încape toată comanda și în care rezervarea reușește. */
+async function assignFirstFit(p: Preorder, lots: Lot[]): Promise<Lot | null> {
+  for (const l of lots.filter((x) => sellableBirds(x) >= p.birds)) {
+    if (await tryAssign(p, l)) return l;
+  }
+  return null;
+}
+
 export type AllocationResult =
   | { kind: "alocata"; lot: Lot }
   | { kind: "alegere"; maxSingle: number; totalFree: number }
@@ -38,12 +63,9 @@ export type AllocationResult =
 
 /** Alocă o precomandă nouă: întreagă în primul lot cu loc, altfel cere alegerea clientului. */
 export async function allocateNewPreorder(p: Preorder): Promise<AllocationResult> {
+  const fit = await assignFirstFit(p, await openLots());
+  if (fit) return { kind: "alocata", lot: fit };
   const lots = await openLots();
-  const fit = lots.find((l) => sellableBirds(l) >= p.birds);
-  if (fit) {
-    await assign(p, fit);
-    return { kind: "alocata", lot: fit };
-  }
   const totalFree = lots.reduce((s, l) => s + sellableBirds(l), 0);
   const status = totalFree > 0 ? "alegere" : "asteapta";
   await preorderRepository.update(p.id, { allocation: { status, at: new Date().toISOString() } });
@@ -80,8 +102,10 @@ export async function splitPreorder(p: Preorder) {
   }
   if (left > 0) plan.push({ lot: null, birds: left });
   if (plan.length < 2 && plan[0]?.lot) {
-    await assign(p, plan[0].lot);
-    return [p.number];
+    if (await tryAssign(p, plan[0].lot)) return [p.number];
+    // Locurile au fost luate între timp de altă comandă: comanda așteaptă.
+    await chooseWait(p);
+    return [];
   }
 
   const parts: Preorder[] = [];
@@ -111,7 +135,8 @@ export async function splitPreorder(p: Preorder) {
       piece = await preorderRepository.update(created.id, { parentNumber: p.number });
     }
     if (!piece) continue;
-    if (part.lot) piece = (await assign(piece, part.lot)) ?? piece;
+    const placed = part.lot ? await tryAssign(piece, part.lot) : null;
+    if (placed) piece = placed;
     else piece = (await preorderRepository.update(piece.id, { allocation: { status: "asteapta", at: new Date().toISOString() } })) ?? piece;
     parts.push(piece);
   }
@@ -130,8 +155,5 @@ export async function processWaitingPreorders() {
   const waiting = (await preorderRepository.list())
     .filter((p) => !p.lotCode && p.status !== "anulata" && p.allocation?.status === "asteapta")
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  for (const p of waiting) {
-    const fit = (await openLots()).find((l) => sellableBirds(l) >= p.birds);
-    if (fit) await assign(p, fit);
-  }
+  for (const p of waiting) await assignFirstFit(p, await openLots());
 }

@@ -110,6 +110,13 @@ async function allLots(): Promise<Lot[]> {
   }));
 }
 
+/** Capacitatea de bază a lotului pentru registrul de locuri (src/server/seats.ts): totalul minus rezervările inițiale. */
+export async function lotSeatCapacity(code: string, totalBirds?: number) {
+  const lot = (await store.get<StoredLot>(LOTS, code)) ?? lots.find((l) => l.code === code);
+  if (!lot) return null;
+  return { capacity: Math.max(0, (totalBirds ?? lot.totalBirds) - lot.reservedBirds), baseReserved: lot.reservedBirds };
+}
+
 export type NewLot = Pick<Lot, "farmSlug" | "species" | "breed" | "startDate" | "growthDays" | "totalBirds" | "feed" | "processor" | "notes" | "pens">;
 
 /** Implicit doar loturile aprobate (publice); `{ all: true }` în panouri. */

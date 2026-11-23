@@ -1,0 +1,78 @@
+import "server-only";
+import { store } from "./db/store";
+import { lotSeatCapacity } from "./repositories/catalog";
+import { emptyLedger, reconcile, release, reserve, seatViolation, setCapacity, type PreorderSnapshot, type SeatLedger } from "./seats-core";
+
+/**
+ * Registrul de locuri al fiecărui lot (CG-04), colecția `lot-seats`. Fiecare operație citește, verifică și scrie
+ * registrul într-o singură tranzacție (`store.transact`: SELECT … FOR UPDATE pe Postgres, lacăt pe fișiere JSON), deci
+ * cererile simultane nu pot ocupa mai multe locuri decât are lotul. Logica (inclusiv reconcilierea cu precomenzile)
+ * e în `seats-core.ts`, testată unitar.
+ *
+ * Fără blocaje la pool-ul de 3 conexiuni: funcția din tranzacție nu face nicio altă interogare (imaginea precomenzilor
+ * și capacitatea se citesc ÎNAINTE), deci cine ține rândul blocat nu are nevoie de o a doua conexiune.
+ */
+const SEATS = "lot-seats";
+
+async function snapshot(): Promise<PreorderSnapshot> {
+  return store.list<{ id: string; lotCode: string | null; birds: number; status: string }>("preorders");
+}
+
+/** Ocupă `birds` locuri pe lot pentru precomandă. `false` = nu mai e loc (registrul nu primește precomanda). */
+export async function reserveSeats(code: string, preorderId: string, birds: number): Promise<boolean> {
+  const [cap, snap] = await Promise.all([lotSeatCapacity(code), snapshot()]);
+  if (!cap) return false;
+  const now = new Date();
+  return store.transact<SeatLedger, boolean>(
+    SEATS,
+    code,
+    (cur) => {
+      const r = reserve(cur ?? emptyLedger(code, cap.capacity, now), snap, preorderId, birds, now);
+      return { patch: r.ledger, result: r.ok };
+    },
+    emptyLedger(code, cap.capacity, now),
+  );
+}
+
+/** Eliberează locurile precomenzii (anulare, mutare pe alt lot). */
+export async function releaseSeats(code: string, preorderId: string): Promise<void> {
+  await store.transact<SeatLedger, void>(SEATS, code, (cur) => {
+    const next = cur ? release(cur, preorderId, new Date()) : null;
+    return { patch: next ?? undefined, result: undefined };
+  });
+}
+
+/** Schimbă numărul total de păsări al lotului; refuză dacă ar rămâne sub locurile deja ocupate. */
+export async function setLotCapacity(code: string, totalBirds: number): Promise<{ ok: true } | { ok: false; used: number }> {
+  const [cap, snap] = await Promise.all([lotSeatCapacity(code, totalBirds), snapshot()]);
+  if (!cap) return { ok: true };
+  const now = new Date();
+  return store.transact<SeatLedger, { ok: true } | { ok: false; used: number }>(
+    SEATS,
+    code,
+    (cur) => {
+      const r = setCapacity(cur ?? emptyLedger(code, cap.capacity, now), snap, cap.capacity, now);
+      return { patch: r.ledger, result: r.ok ? { ok: true } : { ok: false, used: r.used + cap.baseReserved } };
+    },
+    emptyLedger(code, cap.capacity, now),
+  );
+}
+
+/**
+ * Verificarea invariantului `ocupat ≤ capacitate` pe toate loturile cu comenzi, din registru reconciliat cu precomenzile
+ * de acum (prinde și depășirile din date istorice). Doar raport: nu modifică nimic.
+ */
+export async function seatViolations() {
+  const [ledgers, snap] = await Promise.all([store.list<SeatLedger>(SEATS), snapshot()]);
+  const byCode = new Map(ledgers.map((l) => [l.id, l]));
+  const codes = new Set([...byCode.keys(), ...snap.filter((p) => p.lotCode && p.status !== "anulata").map((p) => p.lotCode!)]);
+  const now = new Date();
+  const out = [];
+  for (const code of codes) {
+    const cap = await lotSeatCapacity(code);
+    if (!cap) continue;
+    const v = seatViolation(reconcile({ ...(byCode.get(code) ?? emptyLedger(code, cap.capacity, now)), capacity: cap.capacity }, snap, now));
+    if (v) out.push(v);
+  }
+  return out;
+}
