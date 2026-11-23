@@ -11,8 +11,8 @@ reproductibilă; altfel rămâne „în lucru” sau „blocat de decizie”.
 |---|---|---|---|---|
 | CG-01 | P0 | ACCEPTAT | **Închis** (#56, unit în `main`) | test E2E în CI |
 | CG-02 | P0 | ACCEPTAT | **Reparat**, test de concurență dedicat lipsă → în lucru | #56 |
-| CG-03 | P0 | ACCEPTAT | Specificat, **neimplementat**; blocat de decizia PO (politica) | CLAUDE-03 |
-| CG-04 | P0 | ACCEPTAT | Inventar făcut pe cod: **risc real în aplicația de azi** (alocare fără blocare); reparație propusă | §CG-04 |
+| CG-03 | P0 | ACCEPTAT | **Politica decisă de PO (varianta b)**, specificată; neimplementată în cod | CLAUDE-03 §6.1 |
+| CG-04 | P0 | ACCEPTAT | **Reparat în PR #59** (reprodus 64/40 → acum 40/40, test E2E) | §CG-04 |
 | CG-05 | P0 | ACCEPTAT | În lucru: plan de matrice RLS; azi doar SELECT pe un tabel | §CG-05 |
 | CG-06 | P1 | ACCEPTAT | **Corectat în spec**: `compliance_holds` + F-02 refăcut + 3 teste SQL | CLAUDE-02, CLAUDE-04 |
 | CG-07 | P1 | ACCEPTAT | **Închis** (protecții + jurnal), testat local | `verify-ddl.sh` |
@@ -47,20 +47,20 @@ Nu am respins nicio constatare: toate sunt corecte ca fond. Nuanțele sunt mai j
 - **Stare în spec:** CLAUDE-03 propune MFA + notificare pe toate canalele titularului + întârziere 24 h (T11, §6).
 - **Diferență față de ChatGPT:** ChatGPT cere în plus **verificare out-of-band** (ex. apel la numărul deja cunoscut) și
   **aprobare separată** (a doua persoană). Le accept ca opțiuni; alegerea politicii e a PO.
-- **Decizie necesară [PO]:** care combinație — (a) MFA + 24 h + notificare; (b) (a) + confirmare telefonică de la
-  PUII MEI; (c) (b) + aprobarea unui al doilea administrator. Recomand **(b)** la început (puține gospodării, risc mare pe
-  plăți), **(c)** după ce există mai mulți administratori.
+- **Decizia PO (23.11.2026): varianta (b)** — MFA + 24 h + notificare pe toate canalele + confirmare telefonică de la
+  PUII MEI la numărul deja cunoscut. Fluxul, datele și testele: CLAUDE-03 §6.1. Varianta (c) rămâne pentru mai târziu.
 - **Măsură imediată posibilă fără decizie** [PROPUS, cere acordul PO]: notificare pe email / SMS către titular și admin
   la orice schimbare de IBAN + jurnal de audit. Nu blochează pe nimeni și reduce riscul.
 
-## CG-04 — Supraalocare pe alte rute · ACCEPTAT · ÎN LUCRU
+## CG-04 — Supraalocare pe alte rute · ACCEPTAT · REPARAT (#59)
 ChatGPT are dreptate: testul SQL dovedește mecanismul (`FOR UPDATE` → 40/40), nu că **toate** căile de mutație îl
 folosesc. Inventarul căilor care modifică ocuparea țarcurilor, pe codul actual:
 
 **Cum funcționează azi:** locurile libere ale unui lot nu sunt un contor stocat; se calculează la fiecare citire din
 precomenzile alocate (`src/server/repositories/catalog.ts` r. 109: `reservedBirds` + precomenzile cu `lotCode`).
-Alocarea face „citește → verifică dacă încape → scrie `lotCode`” fără blocare. **Deci supra-rezervarea e posibilă azi**
-(analiză de cod; încă nereprodusă cu test).
+Alocarea făcea „citește → verifică dacă încape → scrie `lotCode`” fără blocare. **Reprodus:** 10 precomenzi simultane
+de 8 pui pe un lot de 40 → 64 de pui alocați. **Reparat în PR #59:** registru de locuri pe lot (`src/server/seats.ts`),
+rezervare atomică folosită de toate căile din tabel; același test → exact 40; anularea eliberează locurile.
 
 | Cale care ocupă / eliberează locuri | Fișier | Verifică locul? | Atomică? |
 |---|---|---|---|
@@ -132,14 +132,18 @@ Alocarea face „citește → verifică dacă încape → scrie `lotCode`” fă
 
 ---
 
+## Completare la CG-06 — alertele de expirare [CONFIRMAT PO 23.11.2026]
+PO: „e treaba companiei să anunțe din timp gospodarul”. F-02 are acum un pas 0: job zilnic cu alerte la 60 / 30 / 14 / 7
+zile înainte de expirare (termene [PROPUS]), către titular și operator, cu apel telefonic obligatoriu la 7 zile fără
+document nou; tabelul `household.compliance_reminders` (idempotent, testat) și `reminder_days` pe cerință.
+
 ## Despre contractul de lucru propus de ChatGPT
 De acord cu toate cele 4 puncte: răspuns pe fiecare constatare (acest document), fișiere separate `CLAUDE-*` /
 `CHATGPT-*`, comparație pe acoperire și calitatea verificării (nu pe număr de PR-uri), niciun merge automat și nicio
 implementare a fluxurilor reglementate fără PO.
 
 ## Ce propun ca următor pas (în ordine)
-1. **CG-04:** test E2E care reproduce supra-rezervarea, apoi o funcție unică de rezervare atomică folosită de toate
-   căile din tabel (inclusiv alocarea manuală, care azi nu verifică deloc capacitatea).
+1. **CG-03 pe codul actual:** notificare + jurnal + IBAN nou inactiv până la confirmarea telefonică (fără MFA încă).
 2. **CG-02:** testul E2E de concurență pe PIN-ul curierului; PIN de ridicare păstrat ca hash.
 3. **CG-05:** matricea RLS completă în `concurrency-and-rls.mjs` + testul IDOR pe codul de azi.
-4. **CG-03:** după decizia PO asupra politicii IBAN.
+4. **Alertele de expirare în cod:** data de expirare pe documentele gospodăriei + job zilnic + lista din panou.

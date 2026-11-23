@@ -101,6 +101,10 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
   creșterii; 3) cifrele publice; 4) dashboard client; 5) navigare clară (breadcrumbs, „Înapoi” explicit);
   6) română / engleză.
 
+- **23 nov. 2026 (după auditul ChatGPT #57):** IBAN → varianta (b): MFA + 24 h + notificare + confirmare telefonică
+  de la PUII MEI. Documentele care expiră: **compania** anunță gospodarul din timp → alerte în sistem (60 / 30 / 14 / 7
+  zile, apel la 7 zile). Supra-rezervarea locurilor: reparată (PR #59).
+
 ## Setări și servicii
 
 - Vercel: `DATABASE_URL` (Neon), `ADMIN_USER`, `ADMIN_PASSWORD`; de adăugat `SESSION_SECRET`, `RESEND_API_KEY`,

@@ -14,7 +14,7 @@ documentare și validare, fără implementare.
 |---|---|---|
 | 1 | Reconciliere ADR-001 | deja făcută în ADR-001 și în CLAUDE-V1 / CLAUDE-02 (10% × max(0, venituri − cheltuieli); definițiile [DESCHIS]; fără formulă executabilă); `01-BUSINESS-ARCHITECTURE.md` neatins |
 | 2 | Fluxurile operaționale cap-coadă | `CLAUDE-04-OPERATIONAL-FLOWS.md` (același PR) |
-| 3 | Verificarea independentă a DDL v0.2 | **DDL compilează** (exit 0): 14 scheme, 77 tabele, 114 FK, 33 UNIQUE, 89 CHECK, 137 indexuri (după `compliance_holds`, CG-06). **12 reguli dovedite** de schemă; **INV-01 și RLS dovedite** cu teste de concurență / rol; restul doar specificate (§1.3) |
+| 3 | Verificarea independentă a DDL v0.2 | **DDL compilează** (exit 0): 14 scheme, 78 tabele, 116 FK, 34 UNIQUE, 92 CHECK, 139 indexuri (după `compliance_holds` și `compliance_reminders`). **13 reguli dovedite** de schemă; **INV-01 și RLS dovedite** cu teste de concurență / rol; restul doar specificate (§1.3) |
 | 4 | Modelul de amenințări prioritar | **o vulnerabilitate confirmată în codul din producție**: limita de 5 încercări la PIN-ul clientului **nu rezistă la cereri simultane** (20 / 20 PIN-uri greșite evaluate, contor = 4). Alte 4 constatări pe cod (§2) |
 | 5 | Parametrii de producție | „9,8 kg furaj / pui” și „asimilare 70%” scoși din valorile considerate valide; randamentul la sacrificare și FCR devin parametri separați, versionați, cu statut; **FCR-ul implicit actual (≈1,43) e foarte probabil subestimat** (§3) |
 | 6 | Matrice cerință → modul → tabele → API → permisiune → test → status; ADR-uri deschise; diferențe față de CHATGPT-* | §4, §5, §6 |
@@ -35,7 +35,7 @@ DBURL=postgresql://postgres@localhost:5432/puii_ddl_verify node concurrency-and-
 ### 1.2 Rezultat (PostgreSQL 16.15 local, 23.11.2026)
 ```
 DDL: exit 0
-scheme|14   tabele|77   chei_straine|114   unique|33   check_explicite|89   indexuri|137   tabele_cu_household_id|24
+scheme|14   tabele|78   chei_straine|116   unique|34   check_explicite|92   indexuri|139   tabele_cu_household_id|25
 OK  pret client = 36 lei/kg (coloana generata)
 OK  INV-02 cheie de idempotenta duplicata respinsa
 OK  INV-03 al doilea avans activ respins
@@ -48,6 +48,7 @@ OK  IBAN invalid respins
 OK  F-02 suspendare oprire fara termen de reanalizare respinsa
 OK  F-02 activitate afectata necunoscuta respinsa
 OK  F-02 ridicare fara data si autor respinsa
+OK  F-02 alerta de expirare duplicata respinsa (job idempotent)
 Invariante SQL: exit 0
 
 OK  fără FOR UPDATE: 10 cereri simultane pentru ultimele 5 locuri → 10 rezervate, total 85/40 (supra-vânzare reprodusă: testul e relevant)

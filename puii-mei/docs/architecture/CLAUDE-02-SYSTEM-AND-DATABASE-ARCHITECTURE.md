@@ -220,7 +220,7 @@ neconectată, se șterge — D-11). Alternativă acceptabilă: Prisma cu migraț
 > concizie și sunt obligatorii pe fiecare tabel mutabil.
 >
 > **Verificat:** toate blocurile SQL din acest capitol (cu `/* audit */` expandat) au rulat fără erori pe PostgreSQL 16,
-> într-o bază goală: 14 scheme, 77 de tabele (v0.2 + `compliance_holds`, 23 nov. 2026).
+> într-o bază goală: 14 scheme, 78 de tabele (v0.2 + `compliance_holds`, `compliance_reminders`, 23 nov. 2026).
 
 ### 8.1 identity
 
@@ -393,6 +393,7 @@ create table household.compliance_requirements (  -- catalog per program / tip d
   applies_to    text not null,             -- 'gospodarie' sau codul programului
   evidence_kind text not null,             -- 'document','inspectie','declaratie'
   validity_days integer,                   -- null = nu expiră
+  reminder_days integer[] not null default '{60,30,14,7}',  -- alerte de expirare (zile înainte), F-02
   mandatory     boolean not null default true,
   authority     text                       -- DSVSA, contabil, jurist…
 );
@@ -409,6 +410,20 @@ create table household.compliance_checks (        -- Compliance Gate (SC-043)
   note           text,
   /* audit */
   unique (household_id, requirement_id)
+);
+
+create table household.compliance_reminders (     -- alertele de expirare trimise (F-02, decizia PO 23.11.2026)
+  id             uuid primary key,
+  check_id       uuid not null references household.compliance_checks(id),
+  household_id   uuid not null references household.households(id),
+  expires_at     timestamptz not null,          -- data de expirare la care se referă alerta
+  days_before    integer not null check (days_before >= 0),
+  recipient      text not null check (recipient in ('titular','operator','calitate')),
+  channel        text not null check (channel in ('panou','email','sms','apel')),
+  sent_at        timestamptz not null default now(),
+  seen_at        timestamptz,
+  outcome        text,                          -- la 'apel': rezultatul notat de operator
+  unique (check_id, expires_at, days_before, recipient, channel)  -- jobul zilnic e idempotent
 );
 
 create table household.compliance_holds (         -- suspendare de conformitate cu severitate (F-02, CG-06)

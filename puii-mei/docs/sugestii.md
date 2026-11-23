@@ -108,11 +108,13 @@ _Ultima actualizare: 22 noiembrie 2026_
 ## Securitate (de reparat)
 
 - [x] **PIN-ul clientului ocolibil prin cereri simultane** (V-01/V-02) – reparat în #56 (SEC-007).
-- [ ] **Schimbarea IBAN-ului gospodăriei fără protecții** (V-04 / CG-03): de ales politica (23 nov. 2026):
-      (a) MFA + 24 h + notificare; (b) (a) + confirmare telefonică de la PUII MEI (recomandat la început);
-      (c) (b) + aprobarea unui al doilea admin. Măsură imediată propusă: notificare + jurnal la orice schimbare de IBAN.
-- [ ] **Supra-rezervarea locurilor** (CG-04, 23 nov. 2026): alocarea precomenzilor nu e atomică, iar alocarea manuală din
-      admin nu verifică deloc capacitatea. Propus: test care reproduce + funcție unică de rezervare atomică.
+- [ ] **Schimbarea IBAN-ului gospodăriei fără protecții** (V-04 / CG-03): **decis de PO 23.11.2026: varianta (b)**
+      (MFA + 24 h + notificare + confirmare telefonică de la PUII MEI; CLAUDE-03 §6.1). De implementat; primul pas propus,
+      fără MFA: notificare + jurnal + IBAN nou inactiv până la confirmarea telefonică din admin.
+- [x] **Supra-rezervarea locurilor** (CG-04) – reparat în PR #59 (registru de locuri atomic, test E2E).
+- [ ] **Alertele de expirare a documentelor** (decis de PO 23.11.2026: compania anunță gospodarul din timp): în cod,
+      data de expirare pe documentele gospodăriei, job zilnic (60 / 30 / 14 / 7 zile), lista „Expiră în curând” în panou,
+      apel obligatoriu al operatorului la 7 zile (CLAUDE-04 F-02).
 - [ ] **PIN curier**: test de concurență dedicat + PIN de ridicare păstrat ca hash (CG-02).
 - [ ] **Izolarea între gospodării**: matrice RLS completă + test IDOR automat pe codul actual (CG-05).
 

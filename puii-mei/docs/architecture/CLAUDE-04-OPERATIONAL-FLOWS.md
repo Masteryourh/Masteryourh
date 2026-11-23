@@ -89,9 +89,31 @@ obligatorii sunt `valid`.
 | 1 | titular | încarcă documentul pentru o cerință | `documents` + `compliance_checks.status = in_verificare`; fișierul nu se servește până e scanat (INV-13) |
 | 2 | calitate | verifică: valid (cu dată de expirare) / respins (cu motiv) | update + recalcul agregat; `compliance.gate_changed` |
 | 3 | sistem | când agregatul devine `valid` → gospodăria poate fi activată (`standing = activa`, profil public) | `household.standing_changed` |
+| 0 | job zilnic | **alertele de expirare** către gospodar și operator, din timp (vezi „Alertele de expirare” mai jos) | `compliance.expiry_reminder_sent` |
 | 4 | job | expirarea unei cerințe → agregat `expirat` → se creează automat o **suspendare de conformitate** (`compliance_holds`) cu severitate `restrictie`, `affected = {loturi_noi, alocari_noi}`; loturile în curs **nu** continuă automat fără analiză: calitatea reîncadrează suspendarea în maximum 1 zi lucrătoare [PROPUS, termen de validat] | `compliance.hold_placed` |
 | 5 | calitate | analizează cauza și impactul și ajustează suspendarea: severitate, activități afectate, loturi vizate, termen de reanalizare (vezi tabelul de mai jos) | `compliance.hold_changed` |
 | 6 | calitate / admin | ridicarea suspendării numai cu dovadă (document nou, rezultat control, decizie a autorității) | `compliance.hold_lifted` |
+
+**Alertele de expirare [CONFIRMAT PO 23.11.2026].** Este responsabilitatea **companiei** să anunțe gospodarul din timp că
+un document îi expiră; sistemul trebuie să genereze alertele, nu gospodarul să urmărească singur datele.
+
+| Când (față de `expires_at`) | Către cine | Canal | Ce cere |
+|---|---|---|---|
+| cu 60 de zile înainte | titularul gospodăriei | panou + email | „Documentul X expiră la data D. Încarcă documentul nou.” |
+| cu 30 și cu 14 zile înainte | titularul + operatorul PUII MEI responsabil | panou + email + SMS | aceeași cerere; operatorul vede alerta în lista lui de sarcini |
+| cu 7 zile înainte, fără document nou încărcat | operatorul PUII MEI | sarcină obligatorie: **apel telefonic** la gospodar, cu rezultatul notat | ajutor concret (ce act, de unde se obține) |
+| în ziua expirării | titularul + operator + calitate | toate canalele | se aplică suspendarea `restrictie` (pasul 4) |
+
+- Termenele (60 / 30 / 14 / 7 zile) sunt [PROPUS]; pot diferi pe tip de cerință (`compliance_requirements.reminder_days`).
+- Alerta încetează imediat ce s-a încărcat un document nou pentru aceeași cerință (chiar dacă e încă în verificare).
+- Fiecare alertă trimisă se înregistrează (`household.compliance_reminders`): cerință, termen, canal, când s-a trimis,
+  când a fost văzută; jobul zilnic e idempotent (o alertă pe termen, nu una pe zi).
+- La încărcare, data de expirare e obligatorie pentru cerințele care expiră (`validity_days` nenul); dacă actul nu are
+  dată explicită, calitatea o stabilește la verificare.
+- Panoul gospodarului arată mereu lista „Documente care expiră în curând”, cu zilele rămase.
+- **Teste:** document care expiră peste 60 / 30 / 14 / 7 zile → exact o alertă pe termen, chiar dacă jobul rulează de mai
+  multe ori; document nou încărcat → alertele următoare nu mai pleacă; la 7 zile fără document → sarcină de apel pentru
+  operator; nicio alertă pentru cerințe fără expirare.
 
 **Suspendarea de conformitate (răspuns la CG-06).** Expirarea sau respingerea unei dovezi nu are mereu același efect
 operațional. Fiecare suspendare are: cauză, severitate, activitățile afectate (loturi noi, alocări noi, creștere,

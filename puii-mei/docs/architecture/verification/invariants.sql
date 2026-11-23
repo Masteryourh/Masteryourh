@@ -113,4 +113,17 @@ do $$ begin
       values ('00000000-0000-0000-0000-000000000122','00000000-0000-0000-0000-0000000000a1','alta','restrictie','{loturi_noi}','test','calitate','00000000-0000-0000-0000-000000000001','ridicat');
     raise exception 'FAIL HOLD lift';
   exception when check_violation then raise notice 'OK  F-02 ridicare fara data si autor respinsa'; end; end $$;
+-- F-02: alerta de expirare se trimite o singură dată pe termen (jobul zilnic e idempotent)
+insert into household.compliance_requirements (id, code, title, applies_to, evidence_kind, validity_days)
+  values ('00000000-0000-0000-0000-000000000130','DSV_TEST','Inregistrare sanitar-veterinara','gospodarie','document',365);
+insert into household.compliance_checks (id, household_id, requirement_id, status, expires_at)
+  values ('00000000-0000-0000-0000-000000000131','00000000-0000-0000-0000-0000000000a1','00000000-0000-0000-0000-000000000130','valid','2027-01-31');
+insert into household.compliance_reminders (id, check_id, household_id, expires_at, days_before, recipient, channel)
+  values ('00000000-0000-0000-0000-000000000132','00000000-0000-0000-0000-000000000131','00000000-0000-0000-0000-0000000000a1','2027-01-31',30,'titular','email');
+do $$ begin
+  begin
+    insert into household.compliance_reminders (id, check_id, household_id, expires_at, days_before, recipient, channel)
+      values ('00000000-0000-0000-0000-000000000133','00000000-0000-0000-0000-000000000131','00000000-0000-0000-0000-0000000000a1','2027-01-31',30,'titular','email');
+    raise exception 'FAIL REMINDER';
+  exception when unique_violation then raise notice 'OK  F-02 alerta de expirare duplicata respinsa (job idempotent)'; end; end $$;
 rollback;
