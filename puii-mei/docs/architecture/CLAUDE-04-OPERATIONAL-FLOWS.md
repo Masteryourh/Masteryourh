@@ -89,13 +89,32 @@ obligatorii sunt `valid`.
 | 1 | titular | încarcă documentul pentru o cerință | `documents` + `compliance_checks.status = in_verificare`; fișierul nu se servește până e scanat (INV-13) |
 | 2 | calitate | verifică: valid (cu dată de expirare) / respins (cu motiv) | update + recalcul agregat; `compliance.gate_changed` |
 | 3 | sistem | când agregatul devine `valid` → gospodăria poate fi activată (`standing = activa`, profil public) | `household.standing_changed` |
-| 4 | job | expirarea unei cerințe → agregat `expirat` → **blocare**: fără loturi noi și fără alocări noi; loturile în curs continuă, cu alertă | `compliance.gate_changed` |
+| 4 | job | expirarea unei cerințe → agregat `expirat` → se creează automat o **suspendare de conformitate** (`compliance_holds`) cu severitate `restrictie`, `affected = {loturi_noi, alocari_noi}`; loturile în curs **nu** continuă automat fără analiză: calitatea reîncadrează suspendarea în maximum 1 zi lucrătoare [PROPUS, termen de validat] | `compliance.hold_placed` |
+| 5 | calitate | analizează cauza și impactul și ajustează suspendarea: severitate, activități afectate, loturi vizate, termen de reanalizare (vezi tabelul de mai jos) | `compliance.hold_changed` |
+| 6 | calitate / admin | ridicarea suspendării numai cu dovadă (document nou, rezultat control, decizie a autorității) | `compliance.hold_lifted` |
+
+**Suspendarea de conformitate (răspuns la CG-06).** Expirarea sau respingerea unei dovezi nu are mereu același efect
+operațional. Fiecare suspendare are: cauză, severitate, activitățile afectate (loturi noi, alocări noi, creștere,
+procesare, comercializare, livrare), loturile vizate (sau toată gospodăria), cine a constatat (calitate, DSVSA, jurist…),
+termen de reanalizare și dovada de ridicare (tabel `household.compliance_holds`, CLAUDE-02).
+
+| Severitate | Efect | Exemple orientative [DESCHIS: matricea finală cauză → severitate, cu aviz juridic și sanitar-veterinar] |
+|---|---|---|
+| `informare` | nicio blocare; alertă și termen de remediere | document administrativ expirat fără efect sanitar (ex. o adeverință bancară) |
+| `restrictie` | blochează doar activitățile din `affected`; restul continuă | act de folosință a terenului expirat → fără loturi și alocări noi |
+| `oprire` | blochează toate activitățile din `affected` pentru loturile vizate, inclusiv cele în curs; `review_at` obligatoriu | înregistrare sanitar-veterinară expirată sau decizie a autorității → fără procesare / comercializare / livrare până la ridicare |
+
+Regula: **sistemul nu decide singur că un lot în curs poate continua**; implicit blochează doar lucrurile noi și cere o
+decizie umană documentată pentru restul. Ce se întâmplă cu păsările vii aflate în creștere în timpul unei `oprire`
+(îngrijirea continuă obligatoriu) este [DESCHIS: aviz sanitar-veterinar].
 
 **Excepții:** document ilizibil → `respins` cu motiv; cerință neaplicabilă → marcată de calitate cu justificare.
 **Permisiuni:** `household.compliance.check` (Cal), încărcare (Gsp); activare (Adm / Op cu aprobare).
 **API:** `POST /households/{id}/compliance/{requirementCode}/evidence`, `POST /compliance-checks/{id}/decide`.
 **Teste:** INV-08 — gospodărie cu o cerință `lipsa` / `expirat` → `production.createLot` și `reserveCapacity` →
-`COMPLIANCE_BLOCKED`; trecerea la `valid` deblochează.
+`COMPLIANCE_BLOCKED`; trecerea la `valid` deblochează. Suspendare `restrictie` pe `loturi_noi` → lotul în curs poate
+avansa la procesare; suspendare `oprire` pe `procesare` pentru lotul X → tranziția lui X spre procesare refuzată, alt lot
+al aceleiași gospodării neafectat; ridicare fără dovadă → refuzată; `oprire` fără `review_at` → refuzată de baza de date.
 **Acceptanță:** nicio gospodărie nu poate primi comenzi fără toate cerințele obligatorii valide; istoricul verificărilor
 e complet.
 

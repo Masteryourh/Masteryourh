@@ -94,4 +94,23 @@ do $$ begin
     insert into household.bank_accounts (id, household_id, holder, iban, purpose) values ('00000000-0000-0000-0000-000000000111','00000000-0000-0000-0000-0000000000a1','X','RO12XYZ','incasari_clienti');
     raise exception 'FAIL IBAN';
   exception when check_violation then raise notice 'OK  IBAN invalid respins'; end; end $$;
+-- F-02 / CG-06: suspendare de conformitate
+do $$ begin
+  begin
+    insert into household.compliance_holds (id, household_id, cause, severity, affected, reason, issuer, placed_by)
+      values ('00000000-0000-0000-0000-000000000120','00000000-0000-0000-0000-0000000000a1','decizie_autoritate','oprire','{procesare}','test','DSVSA','00000000-0000-0000-0000-000000000001');
+    raise exception 'FAIL HOLD review_at';
+  exception when check_violation then raise notice 'OK  F-02 suspendare oprire fara termen de reanalizare respinsa'; end; end $$;
+do $$ begin
+  begin
+    insert into household.compliance_holds (id, household_id, cause, severity, affected, reason, issuer, placed_by)
+      values ('00000000-0000-0000-0000-000000000121','00000000-0000-0000-0000-0000000000a1','alta','restrictie','{zbor}','test','calitate','00000000-0000-0000-0000-000000000001');
+    raise exception 'FAIL HOLD affected';
+  exception when check_violation then raise notice 'OK  F-02 activitate afectata necunoscuta respinsa'; end; end $$;
+do $$ begin
+  begin
+    insert into household.compliance_holds (id, household_id, cause, severity, affected, reason, issuer, placed_by, status)
+      values ('00000000-0000-0000-0000-000000000122','00000000-0000-0000-0000-0000000000a1','alta','restrictie','{loturi_noi}','test','calitate','00000000-0000-0000-0000-000000000001','ridicat');
+    raise exception 'FAIL HOLD lift';
+  exception when check_violation then raise notice 'OK  F-02 ridicare fara data si autor respinsa'; end; end $$;
 rollback;

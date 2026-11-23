@@ -14,7 +14,7 @@ documentare și validare, fără implementare.
 |---|---|---|
 | 1 | Reconciliere ADR-001 | deja făcută în ADR-001 și în CLAUDE-V1 / CLAUDE-02 (10% × max(0, venituri − cheltuieli); definițiile [DESCHIS]; fără formulă executabilă); `01-BUSINESS-ARCHITECTURE.md` neatins |
 | 2 | Fluxurile operaționale cap-coadă | `CLAUDE-04-OPERATIONAL-FLOWS.md` (același PR) |
-| 3 | Verificarea independentă a DDL v0.2 | **DDL compilează** (exit 0): 14 scheme, 76 tabele, 110 FK, 33 UNIQUE, 83 CHECK, 135 indexuri. **9 reguli dovedite** de schemă; **INV-01 și RLS dovedite** cu teste de concurență / rol; restul doar specificate (§1.3) |
+| 3 | Verificarea independentă a DDL v0.2 | **DDL compilează** (exit 0): 14 scheme, 77 tabele, 114 FK, 33 UNIQUE, 89 CHECK, 137 indexuri (după `compliance_holds`, CG-06). **12 reguli dovedite** de schemă; **INV-01 și RLS dovedite** cu teste de concurență / rol; restul doar specificate (§1.3) |
 | 4 | Modelul de amenințări prioritar | **o vulnerabilitate confirmată în codul din producție**: limita de 5 încercări la PIN-ul clientului **nu rezistă la cereri simultane** (20 / 20 PIN-uri greșite evaluate, contor = 4). Alte 4 constatări pe cod (§2) |
 | 5 | Parametrii de producție | „9,8 kg furaj / pui” și „asimilare 70%” scoși din valorile considerate valide; randamentul la sacrificare și FCR devin parametri separați, versionați, cu statut; **FCR-ul implicit actual (≈1,43) e foarte probabil subestimat** (§3) |
 | 6 | Matrice cerință → modul → tabele → API → permisiune → test → status; ADR-uri deschise; diferențe față de CHATGPT-* | §4, §5, §6 |
@@ -24,6 +24,8 @@ documentare și validare, fără implementare.
 ## 1. Verificarea DDL (CLAUDE-02 v0.2)
 
 ### 1.1 Cum se reproduce
+Numai pe o instanță PostgreSQL locală / efemeră. Scripturile refuză o gazdă care nu e locală și o bază fără marcajul
+`puii-verify-ephemeral` (CG-07); ieșirea se salvează în `verification/logs/`.
 ```bash
 cd puii-mei/docs/architecture/verification
 PGURL=postgresql://postgres@localhost:5432/postgres ./verify-ddl.sh                         # DDL + statistici + invariante SQL
@@ -33,7 +35,7 @@ DBURL=postgresql://postgres@localhost:5432/puii_ddl_verify node concurrency-and-
 ### 1.2 Rezultat (PostgreSQL 16.15 local, 23.11.2026)
 ```
 DDL: exit 0
-scheme|14   tabele|76   chei_straine|110   unique|33   check_explicite|83   indexuri|135   tabele_cu_household_id|23
+scheme|14   tabele|77   chei_straine|114   unique|33   check_explicite|89   indexuri|137   tabele_cu_household_id|24
 OK  pret client = 36 lei/kg (coloana generata)
 OK  INV-02 cheie de idempotenta duplicata respinsa
 OK  INV-03 al doilea avans activ respins
@@ -43,6 +45,9 @@ OK  INV-07 al doilea blocaj activ pe acelasi lot respins
 OK  INV-11 a doua inchidere a aceluiasi lot respinsa; diferenta = 3.000 lei
 OK  FK alocare pe tarc inexistent respinsa
 OK  IBAN invalid respins
+OK  F-02 suspendare oprire fara termen de reanalizare respinsa
+OK  F-02 activitate afectata necunoscuta respinsa
+OK  F-02 ridicare fara data si autor respinsa
 Invariante SQL: exit 0
 
 OK  fără FOR UPDATE: 10 cereri simultane pentru ultimele 5 locuri → 10 rezervate, total 85/40 (supra-vânzare reprodusă: testul e relevant)
@@ -70,9 +75,9 @@ Toate verificările au trecut (exit 0)
 
 | ID | Amenințare | Ce am verificat | Rezultat | Dovadă |
 |---|---|---|---|---|
-| V-01 | **Ghicirea PIN-ului clientului prin cereri simultane** | 20 de PIN-uri greșite trimise simultan pe aceeași comandă (Playwright, server local) | **VULNERABIL.** Toate 20 au fost evaluate („PIN greșit”), 0 blocate; contorul a rămas la **4** (actualizări pierdute). Cererile în paralel ocolesc limita de 5 încercări. | `src/server/order-access.ts` r. 68–73: citire → verificare → `update(attempts + 1)` fără operație atomică |
-| V-02 | Același tipar la PIN-ul curierului | citirea codului | **Probabil vulnerabil** (netestat): `failedPins + 1` citit-modificat-scris; PIN-ul de ridicare păstrat în clar și comparat cu `!==` | `src/server/delivery.ts` r. 177–180, 232 |
-| V-03 | Cereri de PIN în rafală | citirea codului | limită doar 1 / minut / comandă; fără limită pe zi sau pe IP | `order-access.ts` (RESEND_SECONDS) |
+| V-01 | **Ghicirea PIN-ului clientului prin cereri simultane** | 20 de PIN-uri greșite trimise simultan pe aceeași comandă (Playwright, server local) | **REPARAT în #56 (SEC-007):** acum maximum 5 evaluate, test E2E în CI. Înainte: **VULNERABIL.** Toate 20 au fost evaluate („PIN greșit”), 0 blocate; contorul a rămas la **4** (actualizări pierdute). Cererile în paralel ocolesc limita de 5 încercări. | `src/server/order-access.ts` r. 68–73: citire → verificare → `update(attempts + 1)` fără operație atomică |
+| V-02 | Același tipar la PIN-ul curierului | citirea codului | **REPARAT în #56:** contor atomic, comparare în timp constant, PIN de ridicare folosit o dată (fără test E2E separat). Înainte: **probabil vulnerabil**: `failedPins + 1` citit-modificat-scris; PIN-ul de ridicare păstrat în clar și comparat cu `!==` | `src/server/delivery.ts` r. 177–180, 232 |
+| V-03 | Cereri de PIN în rafală | citirea codului | **REPARAT în #56:** 5 cereri / comandă / zi, 30 / IP / zi, 30 verificări / IP / oră, persistente în baza de date | `order-access.ts` (RESEND_SECONDS) |
 | V-04 | Schimbarea IBAN-ului gospodăriei pentru a deturna avansurile | citirea codului | **Fără protecții:** IBAN-ul se schimbă imediat, fără MFA, fără întârziere, fără notificare | `app/(panou)/cont/gospodar/plati-actions.ts` |
 | V-05 | IDOR între gospodării | citirea tuturor acțiunilor (auditul V1 §5) | **OK în cod:** fiecare acțiune a gospodarului verifică `canManageFarm` pe obiect; adminul are acces total (de restrâns după CLAUDE-03) | auditul V1 §5.2 |
 | V-06 | Documente private | citirea codului | **OK:** `/fisiere/[id]` cere sesiune + `canViewDocument`; **de îmbunătățit:** pozele acceptă `?o=<token comandă>` valabil cât trăiește comanda | `app/fisiere/[id]/route.ts`, `app/foto/[id]/route.ts` |

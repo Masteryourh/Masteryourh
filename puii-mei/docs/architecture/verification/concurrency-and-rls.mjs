@@ -4,6 +4,12 @@ import pg from "pg";
 const url = process.env.DBURL ?? "postgresql://postgres@localhost:5432/puii_ddl_verify";
 const admin = new pg.Client({ connectionString: url });
 await admin.connect();
+// Protecție (CG-07): rulăm doar pe baza efemeră marcată de verify-ddl.sh (scriptul face TRUNCATE).
+const mark = await admin.query(`select shobj_description(oid, 'pg_database') as m from pg_database where datname = current_database()`);
+if (mark.rows[0]?.m !== "puii-verify-ephemeral") {
+  console.error("REFUZ: baza curentă nu e cea creată de verify-ddl.sh (lipsește marcajul). Nu rulez TRUNCATE.");
+  process.exit(2);
+}
 const q = (sql, p) => admin.query(sql, p);
 let failed = 0;
 const ok = (c, m) => { console.log((c ? "OK  " : "FAIL") + " " + m); if (!c) failed++; };

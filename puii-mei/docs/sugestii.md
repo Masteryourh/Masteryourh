@@ -107,10 +107,14 @@ _Ultima actualizare: 22 noiembrie 2026_
 
 ## Securitate (de reparat)
 
-- [ ] **PIN-ul clientului ocolibil prin cereri simultane** (găsit 23 nov. 2026, CLAUDE-VERIFICATION-V1 V-01): 20 de PIN-uri
-      greșite trimise deodată au fost toate verificate. Reparație propusă: verificare + contor într-o operație atomică,
-      limite pe zi și pe IP; același tipar la PIN-ul curierului (V-02). Așteaptă aprobarea PO.
-- [ ] **Schimbarea IBAN-ului gospodăriei fără protecții** (V-04): MFA, întârziere 24 h, notificare.
+- [x] **PIN-ul clientului ocolibil prin cereri simultane** (V-01/V-02) – reparat în #56 (SEC-007).
+- [ ] **Schimbarea IBAN-ului gospodăriei fără protecții** (V-04 / CG-03): de ales politica (23 nov. 2026):
+      (a) MFA + 24 h + notificare; (b) (a) + confirmare telefonică de la PUII MEI (recomandat la început);
+      (c) (b) + aprobarea unui al doilea admin. Măsură imediată propusă: notificare + jurnal la orice schimbare de IBAN.
+- [ ] **Supra-rezervarea locurilor** (CG-04, 23 nov. 2026): alocarea precomenzilor nu e atomică, iar alocarea manuală din
+      admin nu verifică deloc capacitatea. Propus: test care reproduce + funcție unică de rezervare atomică.
+- [ ] **PIN curier**: test de concurență dedicat + PIN de ridicare păstrat ca hash (CG-02).
+- [ ] **Izolarea între gospodării**: matrice RLS completă + test IDOR automat pe codul actual (CG-05).
 
 ## De verificat zootehnic
 
