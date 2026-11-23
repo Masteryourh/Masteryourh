@@ -121,7 +121,7 @@ test("adminul nu poate confirma o schimbare cerută tot de el", async ({ browser
   const form = a.locator("form", { has: a.locator("input[name=iban]") });
   await form.locator("input[name=iban]").fill(C);
   await form.locator("button:has-text('Salvează datele de plată')").click();
-  await a.waitForLoadState("networkidle");
+  await expect.poll(async () => (await payment()).ibanChange?.iban, { timeout: 15_000 }).toBe(C);
   await confirmCall(a);
   await expect(a.getByRole("alert").filter({ hasText: "Confirmarea trebuie făcută de altă persoană" })).toBeVisible();
   expect((await payment()).ibanChange.status).toBe("in-verificare");

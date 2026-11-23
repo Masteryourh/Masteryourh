@@ -48,12 +48,17 @@ async function tryAssign(p: Preorder, lot: Lot): Promise<Preorder | null> {
   }
 }
 
-/** Primul lot deschis în care încape toată comanda și în care rezervarea reușește. */
-async function assignFirstFit(p: Preorder, lots: Lot[]): Promise<Lot | null> {
+/**
+ * Primul lot deschis în care încape toată comanda și în care rezervarea reușește. `raced` = a existat un lot în care
+ * părea să încapă, dar locurile au fost luate între timp de alte cereri simultane.
+ */
+async function assignFirstFit(p: Preorder, lots: Lot[]): Promise<{ lot: Lot | null; raced: boolean }> {
+  let raced = false;
   for (const l of lots.filter((x) => sellableBirds(x) >= p.birds)) {
-    if (await tryAssign(p, l)) return l;
+    if (await tryAssign(p, l)) return { lot: l, raced: false };
+    raced = true;
   }
-  return null;
+  return { lot: null, raced };
 }
 
 export type AllocationResult =
@@ -64,10 +69,12 @@ export type AllocationResult =
 /** Alocă o precomandă nouă: întreagă în primul lot cu loc, altfel cere alegerea clientului. */
 export async function allocateNewPreorder(p: Preorder): Promise<AllocationResult> {
   const fit = await assignFirstFit(p, await openLots());
-  if (fit) return { kind: "alocata", lot: fit };
+  if (fit.lot) return { kind: "alocata", lot: fit.lot };
   const lots = await openLots();
   const totalFree = lots.reduce((s, l) => s + sellableBirds(l), 0);
-  const status = totalFree > 0 ? "alegere" : "asteapta";
+  // Pierdută cursa pentru ultimele locuri: numărul de locuri afișat e deja depășit, deci comanda intră în așteptare
+  // (primește automat locurile eliberate), nu la „alegere”.
+  const status = totalFree > 0 && !fit.raced ? "alegere" : "asteapta";
   await preorderRepository.update(p.id, { allocation: { status, at: new Date().toISOString() } });
   if (status === "alegere") {
     await notifyOrderEvent(p, "alegere");

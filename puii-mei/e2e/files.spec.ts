@@ -44,9 +44,10 @@ test("documentul încărcat ajunge în stocarea externă, nu în baza de date, �
   await form.locator("input[name=declaredM2]").fill("900");
   await form.locator("input[name=file]").setInputFiles({ name: "act-teren.pdf", mimeType: "application/pdf", buffer: PDF });
   await form.locator("button:has-text('Trimite spre confirmare')").click();
-  await a.waitForLoadState("networkidle");
-
-  const doc = (await db.query(`select data from documents where collection = 'documents' and data->>'farmSlug' = 'gospodaria-bodnar' order by created_at desc limit 1`)).rows[0].data;
+  const latestDoc = async () =>
+    (await db.query(`select data from documents where collection = 'documents' and data->>'farmSlug' = 'gospodaria-bodnar' and data->>'fileName' = 'act-teren.pdf' order by created_at desc limit 1`)).rows[0]?.data;
+  await expect.poll(latestDoc, { timeout: 15_000 }).toBeTruthy(); // răspunsul serverului poate întârzia
+  const doc = await latestDoc();
   const file = await row("files", doc.fileId);
   expect(file.data ?? null).toBeNull(); // conținutul NU e în baza de date
   expect(file.blobKey).toBe(`files/${file.id}`);

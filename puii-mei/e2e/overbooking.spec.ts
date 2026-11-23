@@ -94,6 +94,12 @@ test("10 precomenzi simultane pe ultimele locuri → lotul nu e supra-rezervat; 
   const numbers = await simultaneous(browser, 10, 8); // 80 de pui ceruți pe 40 de locuri
   const before = await onLot(code);
   expect(sum(before)).toBe(40); // 5 comenzi × 8 pui; înainte de reparație: 64
+  // Cele rămase fără loc sunt „în așteptare” (primesc automat locurile eliberate), nu „la alegere”.
+  const left = (
+    await db.query(`select data->'allocation'->>'status' as s from documents where collection = 'preorders' and data->>'number' = any($1) and data->>'lotCode' is null`, [numbers])
+  ).rows.map((r) => r.s);
+  expect(left).toHaveLength(5);
+  expect(new Set(left)).toEqual(new Set(["asteapta"]));
   expect(Object.keys(await ledgerOf(code)).sort()).toEqual(before.map((r) => r.id).sort());
 
   // Adminul anulează o comandă de pe lot: locurile se eliberează, iar o comandă din așteptare le ia.
