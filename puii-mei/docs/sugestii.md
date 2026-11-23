@@ -81,6 +81,10 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [ ] **`ADMIN_NOTIFY_EMAIL`** în Vercel: adresa care primește alertele (precomenzi, solicitări, mesaje).
 - [x] **Conectorul Higgsfield** conectat (plan gratuit: doar modelul de imagini `z_image`, fără video).
 
+- [ ] **Vercel: previzualizările pentru branch-uri noi eșuează** (23 nov. 2026): `Resource provisioning failed` în ~1 s, fără
+      build, pe #57, #58, #59; `main` și branch-urile vechi merg. Probabil integrarea Neon nu mai poate crea o bază
+      pentru fiecare branch nou de previzualizare (limita planului). De verificat în Vercel → Storage → Neon.
+
 ## De completat pe site
 
 - [ ] **Datele de plată ale fiecărei gospodării** (titular, IBAN, bancă, preț furaj): Contul meu → Vedere gospodar →
@@ -111,7 +115,8 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [ ] **Schimbarea IBAN-ului gospodăriei fără protecții** (V-04 / CG-03): **decis de PO 23.11.2026: varianta (b)**
       (MFA + 24 h + notificare + confirmare telefonică de la PUII MEI; CLAUDE-03 §6.1). De implementat; primul pas propus,
       fără MFA: notificare + jurnal + IBAN nou inactiv până la confirmarea telefonică din admin.
-- [x] **Supra-rezervarea locurilor** (CG-04) – reparat în PR #59 (registru de locuri atomic, test E2E).
+- [x] **Supra-rezervarea locurilor** (CG-04) – reparat în PR #59 (registru de locuri atomic + reconciliere, teste E2E).
+      Perioada de grație pentru o rezervare rămasă fără comandă: 10 minute [PROPUS].
 - [ ] **Alertele de expirare a documentelor** (decis de PO 23.11.2026: compania anunță gospodarul din timp): în cod,
       data de expirare pe documentele gospodăriei, job zilnic (60 / 30 / 14 / 7 zile), lista „Expiră în curând” în panou,
       apel obligatoriu al operatorului la 7 zile (CLAUDE-04 F-02).
