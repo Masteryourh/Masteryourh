@@ -78,3 +78,27 @@ Nu se implementează operațiuni bancare, comisioane, autorizări sau fluxuri de
 - Backlog P0/P1/P2 justificat cu probe, fără afirmații de testare neexecutată.
 
 **Regulă de guvernanță:** documentul este o bază de lucru; nu modifică deciziile comerciale și nu autorizează implementarea. PR-ul trebuie revizuit înainte de merge.
+
+
+---
+
+## G. ACTUALIZARE GITHUB — 2026-11-23 (după PR #51–54)
+
+**Sursă verificată direct în `main`:** `docs/architecture/adr/ADR-001-ONORARIU-PUII-MEI.md`, `docs/architecture/CLAUDE-02-SYSTEM-AND-DATABASE-ARCHITECTURE.md` v0.2 și `docs/architecture/CLAUDE-03-ROLES-PERMISSIONS-SECURITY.md` v0.1. Au fost citite conținuturile, nu doar titlurile PR-urilor. `pg-ssl.ts`, `json-store.ts`, `order-access.ts` au fost de asemenea recitite.
+
+### Corecție explicită a constatării AUD-011
+
+**AUD-011 este DEPĂȘIT:** ADR-001 a fost acceptat de Product Owner: **onorariu PUII MEI = 10% × max(0, venituri − cheltuieli), pe gospodărie și lot/ciclu închis**, facturat gospodăriei, fără abonament. Formula de bază și procentul nu mai sunt contradictorii. **Rămân DESCHISE** categoriile exacte de venituri/cheltuieli, standard vs. real și abateri, TVA, munca gospodarului, amortizarea, pierderile reportate și documentele justificative. ADR-ul spune expres că nu se implementează până la clarificare. Orice secțiune mai veche care menționează „10% vs 20% nerezolvat” se citește ca istoric, nu ca status actual.
+
+### Evoluție comparativă Claude
+
+- **PR #52 / #53**: `CLAUDE-02-SYSTEM-AND-DATABASE-ARCHITECTURE.md` v0.2 descrie un monolit modular, 14 scheme / 76 tabele (conform descrierii PR #53), DDL, ERD, outbox, migrare JSONB și reguli de izolare. Aceste numere sunt **raportate de autor**, nu verificate independent prin rularea DDL de ChatGPT. Claude a integrat explicit mai multe idei din `CHATGPT-03-SYSTEM-ARCHITECTURE.md` și le-a atribuit.
+- **PR #54**: `CLAUDE-03-ROLES-PERMISSIONS-SECURITY.md` v0.1 include identități, matrice de permisiuni, MFA, separarea atribuțiilor, amenințări STRIDE, GDPR, teste și decizii deschise.
+- **Codul actual:** `pg-ssl.ts` setează `rejectUnauthorized:true` pentru DB nelocală; `json-store.ts` păstrează fallback pe disc/`/tmp`; `order-access.ts` implementează PIN de 6 cifre valabil 24h, 5 încercări în modelul comenzii, fallback manual când nu sunt disponibile SMS/email. Aceasta nu dovedește rezistență la încercări concurente sau la rate-limit distribuit.
+
+### Recomandare de colaborare (fără suprascriere)
+
+1. Claude continuă documentele `CLAUDE-*` pe branch/PR propriu; ChatGPT continuă `CHATGPT-*` în PR #50.
+2. Se folosește ADR-001 drept referință pentru procent; modelul costurilor standard și abaterea față de costurile reale rămân de decis.
+3. Nu se implementează DDL sau autentificare nouă înainte de acceptarea explicită a specificațiilor și a ADR-urilor relevante.
+4. Înainte de comparația finală, se verifică independent DDL, integritatea FK, politici tenant, autorizare pe obiect, migrare și teste de concurență.
