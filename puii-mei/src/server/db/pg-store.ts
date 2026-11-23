@@ -1,6 +1,6 @@
 import "server-only";
 import { Pool } from "pg";
-import type { DocumentStore } from "./store";
+import type { DocumentStore, TransactStep } from "./store";
 import { pgSslConfig } from "./pg-ssl";
 
 /**
@@ -76,6 +76,37 @@ export function pgStore(connectionString: string): DocumentStore {
         [collection, id, JSON.stringify(patch, (_k, v) => (v === undefined ? null : v))],
       );
       return res.rows[0]?.data ?? null;
+    },
+    async transact<T extends { id: string }, R>(
+      collection: string,
+      id: string,
+      fn: (current: T | null) => Promise<TransactStep<T, R>> | TransactStep<T, R>,
+      initial?: T,
+    ) {
+      await init();
+      const c = await pool.connect();
+      try {
+        await c.query("begin");
+        if (initial) {
+          await c.query("insert into documents (collection, id, data) values ($1, $2, $3) on conflict do nothing", [collection, id, JSON.stringify(initial)]);
+        }
+        const res = await c.query<{ data: T }>("select data from documents where collection = $1 and id = $2 for update", [collection, id]);
+        const { patch, result } = await fn(res.rows[0]?.data ?? null);
+        if (patch && res.rows[0]) {
+          await c.query("update documents set data = data || $3::jsonb where collection = $1 and id = $2", [
+            collection,
+            id,
+            JSON.stringify(patch, (_k, v) => (v === undefined ? null : v)),
+          ]);
+        }
+        await c.query("commit");
+        return result;
+      } catch (err) {
+        await c.query("rollback").catch(() => undefined);
+        throw err;
+      } finally {
+        c.release();
+      }
     },
     async remove(collection: string, ids?: string[]) {
       await init();

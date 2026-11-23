@@ -1,7 +1,7 @@
 import "server-only";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { DocumentStore } from "./store";
+import type { DocumentStore, TransactStep } from "./store";
 
 /**
  * Stocare minimală pe disc (JSON) pentru prima versiune.
@@ -65,6 +65,27 @@ export const jsonStore: DocumentStore = {
       items[idx] = { ...items[idx], ...patch };
       await writeCollection(name, items);
       return items[idx];
+    });
+  },
+  transact<T extends { id: string }, R>(
+    name: string,
+    id: string,
+    fn: (current: T | null) => Promise<TransactStep<T, R>> | TransactStep<T, R>,
+    initial?: T,
+  ) {
+    return withLock(name, async () => {
+      const items = await readCollection<T>(name);
+      let idx = items.findIndex((i) => i.id === id);
+      if (idx === -1 && initial) {
+        items.push(initial);
+        idx = items.length - 1;
+      }
+      const { patch, result } = await fn(idx === -1 ? null : items[idx]);
+      if (idx !== -1 && (patch || initial)) {
+        items[idx] = { ...items[idx], ...(patch ?? {}) };
+        await writeCollection(name, items);
+      }
+      return result;
     });
   },
   remove(name: string, ids?: string[]) {
