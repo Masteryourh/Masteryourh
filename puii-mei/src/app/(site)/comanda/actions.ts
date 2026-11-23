@@ -7,6 +7,7 @@ import { requestOrderPin, requireOrderAccess, verifyOrderPin } from "@/server/or
 import { preorderRepository } from "@/server/repositories/preorders";
 import { notifyOrderEvent } from "@/server/notifications";
 import { chooseWait, processWaitingPreorders, splitPreorder } from "@/server/allocation";
+import { releaseSeats } from "@/server/seats";
 
 export type FindOrderState =
   | { status: "idle"; number?: string }
@@ -53,6 +54,7 @@ export async function cancelOrderAction(formData: FormData) {
   if (!p) redirect("/comanda");
   if (p.status === "noua" && (p.feedPayment?.status ?? "de-platit") === "de-platit") {
     await preorderRepository.updateStatus(p.id, "anulata");
+    if (p.lotCode) await releaseSeats(p.lotCode, p.id);
     await notifyOrderEvent(p, "anulata");
     if (p.lotCode) await processWaitingPreorders();
   }

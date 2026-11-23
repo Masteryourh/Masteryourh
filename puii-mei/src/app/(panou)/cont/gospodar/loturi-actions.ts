@@ -13,6 +13,7 @@ import { landRepository } from "@/server/repositories/land";
 import { processWaitingPreorders } from "@/server/allocation";
 import { notifyAdmins, notifyFarm } from "@/server/notifications";
 import { site } from "@/lib/site";
+import { setLotCapacity } from "@/server/seats";
 
 const SPECIES: Species[] = ["pui", "curcani", "rate", "fazani"];
 
@@ -101,6 +102,11 @@ export async function updateLotAction(formData: FormData) {
     (data.totalBirds < lot.reservedBirds ? `Lotul are deja ${lot.reservedBirds} păsări rezervate.` : "") ||
     (data.totalBirds !== lot.totalBirds || data.startDate !== lot.startDate ? checkLotLimits(farmLots, gov, { ...data, code: lot.code }, land) : "");
   if (error) redirect(back(formData, `eroareLot=${encodeURIComponent(error)}`));
+  // Capacitatea nouă se verifică atomic față de locurile ocupate (CG-04).
+  if (data.totalBirds !== lot.totalBirds) {
+    const cap = await setLotCapacity(lot.code, data.totalBirds);
+    if (!cap.ok) redirect(back(formData, `eroareLot=${encodeURIComponent(`Lotul are deja ${cap.used} păsări rezervate.`)}`));
+  }
   await lotRepository.update(lot.code, {
     totalBirds: data.totalBirds,
     pens: data.pens,

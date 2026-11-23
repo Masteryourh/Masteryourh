@@ -110,6 +110,26 @@ async function allLots(): Promise<Lot[]> {
   }));
 }
 
+/**
+ * Baza registrului de locuri al unui lot (src/server/seats.ts): capacitatea (totalul minus rezervările inițiale) și
+ * precomenzile alocate acum pe lot. `stale` = precomenzi anulate sau mutate pe alt lot (de scos din registru).
+ */
+export async function lotSeatBasis(code: string) {
+  const [stored, preorders] = await Promise.all([
+    store.get<StoredLot>(LOTS, code),
+    store.list<{ id: string; lotCode: string | null; birds: number; status: string }>("preorders"),
+  ]);
+  const lot = stored ?? lots.find((l) => l.code === code);
+  if (!lot) return null;
+  const allocations: Record<string, number> = {};
+  const stale: string[] = [];
+  for (const p of preorders) {
+    if (p.lotCode === code && p.status !== "anulata") allocations[p.id] = p.birds;
+    else if (p.status === "anulata" || (p.lotCode && p.lotCode !== code)) stale.push(p.id);
+  }
+  return { baseReserved: lot.reservedBirds, capacity: Math.max(0, lot.totalBirds - lot.reservedBirds), allocations, stale };
+}
+
 export type NewLot = Pick<Lot, "farmSlug" | "species" | "breed" | "startDate" | "growthDays" | "totalBirds" | "feed" | "processor" | "notes" | "pens">;
 
 /** Implicit doar loturile aprobate (publice); `{ all: true }` în panouri. */
