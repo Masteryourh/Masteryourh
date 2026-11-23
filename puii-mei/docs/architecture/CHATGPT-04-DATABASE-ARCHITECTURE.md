@@ -65,7 +65,7 @@ erDiagram
 | traceability | events | evenimente cronologice lot |
 | platform | documents, audit_events, outbox, idempotency_keys | fișiere, audit, evenimente și deduplicare |
 
-**Total: 29 tabele în DDL-ul inițial.** Numărul este un inventar al textului propus, nu rezultatul unui test SQL. Nu sunt încă modelate complet: recepții/stocuri, furnizori, țarcuri individuale, intervenții veterinare, procesatori, ture/curieri/colete/temperaturi, documente fiscale, rambursări, dispute, AI jobs, notificări, granularitatea permisiunilor, ledger contabil și retenția GDPR. Acestea sunt **obligatorii pentru documentația finală** și nu trebuie omise din schema aprobată.
+**Total: 28 tabele în DDL-ul inițial (numărate din inventarul SQL).** Numărul este un inventar al textului propus, nu rezultatul unui test SQL. Nu sunt încă modelate complet: recepții/stocuri, furnizori, țarcuri individuale, intervenții veterinare, procesatori, ture/curieri/colete/temperaturi, documente fiscale, rambursări, dispute, AI jobs, notificări, granularitatea permisiunilor, ledger contabil și retenția GDPR. Acestea sunt **obligatorii pentru documentația finală** și nu trebuie omise din schema aprobată.
 
 ## 4. Invariante și tranzacții
 
@@ -130,7 +130,7 @@ erDiagram
 | DB-D07 | Alegerea ORM și proprietatea migrărilor | PROPUS: SQL migrations explicite; decizie tehnică după teste |
 | DB-D08 | Migrarea/compatibilitatea cu `seats.ts` după PR #59 | DESCHIS · verificare cod integrat |
 
-## 9. Ce urmează înainte de aprobarea acestui capitol
+## 9. Extindere v0.2 — inventar operațional și corecții\n\nExtinderea propusă este în `chatgpt-04-extensions.draft.sql` și în `CHATGPT-04-IMPLEMENTATION-CONTRACTS.md`. SQL-ul extensiei presupune că fișierul de nucleu a fost executat anterior. Împreună sunt **drafturi nevalidate într-un server PostgreSQL**, nu migrări aprobate. Sunt incluse: documente contractuale, capacitate fizică, jurnal mortalitate și greutate, furnizori/stocuri, procesare, colete, ture, temperaturi, controale de calitate, notificări, execuții AI și aprobări umane.\n\n**Corecție importantă:** în v0.1 sunt **28**, nu 29 tabele. Diferența era o eroare de inventariere, nu o tabelă lipsă identificată.\n\n## 10. Ce urmează înainte de aprobarea acestui capitol
 
 1. **Validare SQL reală** pe PostgreSQL 16, repararea erorilor și capturarea outputului.
 2. Completarea tuturor entităților de logistică, stocuri, calitate, AI, notificări, GDPR și RBAC, cu DDL integral.
