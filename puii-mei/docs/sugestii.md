@@ -83,7 +83,8 @@ _Ultima actualizare: 22 noiembrie 2026_
 
 - [ ] **Vercel: previzualizările pentru branch-uri noi eșuează** (23 nov. 2026): `Resource provisioning failed` în ~1 s, fără
       build, pe #57, #58, #59; `main` și branch-urile vechi merg. Probabil integrarea Neon nu mai poate crea o bază
-      pentru fiecare branch nou de previzualizare (limita planului). De verificat în Vercel → Storage → Neon.
+      pentru fiecare branch nou de previzualizare (limita planului). **Confirmat de PO (captură Vercel): „Branch limit
+      reached. Upgrade your plan or delete unused branches.”** Remediere: ștergerea branch-urilor Neon ale PR-urilor unite.
       Variante (23 nov. 2026, fără răspuns încă): (1) ștergerea branch-urilor vechi din Neon; (2) mutarea pe Supabase
       (regiunea Frankfurt, UE) sau alt PostgreSQL standard — aplicația folosește doar `DATABASE_URL`, deci fără schimbări
       de cod; în ambele cazuri, bază separată pentru previzualizări (azi Preview și Production au aceeași conexiune).
