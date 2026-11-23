@@ -29,6 +29,12 @@ export async function hitRateLimit(key: string, limit: number, windowSeconds: nu
   );
 }
 
+/** Doar citire: limita e deja depășită în fereastra curentă? (fără să consume din ea) */
+export async function rateLimitExceeded(key: string, limit: number, windowSeconds: number) {
+  const cur = await store.get<Counter>(COLLECTION, key);
+  return Boolean(cur && Date.now() - cur.windowStart < windowSeconds * 1000 && cur.count >= limit);
+}
+
 /** IP-ul clientului (primul din X-Forwarded-For, setat de Vercel). */
 export async function clientIp() {
   const h = await headers();

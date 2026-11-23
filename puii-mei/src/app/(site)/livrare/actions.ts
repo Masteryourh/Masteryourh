@@ -144,7 +144,7 @@ export async function pinLoginAction(token: string, _p: CourierState, fd: FormDa
     refresh(tour);
     return fail({}, res.error);
   }
-  await grantCourier(tour, tour.courier!.sessionVersion);
+  await grantCourier(tour, res.sessionVersion);
   refresh(tour);
   return { status: "ok" };
 }

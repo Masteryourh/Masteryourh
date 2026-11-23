@@ -9,7 +9,7 @@ import type { Preorder } from "@/lib/domain";
 import { normalizeLotCode } from "@/lib/lots";
 import { preorderRepository } from "@/server/repositories/preorders";
 import { store } from "@/server/db/store";
-import { clientIp, hitRateLimit } from "./rate-limit";
+import { clientIp, hitRateLimit, rateLimitExceeded } from "./rate-limit";
 import { emailEnabled, sendEmail } from "./email";
 import { sendSms, smsEnabled } from "./sms";
 import { keyedHash, sessionSecretReady, signPayload, verifyPayload } from "./session-token";
@@ -33,8 +33,9 @@ export type PinRequest =
   | { ok: false; error: string };
 
 const PIN_REQUESTS_PER_ORDER_PER_DAY = 5;
-const PIN_REQUESTS_PER_IP_PER_DAY = 30;
-const PIN_CHECKS_PER_IP_PER_HOUR = 30;
+// Rețelele mobile pun mulți clienți în spatele aceluiași IP: limita pe IP e generoasă; limita strictă e pe comandă (5/zi).
+const PIN_REQUESTS_PER_IP_PER_DAY = 100;
+const PIN_FAILURES_PER_IP_PER_HOUR = 30;
 
 export async function requestOrderPin(numberInput: string): Promise<PinRequest> {
   if (!sessionSecretReady()) return { ok: false, error: "Accesul la comenzi e oprit temporar (platforma nu e configurată complet). Încearcă mai târziu." };
@@ -112,7 +113,10 @@ export async function verifyOrderPin(numberInput: string, pinInput: string): Pro
   const pin = pinInput.replace(/\D/g, "");
   if (!p) return { ok: false, error: "Cere întâi un PIN pentru această precomandă." };
   const ip = await clientIp();
-  if (!(await hitRateLimit(`pin-verificare:ip:${ip}`, PIN_CHECKS_PER_IP_PER_HOUR, 3600)).allowed) {
+  // Pe IP se numără doar PIN-urile GREȘITE: clienții legitimi din aceeași rețea (NAT la operatorii mobili) nu se
+  // blochează între ei; limita sigură rămâne cea de 5 încercări pe comandă, atomică.
+  const ipKey = `pin-verificare-gresit:ip:${ip}`;
+  if (await rateLimitExceeded(ipKey, PIN_FAILURES_PER_IP_PER_HOUR, 3600)) {
     return { ok: false, error: "Prea multe încercări de pe această conexiune. Încearcă peste o oră." };
   }
   const r = await store.transact<Preorder, VerifyResult>("preorders", p.id, (cur) => {
@@ -132,7 +136,10 @@ export async function verifyOrderPin(numberInput: string, pinInput: string): Pro
     // Corect: PIN-ul manual nu mai e afișat adminului.
     return { patch: a.manual ? { accessPin: { ...a, manual: undefined } } : undefined, result: { ok: true, expiresAt: a.expiresAt } };
   });
-  if (!r.ok) return r;
+  if (!r.ok) {
+    if (r.error.startsWith("PIN greșit")) await hitRateLimit(ipKey, PIN_FAILURES_PER_IP_PER_HOUR, 3600);
+    return r;
+  }
   await grantOrderAccess(p, Date.parse(r.expiresAt));
   return { ok: true, token: await ensureTrackingToken(p) };
 }
