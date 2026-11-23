@@ -142,7 +142,17 @@ export interface Preorder {
    * Se păstrează doar amprenta; `manual` = PIN-ul în clar, doar cât timp nu e configurat SMS-ul,
    * ca adminul să-l poată trimite pe WhatsApp.
    */
-  accessPin?: { hash: string; requestedAt: string; expiresAt: string; attempts: number; channel: "sms" | "email" | "manual"; manual?: string };
+  accessPin?: {
+    hash: string;
+    requestedAt: string;
+    expiresAt: string;
+    attempts: number;
+    channel: "sms" | "email" | "manual";
+    manual?: string;
+    /** Limita de cereri de PIN pe zi, pe comandă. */
+    requestsDay?: string;
+    requestsCount?: number;
+  };
   /** Avansul pentru hrană, plătit de client direct în contul gospodăriei. */
   feedPayment?: FeedPayment;
   /**

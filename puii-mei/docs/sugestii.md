@@ -64,6 +64,8 @@ _Ultima actualizare: 22 noiembrie 2026_
 
 - [x] **Navigare clară** (PR #32): traseul „Acasă › …” pe site, „Panou admin › …” în panouri, iar pe telefon
       „← Înapoi la <pagina părinte>”.
+- [ ] **Limitele pe IP pentru PIN** (SEC-007, 23 nov. 2026): 30 verificări/oră și 30 cereri/zi pe aceeași adresă IP.
+      Clienții din aceeași rețea mobilă pot avea același IP (NAT) – de reevaluat după lansare, din jurnale.
 - [ ] **Română / engleză** – amânat de utilizator (22 nov. 2026); întâi site-ul public, apoi panourile.
 
 ## De configurat (Vercel / servicii)
