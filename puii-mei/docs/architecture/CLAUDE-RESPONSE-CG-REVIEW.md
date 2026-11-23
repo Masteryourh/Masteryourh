@@ -10,8 +10,8 @@ reproductibilă; altfel rămâne „în lucru” sau „blocat de decizie”.
 | ID | Prioritate | Verdict | Stare după acest PR | Dovadă |
 |---|---|---|---|---|
 | CG-01 | P0 | ACCEPTAT | **Închis** (#56, unit în `main`) | test E2E în CI |
-| CG-02 | P0 | ACCEPTAT | **Reparat**, test de concurență dedicat lipsă → în lucru | #56 |
-| CG-03 | P0 | ACCEPTAT | **Politica decisă de PO (varianta b)**, specificată; neimplementată în cod | CLAUDE-03 §6.1 |
+| CG-02 | P0 | ACCEPTAT | **Reparat + testat în PR #64**: împerechere atomică (PIN de ridicare de unică folosință și sub concurență), test E2E de concurență, tură străină, resetare | `e2e/courier.spec.ts` |
+| CG-03 | P0 | ACCEPTAT | **Etapa 1 implementată în PR #61 (unit)**: varianta (b) decisă de PO, fără MFA încă (ADR-009) | `e2e/iban.spec.ts` |
 | CG-04 | P0 | ACCEPTAT | **Reparat în PR #59** (reprodus 64/40 → acum 40/40, test E2E) | §CG-04 |
 | CG-05 | P0 | ACCEPTAT | În lucru: plan de matrice RLS; azi doar SELECT pe un tabel | §CG-05 |
 | CG-06 | P1 | ACCEPTAT | **Corectat în spec**: `compliance_holds` + F-02 refăcut + 3 teste SQL | CLAUDE-02, CLAUDE-04 |
@@ -32,14 +32,18 @@ Nu am respins nicio constatare: toate sunt corecte ca fond. Nuanțele sunt mai j
   „E2E (Playwright + PostgreSQL)”, verde pe #56).
 - În plus (V-03): limite persistente pe IP și pe comandă.
 
-## CG-02 — PIN curier · ACCEPTAT · REPARAT, TEST DEDICAT LIPSĂ
+## CG-02 — PIN curier · ACCEPTAT · REPARAT ȘI TESTAT (#64)
 - **Remediere (#56):** `countPinAttempt` în `src/server/delivery.ts` — contor `failedPins` atomic, blocare la 5;
   comparare în timp constant (`safeEqual`); PIN-ul de ridicare se folosește o singură dată (`pickupPinUsed`).
 - **Ce lipsește pentru închidere:** testul de exploatare controlat cerut de ChatGPT. Același mecanism (`transact`) e
   dovedit pe PIN-ul clientului, dar **nu am reprodus separat** scenariul pe curier.
 - **Mai rămâne deschis:** PIN-ul de ridicare e încă păstrat în clar în documentul turei (îl vede gospodarul ca să-l dea
   curierului). Propunere: păstrare ca hash + afișare o singură dată la generare. [PROPUS]
-- **Următorul pas:** `e2e/security-courier.spec.ts` (20 de PIN-uri greșite simultan pe aceeași tură → max. 5).
+- **Închis în PR #64:** testul de concurență cerut (20 PIN-uri greșite simultan → exact 5 evaluate, pe PIN-ul de ridicare
+  și pe cel personal). La citirea codului am găsit și o problemă nouă: marcarea PIN-ului de ridicare ca „folosit” era o
+  scriere separată de verificare, deci două împerecheri simultane corecte puteau primi amândouă acces. Nu am reprodus-o
+  pe codul vechi (fereastră îngustă), dar acum totul se face într-o singură tranzacție; test: 10 persoane cu PIN-ul
+  corect simultan → un singur curier. Plus: tură străină, resetare, NAT (pe IP se numără doar PIN-urile greșite).
 
 ## CG-03 — IBAN fără protecții · ACCEPTAT · SPECIFICAT, NEIMPLEMENTAT
 - **Stare în cod (V-04):** IBAN-ul se schimbă imediat din panoul gospodarului
