@@ -87,6 +87,13 @@ _Ultima actualizare: 22 noiembrie 2026_
       deployment-ul din Vercel. De setat în Vercel → Settings → Deployment Retention (ex. previzualizări mai vechi de
       30 de zile), ca limita să nu se mai atingă.
 
+- [ ] **Baza de date gratuită pe termen lung** (23 nov. 2026, PO: „soluție pentru mai multă stocare gratuită”): limita
+      atinsă e cea de 10 branch-uri Neon (câte unul pe previzualizare), nu spațiul. Fotografiile se salvează însă în baza
+      de date (base64) și o vor umple. Propunere: (1) previzualizările pe o singură bază de test fixă, separată de
+      producție; (2) fotografiile și documentele în object storage gratuit (ex. Cloudflare R2), baza de date doar pentru
+      date. Alternativ: Prisma Postgres (2 GB gratuit), Supabase (500 MB, UE). Tokenul Vercel din sesiune trebuie
+      reînnoit (cel salvat e refuzat).
+
 ## De completat pe site
 
 - [ ] **Datele de plată ale fiecărei gospodării** (titular, IBAN, bancă, preț furaj): Contul meu → Vedere gospodar →
