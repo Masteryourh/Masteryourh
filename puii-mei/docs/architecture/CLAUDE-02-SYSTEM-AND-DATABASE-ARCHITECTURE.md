@@ -1,6 +1,9 @@
 # CLAUDE — PUII MEI · 02 — Arhitectura sistemului și a bazei de date
 
-**Autor:** Claude Code · **Data:** 23 noiembrie 2026 · **Versiune:** 0.1 (draft pentru comparație și aprobare)
+**Autor:** Claude Code · **Data:** 23 noiembrie 2026 · **Versiune:** 0.2 (draft pentru comparație și aprobare)
+**v0.2:** preluate din varianta ChatGPT (`CHATGPT-03-SYSTEM-ARCHITECTURE.md`, PR #50), marcate **[din ChatGPT]**: module
+separate Contracte și Stocuri, rețete și costuri standard versionate, catalog de erori (RFC 9457), outbox cu dead-letter,
+SLO / NFR, MFA, CSRF, scanarea fișierelor, rate limiting distribuit, zone de încredere, audit cu dovadă de integritate.
 **Bază:** `CLAUDE-TECHNICAL-ARCHITECTURE-V1.md` (audit as-built), `00-SYSTEM-CONSTITUTION.md`,
 `01-BUSINESS-ARCHITECTURE.md`, `adr/ADR-001-ONORARIU-PUII-MEI.md`, `TEAM-WORKFLOW.md`.
 **Convenții:** **[CONFIRMAT]** decis / aprobat · **[PROPUS]** recomandarea mea · **[DESCHIS]** cere decizie sau validare ·
@@ -25,6 +28,9 @@
 13. Extinderea la alte verticale
 14. Decizii deschise
 15. Criterii de acceptanță și teste pentru acest document
+16. Catalogul de erori [din ChatGPT]
+17. Cerințe nefuncționale (SLO) [din ChatGPT]
+18. Securitate transversală (completări) [din ChatGPT]
 
 ---
 
@@ -82,6 +88,11 @@ flowchart TB
   B -. import extrase .-> P
 ```
 
+**Zone de încredere [din ChatGPT]:** (1) public → HTTPS + rate limiting → aplicație; (2) echipa internă → autentificare
+cu MFA → aplicație; (3) parteneri externi (contabil, bancă) → acces limitat, fără acces direct la baza de date;
+(4) agenți AI → gateway de instrumente cu politici și aprobare umană; (5) aplicație → baza de date și stocarea privată
+(rețea privată, credențiale separate). Niciun serviciu extern nu primește acces direct la baza de date.
+
 ---
 
 ## 3. Containere (C4 nivel 2)
@@ -117,11 +128,13 @@ flowchart LR
 |---|---|---|---|
 | **identity** | conturi, roluri, membership pe gospodărie, sesiuni, PIN-uri, invitații, rate limiting | users, roles, memberships, sessions, access_pins, login_attempts | — |
 | **household** (Household OS) | entitatea economică a gospodăriei, profilul public, terenul, conturile bancare, mandatul, regimul (activă / suspendată), Compliance Gate | households, farm_profiles, land_parcels, bank_accounts, mandates, compliance_* , standing_events | identity, documents |
-| **program** (Program Engine) | definirea programelor (ex. „Pui pășunat 60 zile”) și a versiunilor cu parametri; eligibilitatea gospodăriei; capacitatea | programs, program_versions, household_programs | household |
+| **program** (Program Engine) | definirea programelor (ex. „Pui pășunat 60 zile”) și a versiunilor cu parametri; rețete și costuri standard versionate [din ChatGPT]; eligibilitatea gospodăriei; capacitatea | programs, program_versions, cost_standards, household_programs | household |
 | **production** | loturi, țarcuri, efectivul și evenimentele lui, jurnalul de creștere, cântăriri, alerte de monitorizare | lots, pens, flock_events, growth_entries, weighings, monitoring_alerts | program, household |
-| **commerce** (Marketplace) | clienți, produse, prețuri, precomenzi, alocarea pe țarcuri, anulări, contracte client | customers, products, price_lists, orders, order_lines, allocations, order_contracts | production, program, household |
+| **commerce** (Marketplace) | clienți, produse, prețuri, precomenzi, alocarea pe țarcuri, anulări | customers, products, price_lists, orders, order_lines, allocations | production, program, household |
+| **contracts** [din ChatGPT] | șabloane de contract versionate, contracte emise (client–gospodărie, administrare gospodărie–PUII MEI, investiții), acceptări și semnături | contract_templates, contract_template_versions, contracts, contract_parties, signatures | household, commerce, documents |
+| **inventory** [din ChatGPT] | stocul gospodăriei: articole, recepții, consumuri, aprovizionare (pui de o zi, furaje, materiale) | inventory_items, supply_orders, stock_movements | household, production |
 | **finance** | plăți (avans, sold), confirmări cu referință, rambursări, registrul gospodăriei, închiderea lotului, onorariul (ADR-001), facturi, investiții | payments, payment_confirmations, refunds, ledger_entries, lot_closings, fee_calculations, invoices, investments, repayments | commerce, production, household, documents |
-| **logistics** | zone, aprovizionare (pui de o zi, furaje), stocuri de materiale, procesare (sacrificare) ca etapă, colete, ture, curieri, temperaturi | zones, supply_orders, stock_movements, processing_runs, parcels, tours, tour_stops, tour_events | commerce, production |
+| **logistics** | zone, procesare (sacrificare) ca etapă, colete, ture, curieri, temperaturi | zones, processing_runs, parcels, tours, tour_stops, tour_events | commerce, production |
 | **quality** | verificări, neconformități, acțiuni corective, incidente, evaluări clienți, blocarea lotului | inspections, nonconformities, corrective_actions, incidents, ratings, lot_holds | production, logistics, household |
 | **traceability** | *fără tabele proprii de scriere*: vederi care compun istoricul lotului / produsului din celelalte module; publicare către client | vederi `traceability.*` | toate (doar citire) |
 | **documents** | fișiere (metadate + storage), documente cu categorie, verificare, legături la obiecte | files, documents, document_links | identity |
@@ -129,8 +142,8 @@ flowchart LR
 | **platform** | outbox, joburi, audit, setări, bibliotecă legislativă, formulare publice | outbox, jobs, audit_log, settings, legal_entries, applications, interest_signups, contact_messages | — |
 | **ai** | registrul agenților, permisiuni, propuneri, aprobări umane, jurnalul acțiunilor AI | ai_agents, ai_proposals, ai_runs | toate prin API v1 |
 
-**Regulă de dependență [PROPUS]:** graful e aciclic de jos în sus: `identity → household → program → production →
-commerce → finance / logistics → quality → traceability (citire)`. Un modul „de jos” nu importă un modul „de sus”;
+**Regulă de dependență [PROPUS]:** graful e aciclic de jos în sus: `identity → household → program → production / inventory →
+commerce → contracts → finance / logistics → quality → traceability (citire)`. Un modul „de jos” nu importă un modul „de sus”;
 reacția la evenimentele de sus se face prin outbox (§5).
 
 ---
@@ -141,7 +154,9 @@ reacția la evenimentele de sus se face prin outbox (§5).
    Ex.: `commerce.placeOrder()` apelează `production.reserveCapacity()` în aceeași tranzacție.
 2. **Evenimente de domeniu prin outbox** — pentru efecte secundare. Comanda de domeniu scrie evenimentul în
    `platform.outbox` în aceeași tranzacție; worker-ul îl livrează cel puțin o dată; consumatorii sunt idempotenți
-   (cheie = `event_id`).
+   (cheie = `event_id`). **[din ChatGPT]** Reîncercare cu întârziere exponențială + jitter; după `max_attempts`
+   evenimentul trece în **dead-letter** (`dead_lettered_at`), apare în Central Command și se reprocesează manual,
+   cu audit. Evenimentele nu înlocuiesc tranzacțiile necesare.
 
 Evenimente inițiale [PROPUS]:
 
@@ -205,7 +220,7 @@ neconectată, se șterge — D-11). Alternativă acceptabilă: Prisma cu migraț
 > concizie și sunt obligatorii pe fiecare tabel mutabil.
 >
 > **Verificat:** toate blocurile SQL din acest capitol (cu `/* audit */` expandat) au rulat fără erori pe PostgreSQL 16,
-> într-o bază goală: 12 scheme, 68 de tabele (23 nov. 2026).
+> într-o bază goală: 14 scheme, 76 de tabele (v0.2, 23 nov. 2026).
 
 ### 8.1 identity
 
@@ -259,7 +274,18 @@ create table identity.invitations (
   created_at  timestamptz not null default now()
 );
 
-create table identity.login_attempts (   -- rate limiting persistent (rezolvă D-05)
+create table identity.mfa_factors (       -- MFA pentru admin, financiar, aprobări critice [din ChatGPT]
+  id          uuid primary key,
+  user_id     uuid not null references identity.users(id),
+  kind        text not null check (kind in ('totp','webauthn')),
+  secret_enc  bytea,                       -- TOTP criptat cu cheia aplicației
+  credential  jsonb,                       -- WebAuthn
+  created_at  timestamptz not null default now(),
+  last_used_at timestamptz,
+  revoked_at  timestamptz
+);
+
+create table identity.login_attempts (   -- rate limiting persistent, comun tuturor instanțelor (rezolvă D-05)
   id          bigserial primary key,
   key         text not null,               -- email normalizat sau IP
   succeeded   boolean not null,
@@ -436,6 +462,22 @@ create table program.household_programs (   -- gospodăria înscrisă într-un p
   /* audit */
   unique (household_id, program_id)
 );
+
+create table program.cost_standards (       -- rețete și costuri standard versionate [din ChatGPT, ADR-TECH-010]
+  id                 uuid primary key,
+  program_version_id uuid not null references program.program_versions(id),
+  category           text not null,          -- aceleași categorii ca registrul (pui, furaj, sanatate, energie…)
+  basis              text not null check (basis in ('per_pui','per_kg','per_lot','per_zi')),
+  quantity           numeric(12,3),          -- ex. 9,8 kg furaj / pui [ipoteză de validat zootehnic]
+  unit               text,
+  amount_bani        bigint not null check (amount_bani >= 0),
+  tolerance_pct      numeric(5,2) not null default 10.00,   -- peste ea, abaterea cere justificare
+  approved_by        uuid references identity.users(id),
+  approved_at        timestamptz,
+  unique (program_version_id, category, basis)
+);
+-- Folosire: bugetul lotului, avansul (pui + furaj), și — dacă ADR-001 se definește pe „cheltuieli standard” —
+-- calculul onorariului. Abaterile real vs. standard se înregistrează în finance.cost_variances.
 ```
 
 ### 8.4 production
@@ -617,15 +659,63 @@ create table commerce.allocations (      -- rezervarea capacității: comanda �
 );
 create index on commerce.allocations (pen_id) where status <> 'eliberat';
 
-create table commerce.order_contracts (   -- contractul clientului (versiune + acceptare)
-  id            uuid primary key,
-  order_id      uuid not null references commerce.orders(id),
-  template_code text not null,            -- [DESCHIS CX-01 / BA-004]: părțile contractului
-  template_version text not null,
-  rendered_file_id uuid,                  -- PDF generat
-  accepted_at   timestamptz,
-  accepted_ip   inet,
+```
+
+### 8.5b contracts [din ChatGPT]
+
+```sql
+create schema contracts;
+
+create table contracts.contract_templates (
+  id          uuid primary key,
+  code        text not null unique,      -- 'CLIENT_GOSPODARIE', 'ADMINISTRARE_GOSPODARIE', 'INVESTITIE'
+  title       text not null,
+  kind        text not null check (kind in ('client','administrare','mandat','investitie','furnizor','alt')),
   /* audit */
+);
+
+create table contracts.contract_template_versions (
+  id           uuid primary key,
+  template_id  uuid not null references contracts.contract_templates(id),
+  version_label text not null,           -- ex. '1.0' (coloana `version` e rezervată blocării optimiste)
+  body_markdown text not null,             -- text cu câmpuri {{…}}
+  legal_review text not null check (legal_review in ('nevalidat','in_revizuire','validat')),  -- [DESCHIS CX-01]
+  effective_from date,
+  /* audit */
+  unique (template_id, version_label)
+);
+
+create table contracts.contracts (
+  id                  uuid primary key,
+  template_version_id uuid not null references contracts.contract_template_versions(id),
+  household_id        uuid references household.households(id),
+  order_id            uuid references commerce.orders(id),
+  investment_id       uuid,                  -- finance.investments (FK adăugat după crearea tabelului)
+  status              text not null check (status in ('ciorna','emis','acceptat','semnat','reziliat','expirat')),
+  rendered_file_id    uuid,                  -- PDF generat
+  valid_from          date,
+  valid_to            date,
+  /* audit */
+);
+create index on contracts.contracts (order_id);
+create index on contracts.contracts (household_id);
+
+create table contracts.contract_parties (
+  contract_id uuid not null references contracts.contracts(id),
+  role        text not null check (role in ('client','gospodarie','puii_mei','investitor','furnizor')),
+  party_ref   uuid not null,                 -- customer_id / household_id / user_id
+  display_name text not null,
+  primary key (contract_id, role, party_ref)
+);
+
+create table contracts.signatures (
+  id          uuid primary key,
+  contract_id uuid not null references contracts.contracts(id),
+  party_role  text not null,
+  method      text not null check (method in ('acceptare_online','semnatura_olografa_scanata','semnatura_electronica')),
+  signed_at   timestamptz not null,
+  ip          inet,
+  evidence_file_id uuid
 );
 ```
 
@@ -696,6 +786,18 @@ create table finance.lot_closings (           -- închiderea lotului și calculu
   /* audit */
 );
 
+create table finance.cost_variances (       -- abateri real vs. standard [din ChatGPT]
+  id               uuid primary key,
+  lot_id           uuid not null references production.lots(id),
+  cost_standard_id uuid not null references program.cost_standards(id),
+  standard_bani    bigint not null,
+  actual_bani      bigint not null,
+  justification    text,
+  status           text not null check (status in ('in_limita','de_justificat','acceptata','respinsa')),
+  decided_by       uuid references identity.users(id),
+  /* audit */
+);
+
 create table finance.invoices (               -- facturi PUII MEI → gospodărie (onorariu)
   id           uuid primary key,
   household_id uuid not null references household.households(id),
@@ -732,6 +834,8 @@ create table finance.investments (            -- [DESCHIS DEC-007] statut juridi
   repayment_per_bird_bani bigint,             -- [DESCHIS] „de stabilit”
   /* audit */
 );
+
+alter table contracts.contracts add foreign key (investment_id) references finance.investments(id);
 
 create table finance.investment_events (
   id            uuid primary key,
@@ -773,33 +877,6 @@ create table logistics.zones (
   active        boolean not null default true,
   /* audit */
 );
-
-create table logistics.supply_orders (     -- aprovizionare: pui de o zi, furaje, materiale
-  id            uuid primary key,
-  household_id  uuid not null references household.households(id),
-  lot_id        uuid references production.lots(id),
-  item          text not null check (item in ('pui_o_zi','furaj','asternut','ambalaje','alte')),
-  quantity      numeric(12,3) not null,
-  unit          text not null,
-  supplier      text not null,
-  status        text not null check (status in ('planificata','comandata','livrata','anulata')),
-  delivered_on  date,
-  ledger_entry_id uuid references finance.ledger_entries(id),
-  /* audit */
-);
-
-create table logistics.stock_movements (   -- stocul gospodăriei (furaje, materiale)
-  id            uuid primary key,
-  household_id  uuid not null references household.households(id),
-  item          text not null,
-  quantity      numeric(12,3) not null,       -- + intrare, − consum
-  reason        text not null check (reason in ('livrare','consum','pierdere','corectie')),
-  lot_id        uuid references production.lots(id),
-  occurred_on   date not null,
-  recorded_by   uuid not null references identity.users(id),
-  recorded_at   timestamptz not null default now()
-);
-create index on logistics.stock_movements (household_id, item, occurred_on);
 
 create table logistics.processing_runs (   -- sacrificare / procesare ca etapă trasabilă [DESCHIS BA-003]
   id            uuid primary key,
@@ -872,6 +949,48 @@ create table logistics.tour_events (       -- jurnal append-only al turei (exist
   at          timestamptz not null default now()
 );
 create index on logistics.tour_events (tour_id, at);
+```
+
+### 8.7b inventory [din ChatGPT]
+
+```sql
+create schema inventory;
+
+create table inventory.inventory_items (
+  id        uuid primary key,
+  code      text not null unique,          -- 'FURAJ_START', 'FURAJ_CRESTERE', 'RUMEGUS', 'PUNGI_VID'…
+  name      text not null,
+  unit      text not null check (unit in ('kg','buc','sac','l')),
+  category  text not null check (category in ('pui_o_zi','furaj','asternut','ambalaje','medicamente','alte'))
+);
+
+create table inventory.supply_orders (     -- aprovizionare: pui de o zi, furaje, materiale
+  id            uuid primary key,
+  household_id  uuid not null references household.households(id),
+  lot_id        uuid references production.lots(id),
+  item_id       uuid not null references inventory.inventory_items(id),
+  quantity      numeric(12,3) not null,
+  unit          text not null,
+  supplier      text not null,
+  status        text not null check (status in ('planificata','comandata','livrata','anulata')),
+  delivered_on  date,
+  ledger_entry_id uuid references finance.ledger_entries(id),
+  /* audit */
+);
+
+create table inventory.stock_movements (   -- stocul gospodăriei (furaje, materiale)
+  id            uuid primary key,
+  household_id  uuid not null references household.households(id),
+  item_id       uuid not null references inventory.inventory_items(id),
+  quantity      numeric(12,3) not null,       -- + intrare, − consum
+  reason        text not null check (reason in ('livrare','consum','pierdere','corectie')),
+  lot_id        uuid references production.lots(id),
+  occurred_on   date not null,
+  recorded_by   uuid not null references identity.users(id),
+  recorded_at   timestamptz not null default now()
+);
+create index on inventory.stock_movements (household_id, item_id, occurred_on);
+
 ```
 
 ### 8.8 quality
@@ -948,6 +1067,10 @@ create table documents.files (
   mime         text not null,
   size_bytes   bigint not null check (size_bytes > 0),
   sha256       char(64) not null,
+  detected_mime text not null,             -- din „magic bytes”, nu din extensie [din ChatGPT]
+  scan_status  text not null default 'in_asteptare'
+               check (scan_status in ('in_asteptare','curat','infectat','eroare')),  -- fișierul nu se servește până e „curat”
+  retention_until date,
   uploaded_by  uuid,
   uploaded_at  timestamptz not null default now()
 );
@@ -994,9 +1117,13 @@ create table platform.outbox (
   aggregate_id uuid not null,
   payload     jsonb not null,
   occurred_at timestamptz not null default now(),
-  processed_at timestamptz
+  attempts    integer not null default 0,
+  next_attempt_at timestamptz not null default now(),
+  last_error  text,
+  processed_at timestamptz,
+  dead_lettered_at timestamptz             -- [din ChatGPT] reprocesare manuală, cu audit
 );
-create index on platform.outbox (processed_at) where processed_at is null;
+create index on platform.outbox (next_attempt_at) where processed_at is null and dead_lettered_at is null;
 
 create table platform.jobs (
   id          uuid primary key,
@@ -1022,7 +1149,9 @@ create table platform.audit_log (             -- append-only (rezolvă D-08)
   before      jsonb,
   after       jsonb,
   reason      text,
-  request_id  text
+  request_id  text,
+  prev_hash   char(64),                    -- [din ChatGPT] lanț de amprente: dovadă de integritate,
+  row_hash    char(64) not null            -- sha256(prev_hash || conținut); verificat periodic de un job
 );
 create index on platform.audit_log (object_type, object_id, at);
 create index on platform.audit_log (household_id, at);
@@ -1114,6 +1243,15 @@ erDiagram
   PARCELS ||--o| RATINGS : evaluare
   DOCUMENTS }o--|| FILES : fisier
   INVESTMENTS ||--o{ REPAYMENTS : rate
+  PROGRAM_VERSIONS ||--o{ COST_STANDARDS : "costuri standard"
+  COST_STANDARDS ||--o{ COST_VARIANCES : abateri
+  CONTRACT_TEMPLATES ||--o{ CONTRACT_TEMPLATE_VERSIONS : versiuni
+  CONTRACT_TEMPLATE_VERSIONS ||--o{ CONTRACTS : emise
+  CONTRACTS ||--o{ CONTRACT_PARTIES : parti
+  CONTRACTS ||--o{ SIGNATURES : semnaturi
+  ORDERS ||--o| CONTRACTS : "contract client"
+  INVENTORY_ITEMS ||--o{ STOCK_MOVEMENTS : miscari
+  HOUSEHOLDS ||--o{ SUPPLY_ORDERS : aprovizionare
 ```
 
 ---
@@ -1133,6 +1271,9 @@ erDiagram
 | INV-09 | Țarcurile unui lot pornesc în fereastra de 7 zile; un lot pe rând (dacă programul o cere) | verificare în `startPen` / `createLot` pe parametrii versiunii de program |
 | INV-10 | Prețul comenzii nu se schimbă după plasare | `orders.price_list_id` + `order_lines.unit_price_bani` înghețate |
 | INV-11 | Onorariul = 10% × max(0, venituri − cheltuieli), o singură închidere pe lot | `lot_closings.lot_id unique`; formula în aplicație + test; `fee_pct` [CONFIRMAT ADR-001] |
+| INV-12 | Aceeași cheie de idempotență cu alt conținut e respinsă [din ChatGPT] | hash-ul cererii păstrat lângă cheie; `IDEMPOTENCY_CONFLICT` (409) |
+| INV-13 | Un fișier nescanat sau infectat nu se servește | `documents.files.scan_status = 'curat'` verificat la descărcare |
+| INV-14 | Jurnalul de audit nu poate fi modificat nedetectat | lanț `prev_hash` / `row_hash`; job de verificare + alertă |
 
 ---
 
@@ -1216,3 +1357,54 @@ Nucleul (identity, household, commerce, finance, logistics, quality, traceabilit
 
 **Următorul document (varianta Claude):** `CLAUDE-03-ROLES-PERMISSIONS-SECURITY.md` — matricea rol × operațiune × obiect
 pentru toate interfețele, autentificare, sesiuni, PIN-uri, audit, GDPR, threat model.
+
+---
+
+## 16. Catalogul de erori [din ChatGPT]
+
+Toate comenzile de domeniu întorc erori tipizate; API-ul v1 le servește ca **RFC 9457 Problem Details**
+(`type`, `title`, `status`, `detail`, `code`, `errors[]` pe câmpuri, `requestId`); server actions le afișează ca mesaje
+în română, fără detalii interne.
+
+| Cod | HTTP | Condiție | Mesaj pentru utilizator (exemplu) | Jurnal |
+|---|---:|---|---|---|
+| AUTH_REQUIRED | 401 | sesiune / PIN lipsă sau expirat | „Intră din nou în cont.” | nu |
+| ACCESS_DENIED | 403 | rol, gospodărie sau mandat nevalid | „Nu ai acces la această acțiune.” | da (refuz auditat) |
+| RESOURCE_NOT_FOUND | 404 | inexistent **sau** ascuns actorului (fără a divulga existența) | „Nu am găsit ce cauți.” | nu |
+| VERSION_CONFLICT | 409 | `version` diferit (modificat între timp) | „Datele s-au schimbat. Reîncarcă pagina.” | nu |
+| CAPACITY_EXCEEDED | 409 | rezervare peste capacitate | „Nu mai sunt locuri; poți împărți comanda sau aștepta.” | da |
+| COMPLIANCE_BLOCKED | 409 | gospodărie / program fără Compliance Gate valid sau suspendată | „Gospodăria nu poate primi comenzi acum.” | da |
+| LOT_ON_HOLD | 409 | lot blocat de calitate | „Lotul e în verificare.” | da |
+| IDEMPOTENCY_CONFLICT | 409 | aceeași cheie, alt conținut | „Cererea a fost deja trimisă cu alte date.” | da |
+| INVALID_INPUT | 422 | validare Zod eșuată | mesaje pe câmpuri | nu |
+| RATE_LIMITED | 429 | prag depășit (login, PIN, formulare) | „Prea multe încercări. Încearcă peste N minute.” (+ `Retry-After`) | da |
+| DEPENDENCY_UNAVAILABLE | 503 | DB / storage / SMS indisponibil | „Serviciu indisponibil temporar.” (fără efecte parțiale) | da |
+
+## 17. Cerințe nefuncționale (SLO) [din ChatGPT; ținte de validat, nu promisiuni contractuale]
+
+| Indicator | Țintă MVP | Cum se măsoară |
+|---|---|---|
+| Disponibilitate | 99,5% / lună | monitorizare externă pe `/api/health` |
+| Latență citire / scriere (p95) | < 500 ms / < 1000 ms | loguri structurate pe rută |
+| RPO / RTO | ≤ 24 h / ≤ 8 h | doar dacă restaurarea e testată lunar (Neon point-in-time + export) |
+| Coada outbox | < 5 min întârziere; 0 în dead-letter nevăzute > 24 h | metrice worker |
+| Volum de dimensionare (pilot) | 5–20 gospodării, 10.000 comenzi / an, 50 utilizatori simultani | test de încărcare înainte de lansare |
+
+Metrice urmărite: rata 4xx / 5xx, latență pe rută, pool DB, coada outbox, retry și dead-letter, rezervări respinse
+concurent, comenzi nealocate, plăți nereconciliate, documente expirate, loturi blocate, propuneri AI în așteptare.
+Logurile conțin `requestId`, `actorId`, gospodăria pseudonimizată; **niciodată** tokenuri, PIN-uri, IBAN complet, parole.
+
+## 18. Securitate transversală — completări [din ChatGPT]
+
+| Temă | Regulă |
+|---|---|
+| MFA | obligatorie pentru admin, financiar și orice aprobare critică (plăți, deblocare lot, schimbare de roluri); `identity.mfa_factors` |
+| CSRF | server actions: verificarea `Origin` făcută de Next.js; API v1: doar `Authorization: Bearer` (fără cookie) sau token CSRF pentru rutele cu cookie |
+| Rate limiting distribuit | pe login, cerere / verificare PIN, formulare publice, API v1; stare în PostgreSQL (`login_attempts`, `access_pins.attempts`) sau Redis când volumul o cere |
+| Fișiere | listă albă de tipuri, verificare „magic bytes”, scanare antivirus, SHA-256, linkuri semnate cu expirare scurtă, jurnal de descărcări, retenție per categorie |
+| PIN-uri manuale | `manual_pin` doar cât SMS-ul nu e configurat; șters la folosire / expirare; eliminat din flux înainte de scalare (ADR-TECH-009) |
+| Audit | append-only + lanț de amprente; dovadă de integritate, nu imutabilitate absolută |
+| Secrete | doar în managerul de secrete al platformei (Vercel), rotite; niciun secret în cod, loguri, PR-uri |
+| GDPR | registru de prelucrări, temeiuri, retenție, export și anonimizare la cerere (DSAR), DPIA dacă analiza o cere |
+
+Detalierea completă (threat model, matricea rol × acțiune × obiect) urmează în `CLAUDE-03-ROLES-PERMISSIONS-SECURITY.md`.
