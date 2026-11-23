@@ -86,7 +86,11 @@ test("PIN-ul de ridicare corect, trimis simultan de 10 persoane → un singur cu
   const pages: Page[] = [];
   for (let i = 0; i < 10; i++) pages.push(await pairPage(browser, token, PICKUP, i));
   await Promise.all(pages.map((p) => p.click("button:has-text('Confirm ridicarea')")));
-  await Promise.all(pages.map((p) => p.waitForLoadState("networkidle")));
+  // Așteptăm răspunsul fiecărei cereri (eroare sau pasul următor) înainte de a reîncărca pagina: altfel răspunsul,
+  // cu sesiunea câștigătorului, s-ar pierde.
+  await Promise.all(
+    pages.map((p) => p.getByRole("alert").filter({ hasText: /PIN|blocat/ }).or(p.getByText("Alege PIN-ul tău")).first().waitFor({ timeout: 30_000 })),
+  );
   const access = await Promise.all(pages.map((p) => authorized(p, token)));
   expect(access.filter(Boolean)).toHaveLength(1);
   const t = await tourRow(id);

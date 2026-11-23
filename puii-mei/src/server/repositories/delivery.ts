@@ -2,6 +2,7 @@ import "server-only";
 import { randomBytes, randomInt, randomUUID } from "node:crypto";
 import type { Parcel, StoredPhoto, Tour, TourEvent } from "@/lib/domain";
 import { store } from "@/server/db/store";
+import { readContent, sha256, storeContent } from "@/server/files/content";
 
 const PARCELS = "parcels";
 const TOURS = "tours";
@@ -96,20 +97,19 @@ export const eventRepository = {
 };
 
 export const photoRepository = {
-  /** Salvează o fotografie trimisă din formular (File). */
+  /** Salvează o fotografie trimisă din formular (File): conținutul în stocarea externă, dacă e configurată. */
   async save(file: File, owner: string) {
     const buf = Buffer.from(await file.arrayBuffer());
-    const photo: StoredPhoto = {
-      id: randomUUID(),
-      mime: file.type || "image/jpeg",
-      data: buf.toString("base64"),
-      at: new Date().toISOString(),
-      owner,
-    };
+    const id = randomUUID();
+    const mime = file.type || "image/jpeg";
+    const content = await storeContent("photos", id, buf, mime);
+    const photo: StoredPhoto = { id, mime, ...content, size: buf.length, sha256: sha256(buf), at: new Date().toISOString(), owner };
     await store.append(PHOTOS, photo);
     return photo.id;
   },
   async get(id: string) {
     return store.get<StoredPhoto>(PHOTOS, id);
   },
+  /** Conținutul fotografiei (din stocarea externă sau din baza de date). */
+  content: (photo: StoredPhoto) => readContent(photo),
 };

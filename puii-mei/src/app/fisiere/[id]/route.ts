@@ -11,8 +11,10 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/fisiere/[id]">) 
   if (!(await canViewDocument(await getCurrentUser(), doc))) return new NextResponse("Neautorizat", { status: 401 });
   const file = await fileRepository.get(doc.fileId);
   if (!file) return new NextResponse("Fișierul lipsește", { status: 404 });
+  const body = await fileRepository.content(file);
+  if (!body) return new NextResponse("Fișierul nu poate fi citit", { status: 502 });
   const inline = req.nextUrl.searchParams.get("vezi") === "1";
-  return new NextResponse(Buffer.from(file.data, "base64"), {
+  return new NextResponse(new Uint8Array(body), {
     headers: {
       "Content-Type": file.mime,
       "Content-Disposition": `${inline ? "inline" : "attachment"}; filename*=UTF-8''${encodeURIComponent(file.name)}`,

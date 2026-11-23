@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import type { StoredPhoto } from "@/lib/domain";
 import { courierAuthorized } from "@/server/courier-session";
 import { canManageFarm } from "@/server/delivery";
 import { parcelRepository, photoRepository, tourRepository } from "@/server/repositories/delivery";
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/foto/[id]">) {
       (viewer && lot && canManageFarm(viewer, lot.farmSlug)) ||
       (order && lot && (await preorderRepository.byTrackingToken(order))?.lotCode === lot.code);
     if (!okLot) return new NextResponse("Neautorizat", { status: 401 });
-    return new NextResponse(Buffer.from(photo.data, "base64"), { headers: { "Content-Type": photo.mime, "Cache-Control": "private, max-age=3600" } });
+    return serve(photo);
   }
   const parcel = kind === "parcel" ? await parcelRepository.byId(ownerId) : null;
   const tour = kind === "tour" ? await tourRepository.byId(ownerId) : parcel?.tourId ? await tourRepository.byId(parcel.tourId) : null;
@@ -38,7 +39,13 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/foto/[id]">) {
     (tour && (await courierAuthorized(tour)));
   if (!allowed) return new NextResponse("Neautorizat", { status: 401 });
 
-  return new NextResponse(Buffer.from(photo.data, "base64"), {
-    headers: { "Content-Type": photo.mime, "Cache-Control": "private, max-age=3600" },
+  return serve(photo);
+}
+
+async function serve(photo: StoredPhoto) {
+  const body = await photoRepository.content(photo);
+  if (!body) return new NextResponse("Fotografia nu poate fi citită", { status: 502 });
+  return new NextResponse(new Uint8Array(body), {
+    headers: { "Content-Type": photo.mime, "Cache-Control": "private, max-age=3600", "X-Content-Type-Options": "nosniff" },
   });
 }
