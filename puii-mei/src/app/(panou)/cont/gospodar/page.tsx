@@ -33,6 +33,7 @@ import { declareLandAction } from "./teren-actions";
 import { GROWTH, pensForArea } from "@/lib/growth";
 import { expiringDocuments, zile } from "@/lib/document-expiry";
 import { documentRepository } from "@/server/repositories/documents";
+import { mfaEnabled } from "@/server/mfa";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Contul gospodarului", robots: { index: false, follow: false } };
@@ -504,6 +505,17 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
           Prețul puiului de o zi (lei / pui)
           <input name="chickPricePerBird" type="number" step="0.01" min="0.1" max="100" defaultValue={payment?.chickPricePerBird ?? pricing.chickPrice} required className={`${inputClasses} mt-1`} />
         </label>
+        {payment?.iban && (
+          <label className="text-sm font-semibold sm:col-span-2">
+            Cod de confirmare din aplicație (doar dacă schimbi contul bancar)
+            <input name="mfaCode" inputMode="numeric" autoComplete="one-time-code" maxLength={6} className={`${inputClasses} mt-1 w-40 text-center tracking-[0.3em]`} />
+            {user.role === "gospodar" && !mfaEnabled(user) && (
+              <span className="mt-1 block text-xs font-normal text-amber-800">
+                Pentru schimbarea contului activează întâi codul de confirmare: <Link href="/cont/gospodar/securitate" className="underline">Securitate</Link>.
+              </span>
+            )}
+          </label>
+        )}
         <p className="text-xs text-slate-500 sm:col-span-2">
           Avansul plătit de client = puii de o zi + furajul (~{pricing.feedKgPerBird} kg / pui). Se scade din prețul total la livrare.
         </p>

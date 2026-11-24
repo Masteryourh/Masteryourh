@@ -73,6 +73,18 @@ export async function toggleUserStatus(formData: FormData) {
   revalidatePath("/admin/utilizatori");
 }
 
+/**
+ * Resetarea codului de confirmare (MFA) — telefon pierdut, după verificarea identității prin telefon. Închide și
+ * sesiunile contului; utilizatorul activează din nou codul din pagina Securitate.
+ */
+export async function resetUserMfa(formData: FormData) {
+  await requireAdmin();
+  const user = await userRepository.byId(String(formData.get("id") ?? ""));
+  if (!user) throw new Error("Contul nu există");
+  await userRepository.update(user.id, { mfa: undefined, sessionVersion: user.sessionVersion + 1 });
+  revalidatePath("/admin/utilizatori");
+}
+
 /** Ștergerea definitivă a unui cont (nu și a propriului cont). */
 export async function deleteUser(formData: FormData) {
   const admin = await requireAdmin();

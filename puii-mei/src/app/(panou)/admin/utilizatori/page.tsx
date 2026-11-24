@@ -11,7 +11,7 @@ import { formatDate } from "@/lib/format";
 import { farmRepository } from "@/server/repositories/catalog";
 import { setupLinkValid, userRepository } from "@/server/repositories/users";
 import { getCurrentUser } from "@/server/session";
-import { deleteUser, regenerateLink, toggleUserStatus } from "./actions";
+import { deleteUser, regenerateLink, toggleUserStatus, resetUserMfa } from "./actions";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Utilizatori", robots: { index: false, follow: false } };
@@ -116,6 +116,14 @@ function UserRow({ u, origin, farm, isMe }: { u: User; origin: string; farm?: st
               </button>
             </form>
           )
+        )}
+        {!isMe && u.mfa && (
+          <form action={resetUserMfa}>
+            <input type="hidden" name="id" value={u.id} />
+            <button className="rounded-lg px-2.5 py-1 text-xs font-semibold text-amber-900 ring-1 ring-amber-300 hover:bg-amber-50" title="Doar după ce ai verificat la telefon că e chiar titularul contului">
+              Resetează codul de confirmare
+            </button>
+          </form>
         )}
         {!isMe && (
           <form action={toggleUserStatus}>
