@@ -36,7 +36,7 @@ export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/
           <p className="text-sm text-slate-600">Loturi propuse de gospodari. Apar la precomandă doar după aprobare.</p>
           <div className="mt-2 space-y-2">
             {pending.map((l) => (
-              <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove orders={orders} />
+              <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove orders={orders} ordersHref="/admin" />
             ))}
           </div>
           <h2 className="mt-8 text-lg">Toate loturile</h2>
@@ -44,7 +44,7 @@ export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/
       )}
       <div id="loturi" className="mt-6 space-y-2">
         {lots.filter((l) => l.approval?.status !== "asteapta").map((l) => (
-          <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove orders={orders} />
+          <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove orders={orders} ordersHref="/admin" />
         ))}
       </div>
 

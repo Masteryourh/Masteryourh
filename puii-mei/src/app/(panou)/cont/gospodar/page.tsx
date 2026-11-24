@@ -378,7 +378,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         <summary className="cursor-pointer text-sm font-semibold">Administrează loturile: lot nou, modificare, închidere</summary>
         <div className="mt-4 space-y-2">
           {lots.map((l) => (
-            <LotAdminRow key={l.code} lot={l} returnTo={backTo} canApprove={user.role === "admin"} maxPens={limits.pens} orders={farmPreorders} />
+            <LotAdminRow key={l.code} lot={l} returnTo={backTo} canApprove={user.role === "admin"} maxPens={limits.pens} orders={farmPreorders} ordersHref={backTo} />
           ))}
         </div>
         <h3 className="mt-6 mb-2 font-sans text-base font-semibold">Lot nou</h3>
@@ -409,7 +409,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
               <tr><td colSpan={8} className="px-4 py-6 text-center text-muted">Nicio precomandă alocată încă pe loturile tale.</td></tr>
             )}
             {farmPreorders.map((p) => (
-              <tr key={p.id}>
+              <tr key={p.id} id={`comanda-${p.number}`} className="scroll-mt-24 target:bg-amber-50 target:ring-2 target:ring-amber-400">
                 <td className="px-4 py-3 font-mono text-xs">{p.number}</td>
                 <td className="px-4 py-3">
                   <div className="font-medium">{p.customer.name}</div>
