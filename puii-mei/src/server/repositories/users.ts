@@ -34,11 +34,15 @@ export const userRepository = {
   },
   async byEmail(email: string) {
     const e = normEmail(email);
-    return (await store.list<User>(COLLECTION)).find((u) => u.email === e) ?? null;
+    return (await store.findBy<User>(COLLECTION, "email", e))[0] ?? null;
   },
   async bySetupToken(token: string) {
     if (!/^[A-Za-z0-9_-]{20,}$/.test(token)) return null;
-    return (await store.list<User>(COLLECTION)).find((u) => u.setupToken === token) ?? null;
+    return (await store.findBy<User>(COLLECTION, "setupToken", token))[0] ?? null;
+  },
+  /** Conturile legate de o gospodărie (gospodari), fără citirea tuturor utilizatorilor. */
+  async byFarm(slug: string) {
+    return store.findBy<User>(COLLECTION, "farmSlug", slug);
   },
   async create(data: { email: string; name: string; phone: string; role: UserRole; farmSlug?: string }) {
     const user: User = {

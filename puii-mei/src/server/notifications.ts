@@ -81,7 +81,7 @@ export async function notifyOrderEvent(p: Preorder, event: OrderEvent, extra?: s
 /** Email către gospodarii unei gospodării (conturile active legate de ea). */
 export async function notifyFarm(farmSlug: string, subject: string, text: string) {
   const { userRepository } = await import("./repositories/users");
-  const users = (await userRepository.list()).filter((u) => u.role === "gospodar" && u.farmSlug === farmSlug && u.status === "activ");
+  const users = (await userRepository.byFarm(farmSlug)).filter((u) => u.role === "gospodar" && u.status === "activ");
   console.info(`[puii-mei] Gospodăria ${farmSlug}: ${subject}`);
   await Promise.all(users.map((u) => sendEmail({ to: u.email, subject, text, html: `<p>${escapeHtml(text).replace(/\n/g, "<br>")}</p>` })));
 }

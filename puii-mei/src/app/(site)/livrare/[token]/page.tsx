@@ -105,7 +105,7 @@ export default async function CourierTourPage({ params }: PageProps<"/livrare/[t
     }
     const rid = await pendingRequestId(tour);
     const waiting = rid && tour.pinRequest?.id === rid && tour.pinRequest.status === "asteapta";
-    const farmer = (await userRepository.list()).find((u) => u.role === "gospodar" && u.farmSlug === tour.farmSlug && u.status === "activ");
+    const farmer = (await userRepository.byFarm(tour.farmSlug)).find((u) => u.role === "gospodar" && u.status === "activ");
     const confirmLink = `${await requestOrigin()}/cont/gospodar/ture/${tour.id}?cerere=${tour.pinRequest?.id ?? ""}`;
     return (
       <>

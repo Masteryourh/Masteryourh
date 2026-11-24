@@ -12,9 +12,9 @@ export const growthLogRepository = {
     return (await store.list<GrowthEntry>(COLLECTION)).sort((a, b) => b.at.localeCompare(a.at));
   },
   async byLot(code: string) {
-    return (await this.list()).filter((e) => e.lotCode === code);
+    return (await store.findBy<GrowthEntry>(COLLECTION, "lotCode", code)).sort((a, b) => b.at.localeCompare(a.at));
   },
   async byFarm(slug: string) {
-    return (await this.list()).filter((e) => e.farmSlug === slug);
+    return (await store.findBy<GrowthEntry>(COLLECTION, "farmSlug", slug)).sort((a, b) => b.at.localeCompare(a.at));
   },
 };
