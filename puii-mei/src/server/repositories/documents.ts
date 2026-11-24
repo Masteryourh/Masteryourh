@@ -47,13 +47,13 @@ export const documentRepository = {
     return (await store.list<FarmDocument>(DOCS)).sort(byDateDesc);
   },
   async byFarm(slug: string) {
-    return (await this.list()).filter((d) => d.farmSlug === slug);
+    return (await store.findBy<FarmDocument>(DOCS, "farmSlug", slug)).sort(byDateDesc);
   },
-  async byInvestment(id: string) {
-    return (await this.list()).filter((d) => d.investmentId === id);
+  async byInvestment(id: string | string[]) {
+    return (await store.findBy<FarmDocument>(DOCS, "investmentId", id)).sort(byDateDesc);
   },
   async byFileId(fileId: string) {
-    return (await store.list<FarmDocument>(DOCS)).find((d) => d.fileId === fileId) ?? null;
+    return (await store.findBy<FarmDocument>(DOCS, "fileId", fileId))[0] ?? null;
   },
   get: (id: string) => store.get<FarmDocument>(DOCS, id),
   verify: (id: string, by: string) => store.update<FarmDocument>(DOCS, id, { verifiedAt: new Date().toISOString(), verifiedBy: by }),
@@ -67,7 +67,7 @@ export const expenseRepository = {
     return (await store.list<Expense>(EXPENSES)).sort(byDateDesc);
   },
   async byFarm(slug: string): Promise<Expense[]> {
-    return (await store.list<Expense>(EXPENSES)).filter((e) => e.farmSlug === slug).sort(byDateDesc);
+    return (await store.findBy<Expense>(EXPENSES, "farmSlug", slug)).sort(byDateDesc);
   },
   get: (id: string) => store.get<Expense>(EXPENSES, id),
   void: (id: string, voided: Expense["voided"]) => store.update<Expense>(EXPENSES, id, { voided }),
@@ -82,7 +82,10 @@ export const investmentRepository = {
     return (await store.list<Investment>(INVESTMENTS)).sort(byDateDesc);
   },
   async byInvestor(investorId: string) {
-    return (await this.list()).filter((i) => i.investorId === investorId);
+    return (await store.findBy<Investment>(INVESTMENTS, "investorId", investorId)).sort(byDateDesc);
+  },
+  async byFarm(slug: string) {
+    return (await store.findBy<Investment>(INVESTMENTS, "farmSlug", slug)).sort(byDateDesc);
   },
   get: (id: string) => store.get<Investment>(INVESTMENTS, id),
   update: (id: string, patch: Partial<Investment>) => store.update<Investment>(INVESTMENTS, id, patch),

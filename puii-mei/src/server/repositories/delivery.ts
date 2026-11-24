@@ -22,24 +22,27 @@ export const parcelRepository = {
   },
   async byClientToken(token: string) {
     if (!validToken(token)) return null;
-    return (await store.list<Parcel>(PARCELS)).find((p) => p.clientToken === token) ?? null;
+    return (await store.findBy<Parcel>(PARCELS, "clientToken", token))[0] ?? null;
   },
   async byCourierToken(token: string) {
     if (!validToken(token)) return null;
-    return (await store.list<Parcel>(PARCELS)).find((p) => p.courierToken === token) ?? null;
+    return (await store.findBy<Parcel>(PARCELS, "courierToken", token))[0] ?? null;
   },
   async byRatingToken(token: string) {
     if (!validToken(token)) return null;
-    return (await store.list<Parcel>(PARCELS)).find((p) => p.ratingToken === token) ?? null;
+    return (await store.findBy<Parcel>(PARCELS, "ratingToken", token))[0] ?? null;
   },
   /** Un cod vechi, înlocuit la regenerarea etichetei? */
   async replacedBy(token: string) {
     if (!validToken(token)) return null;
-    return (
-      (await store.list<Parcel>(PARCELS)).find((p) =>
-        p.replacedTokens.some((r) => r.clientToken === token || r.courierToken === token),
-      ) ?? null
-    );
+    const [asClient, asCourier] = await Promise.all([
+      store.findContaining<Parcel>(PARCELS, "replacedTokens", { clientToken: token }),
+      store.findContaining<Parcel>(PARCELS, "replacedTokens", { courierToken: token }),
+    ]);
+    return asClient[0] ?? asCourier[0] ?? null;
+  },
+  async byFarm(slug: string) {
+    return store.findBy<Parcel>(PARCELS, "farmSlug", slug);
   },
   async create(p: Parcel) {
     return store.append(PARCELS, p);
@@ -59,7 +62,10 @@ export const tourRepository = {
   },
   async byToken(token: string) {
     if (!validToken(token)) return null;
-    return (await store.list<Tour>(TOURS)).find((t) => t.token === token) ?? null;
+    return (await store.findBy<Tour>(TOURS, "token", token))[0] ?? null;
+  },
+  async byFarm(slug: string) {
+    return (await store.findBy<Tour>(TOURS, "farmSlug", slug)).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
   },
   async create(data: Omit<Tour, "id" | "code" | "token" | "pickupPin" | "createdAt" | "failedPins" | "locked" | "extensions" | "status">) {
     const count = (await store.list<Tour>(TOURS)).length + 1;
@@ -88,7 +94,7 @@ export const eventRepository = {
     return store.append(EVENTS, { ...e, id: randomUUID(), at: new Date().toISOString() });
   },
   async forTour(tourId: string) {
-    const items = (await store.list<TourEvent>(EVENTS)).filter((e) => e.tourId === tourId);
+    const items = await store.findBy<TourEvent>(EVENTS, "tourId", tourId);
     return items.sort((a, b) => a.at.localeCompare(b.at));
   },
   async all() {

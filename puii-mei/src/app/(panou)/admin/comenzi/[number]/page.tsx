@@ -30,16 +30,18 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/comen
   await requireUser(["admin"], `/admin/comenzi/${number}`);
   const order = await preorderRepository.byNumber(decodeURIComponent(number));
   if (!order) notFound();
-  const [{ lot, farm, payment }, zone, parcel, all] = await Promise.all([
+  const [{ lot, farm, payment }, zone, parcel, family] = await Promise.all([
     orderFarm(order),
     zoneRepository.byId(order.zoneId, { includeInactive: true }),
     parcelRepository.byId(order.id),
-    preorderRepository.list(),
+    preorderRepository.family(order.parentNumber ?? order.number),
   ]);
+  // Doar comenzile lotului (pentru țarcuri) și ale aceleiași comenzi împărțite, citite prin index.
+  const lotOrders = lot ? await preorderRepository.byLots([lot.code]) : [];
   const tour = parcel?.tourId ? await tourRepository.byId(parcel.tourId) : null;
-  const pens = lot ? orderPens(order, lot, all) : [];
+  const pens = lot ? orderPens(order, lot, lotOrders) : [];
   const advance = order.feedPayment?.amount ?? feedAdvance(order.birds, payment?.feedPricePerKg, payment?.chickPricePerBird).amount;
-  const parts = all.filter((p) => p.parentNumber === order.number || (order.parentNumber && (p.number === order.parentNumber || p.parentNumber === order.parentNumber)) ).filter((p) => p.id !== order.id);
+  const parts = family.filter((p) => p.id !== order.id);
   const audit = await store.auditList({ resourceId: order.id, limit: 50 });
   const self = `/admin/comenzi/${encodeURIComponent(order.number)}`;
   const back = (to: string) => `${to}${to.includes("?") ? "&" : "?"}inapoi=${encodeURIComponent(self)}`;

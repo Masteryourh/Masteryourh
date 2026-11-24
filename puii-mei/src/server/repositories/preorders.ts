@@ -17,6 +17,8 @@ export interface PreorderRepository {
   byId(id: string): Promise<Preorder | null>;
   byTrackingToken(token: string): Promise<Preorder | null>;
   byNumber(number: string): Promise<Preorder | null>;
+  byLots(codes: string[]): Promise<Preorder[]>;
+  family(rootNumber: string): Promise<Preorder[]>;
 }
 
 function generateNumber(now: Date) {
@@ -54,10 +56,19 @@ export const preorderRepository: PreorderRepository = {
   },
   async byTrackingToken(token) {
     if (!token || token.length < 16) return null;
-    return (await store.list<Preorder>(COLLECTION)).find((p) => p.trackingToken === token) ?? null;
+    return (await store.findBy<Preorder>(COLLECTION, "trackingToken", token))[0] ?? null;
   },
   async byNumber(number) {
     const n = number.trim().toUpperCase();
-    return (await store.list<Preorder>(COLLECTION)).find((p) => p.number === n) ?? null;
+    return (await store.findBy<Preorder>(COLLECTION, "number", n))[0] ?? null;
+  },
+  /** Comenzile de pe loturile date (toate stările), în ordinea creării. */
+  async byLots(codes: string[]) {
+    return store.findBy<Preorder>(COLLECTION, "lotCode", codes);
+  },
+  /** Comanda inițială și părțile ei (după împărțire), în ordinea creării. */
+  async family(rootNumber: string) {
+    const [root, parts] = await Promise.all([this.byNumber(rootNumber), store.findBy<Preorder>(COLLECTION, "parentNumber", rootNumber)]);
+    return [...(root ? [root] : []), ...parts].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   },
 };

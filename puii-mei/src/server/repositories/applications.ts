@@ -23,7 +23,7 @@ export const applicationRepository = {
     return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   },
   async byId(id: string) {
-    return (await store.list<FarmApplication>(COLLECTION)).find((a) => a.id === id) ?? null;
+    return store.get<FarmApplication>(COLLECTION, id);
   },
   async update(id: string, patch: Partial<Pick<FarmApplication, "status" | "internalNote" | "farmSlug">>) {
     return store.update<FarmApplication>(COLLECTION, id, patch);

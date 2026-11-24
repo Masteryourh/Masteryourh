@@ -66,20 +66,21 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
     );
   }
 
-  const [lots, preorders, zones, investments] = await Promise.all([
+  const [lots, zones, investments] = await Promise.all([
     lotRepository.byFarm(farm.slug, { all: true }),
-    preorderRepository.list(),
     zoneRepository.listActive(),
-    investmentRepository.list().then((all) => all.filter((i) => i.farmSlug === farm.slug && (i.status === "activa" || i.status === "semnata" || i.status === "finalizata"))),
+    investmentRepository.byFarm(farm.slug).then((all) => all.filter((i) => i.status === "activa" || i.status === "semnata" || i.status === "finalizata")),
   ]);
   const lotCodes = new Set(lots.map((l) => l.code));
+  // Doar comenzile loturilor acestei gospodării (citite prin index, nu toate comenzile).
+  const preorders = await preorderRepository.byLots([...lotCodes]);
   const backTo = user.role === "admin" ? `/cont/gospodar?gospodarie=${farm.slug}` : "/cont/gospodar";
   const farmPreorders = preorders.filter((p) => p.lotCode && lotCodes.has(p.lotCode) && p.status !== "anulata");
   const zoneName = new Map(zones.map((z) => [z.id, z.name]));
   const activeLots = lots.filter((l) => lotStatus(l) !== "livrat");
   const [allParcels, allTours, payment, expenses, gov, land] = await Promise.all([
-    parcelRepository.list(),
-    tourRepository.list(),
+    parcelRepository.byFarm(farm.slug),
+    tourRepository.byFarm(farm.slug),
     farmPaymentRepository.bySlug(farm.slug),
     expenseRepository.byFarm(farm.slug),
     governanceRepository.bySlug(farm.slug),

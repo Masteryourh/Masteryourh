@@ -74,7 +74,7 @@ async function setStandingAction__impl(formData: FormData) {
   const previous = g.standing;
 
   // Efectele excluderii / reactivării: vizibilitatea pe site și conturile gospodarilor.
-  const users = (await userRepository.list()).filter((u) => u.role === "gospodar" && u.farmSlug === slug);
+  const users = (await userRepository.byFarm(slug)).filter((u) => u.role === "gospodar");
   if (standing !== previous) {
     await notifyFarm(
       slug,

@@ -1,6 +1,7 @@
 import "server-only";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { assertContains, assertIndexed } from "./indexes";
 import type { AuditRecord, DocumentStore, StoredAuditEvent, TransactStep } from "./store";
 
 /**
@@ -62,6 +63,18 @@ export const jsonStore: DocumentStore = {
       .slice(0, f.limit ?? 200);
   },
   list: readCollection,
+  async findContaining<T>(name: string, field: string, item: Record<string, string>) {
+    assertContains(name, field);
+    return (await readCollection<T>(name)).filter((i) => {
+      const list = (i as Record<string, unknown>)[field];
+      return Array.isArray(list) && list.some((x) => Object.entries(item).every(([k, v]) => (x as Record<string, unknown>)?.[k] === v));
+    });
+  },
+  async findBy<T>(name: string, field: string, values: string | string[]) {
+    assertIndexed(name, field);
+    const set = new Set((Array.isArray(values) ? values : [values]).filter((v) => v !== ""));
+    return (await readCollection<T>(name)).filter((i) => set.has((i as Record<string, unknown>)[field] as string));
+  },
   async get<T extends { id: string }>(name: string, id: string) {
     return (await readCollection<T>(name)).find((i) => i.id === id) ?? null;
   },

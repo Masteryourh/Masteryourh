@@ -11,6 +11,13 @@ import { pgStore } from "./pg-store";
  */
 export interface DocumentStore {
   list<T>(collection: string): Promise<T[]>;
+  /**
+   * Documentele cu `data[field]` egal cu una dintre `values`, în ordinea creării, citite prin index (fără citirea
+   * întregii colecții). Doar perechile din `indexes.ts` (altfel eroare).
+   */
+  findBy<T>(collection: string, field: string, values: string | string[]): Promise<T[]>;
+  /** Documentele al căror câmp-listă `field` conține un element care include `item` (index GIN, vezi indexes.ts). */
+  findContaining<T>(collection: string, field: string, item: Record<string, string>): Promise<T[]>;
   get<T extends { id: string }>(collection: string, id: string): Promise<T | null>;
   append<T extends { id: string }>(collection: string, item: T): Promise<T>;
   update<T extends { id: string }>(collection: string, id: string, patch: Partial<T>): Promise<T | null>;

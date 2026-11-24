@@ -3,6 +3,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { Pool, type PoolClient } from "pg";
 import type { AuditRecord, DocumentStore, StoredAuditEvent, TransactStep } from "./store";
 import { pgSslConfig } from "./pg-ssl";
+import { allIndexDdl, assertContains, assertIndexed, fieldExpr } from "./indexes";
 
 /**
  * Stocare PostgreSQL: un tabel `documents` cu date JSONB, creat automat.
@@ -64,6 +65,8 @@ export function pgStore(connectionString: string): DocumentStore {
          event_hash text NOT NULL
        )`,
     );
+    // Căutările directe (findBy): un index parțial pentru fiecare pereche (colecție, câmp) din indexes.ts.
+    for (const sql of allIndexDdl()) await ddl(sql);
     await ddl(`CREATE INDEX IF NOT EXISTS audit_household_idx ON audit_events (household_id, occurred_at, seq)`);
     await ddl(`CREATE INDEX IF NOT EXISTS audit_actor_idx ON audit_events (actor_id, occurred_at)`);
     await ddl(`CREATE INDEX IF NOT EXISTS audit_resource_idx ON audit_events (resource_type, resource_id, occurred_at)`);
@@ -100,6 +103,27 @@ export function pgStore(connectionString: string): DocumentStore {
       const res = await q<{ data: T }>(
         "SELECT data FROM documents WHERE collection = $1 ORDER BY created_at",
         [collection],
+      );
+      return res.rows.map((r) => r.data);
+    },
+    async findBy<T>(collection: string, field: string, values: string | string[]) {
+      assertIndexed(collection, field);
+      const list = (Array.isArray(values) ? values : [values]).filter((v) => typeof v === "string" && v !== "");
+      if (!list.length) return [];
+      await init();
+      // Colecția și câmpul sunt literali verificați (assertIndexed): expresia trebuie să fie identică cu cea din index.
+      const res = await q<{ data: T }>(
+        `SELECT data FROM documents WHERE collection = '${collection}' AND ${fieldExpr(field)} = ANY($1::text[]) ORDER BY created_at`,
+        [list],
+      );
+      return res.rows.map((r) => r.data);
+    },
+    async findContaining<T>(collection: string, field: string, item: Record<string, string>) {
+      assertContains(collection, field);
+      await init();
+      const res = await q<{ data: T }>(
+        `SELECT data FROM documents WHERE collection = '${collection}' AND (data->'${field}') @> $1::jsonb ORDER BY created_at`,
+        [JSON.stringify([item])],
       );
       return res.rows.map((r) => r.data);
     },

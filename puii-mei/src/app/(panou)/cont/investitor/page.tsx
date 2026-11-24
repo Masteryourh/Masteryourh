@@ -17,11 +17,11 @@ export const metadata: Metadata = { title: "Contul investitorului", robots: { in
 
 export default async function InvestorDashboard() {
   const user = await requireUser(["investitor"], "/cont/investitor");
-  const [investments, farms, docs] = await Promise.all([
+  const [investments, farms] = await Promise.all([
     user.role === "admin" ? investmentRepository.list() : investmentRepository.byInvestor(user.id),
     farmRepository.listAll(),
-    documentRepository.list(),
   ]);
+  const docs = await documentRepository.byInvestment(investments.map((i) => i.id));
   const farmName = new Map(farms.map((f) => [f.slug, f.name]));
   const counted = investments.filter((i) => i.status === "semnata" || i.status === "activa" || i.status === "finalizata");
   const myDocs = docs.filter((d) => d.investmentId && investments.some((i) => i.id === d.investmentId));

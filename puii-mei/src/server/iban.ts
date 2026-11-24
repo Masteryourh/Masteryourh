@@ -20,7 +20,7 @@ const actorOf = (u: User) => ({ id: u.id, name: `${u.name} (${u.role})` });
 
 /** Numerele de telefon ale gospodăriei cunoscute acum (doar adminul le poate schimba): aici se face apelul de verificare. */
 async function knownPhones(farmSlug: string) {
-  return (await userRepository.list()).filter((u) => u.role === "gospodar" && u.farmSlug === farmSlug && u.status === "activ" && u.phone).map((u) => u.phone);
+  return (await userRepository.byFarm(farmSlug)).filter((u) => u.role === "gospodar" && u.status === "activ" && u.phone).map((u) => u.phone);
 }
 
 async function notifyAll(farmSlug: string, changeId: string, iban: string, phones: string[], subject: string, text: string) {

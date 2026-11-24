@@ -55,10 +55,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
   const maxSingle = Math.max(0, ...roomLots.map((l) => sellableBirds(l)));
   const totalFree = roomLots.reduce((s, l) => s + sellableBirds(l), 0);
   const rootNumber = order.parentNumber ?? order.number;
-  const allOrders = await preorderRepository.list();
-  const siblings = allOrders
-    .filter((x) => x.number === rootNumber || x.parentNumber === rootNumber)
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const [siblings, lotOrders] = await Promise.all([preorderRepository.family(rootNumber), lot ? preorderRepository.byLots([lot.code]) : []]);
   const journal = lot ? await growthLogRepository.byLot(lot.code) : [];
   const tracks = lot
     ? Array.from({ length: lotPens(lot) }, (_, i) => ({
@@ -69,7 +66,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
           .map((e) => ({ lat: e.lat!, lng: e.lng!, date: e.date })),
       }))
     : [];
-  const myPens = lot ? orderPens(order, lot, allOrders) : [];
+  const myPens = lot ? orderPens(order, lot, lotOrders) : [];
   const myStart = lot?.penStarts?.find((s) => s.n === myPens[0]);
   const feedStatus = feedStatusOf(order);
   const cancelled = order.status === "anulata";
