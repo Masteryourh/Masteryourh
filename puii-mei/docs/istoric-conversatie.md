@@ -124,6 +124,8 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
   **Decizii fondator:** există **manageri locali și zonali**; gospodarul primește zilnic notificări cu sarcinile și
   programările; fiecare sarcină are **câmp de justificare** → notificare la managerul local; managerul zonal vede
   justificările și rezolvările; adminul vede tot; **AI: tot ce se poate automatiza**. De scris ADR-012 după aprobare.
+  Zone: **manager local = comuna**, **manager zonal = grup de comune ca circumscripțiile judecătoriilor**. Detaliile
+  rămase (termene, reacția managerului, limite AI, buget E0) sunt notate în `sugestii.md`; se merge mai departe.
 
 ## Setări și servicii
 

@@ -80,7 +80,8 @@ _Ultima actualizare: 22 noiembrie 2026_
       Întrebări deschise: volum țintă, buget bază de date, RPO/RTO, întârzierea acceptată în dashboard-uri, AI, retenție.
 - [ ] **Sarcini și manageri** (24 nov. 2026, decizie fondator, de detaliat): roluri `manager_local` / `manager_zonal`,
       tabel de sarcini (termen, justificare, rezolvare, escaladare), rezumat zilnic pentru gospodar, coada managerului
-      local, tablou zonal și național. Deschis: termenele pe tip de sarcină (zootehnist), delimitarea zonelor, termenul
+      local, tablou zonal și național. **Decis:** local = comuna (SIRUTA), zonal = grup de comune după circumscripțiile
+      judecătoriilor. Deschis: termenele pe tip de sarcină (zootehnist), termenul
       de reacție al managerului, ce acțiuni AI rămân cu confirmare umană (propunere: plăți, efectiv, veterinar, blocări).
 - [ ] **Durabilitate E0** (24 nov. 2026, propus pe #62): Neon plătit cu PITR (~20 $/lună), copie zilnică imuabilă la
       alt furnizor (ex. R2), test automat de restaurare săptămânal — așteaptă acordul pe buget și furnizor.
