@@ -109,6 +109,8 @@ test("10 precomenzi simultane pe ultimele locuri → lotul nu e supra-rezervat; 
   await row.locator("select[name=status]").selectOption("anulata");
   await row.locator("button:has-text('Salvează')").click();
   await expect.poll(async () => (await onLot(code)).some((r) => r.id === victim.id), { timeout: 15_000 }).toBe(false);
+  // Realocarea către comanda din așteptare se face după anulare, în aceeași cerere: așteptăm s-o vedem.
+  await expect.poll(async () => sum(await onLot(code)), { timeout: 15_000 }).toBe(40);
   const after = await onLot(code);
   expect(sum(after)).toBe(40);
   expect(after.map((r) => r.id).sort()).not.toEqual(before.map((r) => r.id).sort());
