@@ -46,10 +46,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           <ul className="mt-1 space-y-0.5">
             {alerts.slice(0, 3).map((a) => (
               <li key={a.id}>
-                {a.kind === "crestere" ? "Monitorizare: " : "Prelungire: "}
+                {a.kind === "crestere" ? "Monitorizare: " : a.kind === "document" ? "Document: " : "Prelungire: "}
                 {a.text} ·{" "}
                 <Link href={a.href} className="font-semibold underline">
-                  {a.kind === "crestere" ? "Vezi jurnalul" : "Decide"}
+                  {a.kind === "crestere" ? "Vezi jurnalul" : a.kind === "document" ? "Vezi documentele" : "Decide"}
                 </Link>
               </li>
             ))}

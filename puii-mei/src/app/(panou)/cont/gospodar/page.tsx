@@ -31,6 +31,8 @@ import { birdsInYear, effectiveLimits, standingLabels } from "@/lib/governance";
 import { landRepository } from "@/server/repositories/land";
 import { declareLandAction } from "./teren-actions";
 import { GROWTH, pensForArea } from "@/lib/growth";
+import { expiringDocuments, zile } from "@/lib/document-expiry";
+import { documentRepository } from "@/server/repositories/documents";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Contul gospodarului", robots: { index: false, follow: false } };
@@ -82,6 +84,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
     governanceRepository.bySlug(farm.slug),
     landRepository.bySlug(farm.slug),
   ]);
+  const expiring = expiringDocuments(await documentRepository.byFarm(farm.slug), new Date());
   const legalNews = (await legalRepository.list()).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3);
   const recentSince = recentCutoff();
   const limits = effectiveLimits(gov, land);
@@ -147,6 +150,22 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
             Profilul public ↗
           </Link>
         </div>
+
+        {expiring.length > 0 && (
+          <div id="documente-expira" role="alert" className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-950 ring-1 ring-amber-300">
+            <p className="font-semibold">Documente care expiră în curând</p>
+            <ul className="mt-1 space-y-0.5">
+              {expiring.map(({ doc, days }) => (
+                <li key={doc.id}>
+                  {doc.title}: {days < 0 ? <strong>expirat de {zile(-days)}</strong> : days === 0 ? <strong>expiră azi</strong> : <>expiră în <strong>{zile(days)}</strong></>} ({formatDate(doc.expiresOn!)})
+                </li>
+              ))}
+            </ul>
+            <Link href={`/cont/gospodar/documente${user.role === "admin" ? `?gospodarie=${farm.slug}` : ""}#documente`} className="mt-2 inline-block font-semibold underline">
+              Încarcă documentul nou
+            </Link>
+          </div>
+        )}
 
         <div className="grid gap-4 xl:grid-cols-[1.55fr_1fr]">
           <AerialMap

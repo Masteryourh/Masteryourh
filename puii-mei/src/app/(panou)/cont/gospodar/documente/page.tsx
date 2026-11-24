@@ -208,6 +208,11 @@ export default async function FarmDocumentsPage({ searchParams }: PageProps<"/co
           <label className="text-sm font-semibold sm:col-span-2">Titlu<input name="title" required placeholder="Ex. Înregistrare sanitar-veterinară exploatație" className={input} /></label>
           <label className="text-sm font-semibold">Număr (opțional)<input name="number" className={input} /></label>
           <label className="text-sm font-semibold">Data documentului<input name="date" type="date" required defaultValue={today} className={input} /></label>
+          <label className="text-sm font-semibold">
+            Valabil până la (dacă expiră)
+            <input name="expiresOn" type="date" className={input} />
+            <span className="mt-1 block text-xs font-normal text-slate-500">Te anunțăm noi din timp: cu 60, 30, 14 și 7 zile înainte.</span>
+          </label>
           <label className="text-sm font-semibold">Lotul
             <select name="lotCode" className={input}>
               <option value="">General (fără lot)</option>

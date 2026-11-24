@@ -522,6 +522,8 @@ export interface FarmDocument {
   uploadedBy: string;
   verifiedAt?: string;
   verifiedBy?: string;
+  /** Data până la care documentul e valabil (YYYY-MM-DD), dacă expiră: de aici pleacă alertele de expirare. */
+  expiresOn?: string;
 }
 
 export type ExpenseCategory =

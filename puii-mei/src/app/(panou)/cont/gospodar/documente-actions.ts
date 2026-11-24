@@ -43,6 +43,8 @@ export async function uploadDocumentAction(formData: FormData) {
     const date = t(formData, "date");
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Alege data documentului.");
     const lotCode = await checkLot(farmSlug, t(formData, "lotCode"));
+    const expiresOn = t(formData, "expiresOn");
+    if (expiresOn && (!/^\d{4}-\d{2}-\d{2}$/.test(expiresOn) || expiresOn < date)) throw new Error("Data de valabilitate trebuie să fie după data documentului.");
     const file = await saveUpload(formData.get("file") as File, actor(user));
     await documentRepository.create({
       farmSlug,
@@ -51,6 +53,7 @@ export async function uploadDocumentAction(formData: FormData) {
       title,
       number: t(formData, "number") || undefined,
       date,
+      ...(expiresOn ? { expiresOn } : {}),
       fileId: file.id,
       fileName: file.name,
       mime: file.mime,
