@@ -72,6 +72,12 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [ ] **Admin Command Center, rămase** (24 nov. 2026, după #73): păstrarea scroll-ului la „Înapoi” pentru paginile
       fără ancoră (NAV-T14); „Reia Admin” (ultima stare salvată), dacă se dorește; investițiile și calitatea pe
       gospodărie ca entități separate în Admin. Merge #72 sau închiderea lui (înlocuit de #73) — fără răspuns.
+- [ ] **Scalare / „Librarian Architecture”** (24 nov. 2026, review Claude pe #62, în așteptarea deciziei): 1) indexuri și
+      interogări țintite în locul citirii întregii colecții (`.list()` + filtru; ex. `byNumber`) — cel mai mare risc;
+      2) outbox: notificările (e-mail, SMS) scoase din tranzacție; 3) lanțul de audit fără blocarea globală
+      (`pg_advisory_xact_lock`): lanț pe partiții + ancorare; 4) `AccessContext` obligatoriu + proiecții per rol + RLS;
+      5) benchmark reproductibil (N1/N2) în CI; 6) URL-uri presemnate pentru fișiere, partiționare lunară audit/jurnal.
+      Întrebări deschise: volum țintă, buget bază de date, RPO/RTO, întârzierea acceptată în dashboard-uri, AI, retenție.
 - [ ] **AUD-001, etapa 2** (24 nov. 2026, după #70): separarea rolurilor SQL (aplicația fără drept de a șterge
       triggerul), export extern semnat (WORM), interfață de căutare / export pentru investigații (cu audit al
       accesului), retenția pe categorii (jurist / DPO), auditul vizualizărilor sensibile, `householdId` completat la
