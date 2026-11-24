@@ -94,6 +94,9 @@ _Ultima actualizare: 22 noiembrie 2026_
       date. Alternativ: Prisma Postgres (2 GB gratuit), Supabase (500 MB, UE). Tokenul Vercel din sesiune trebuie
       reînnoit (cel salvat e refuzat).
 
+- [ ] **De configurat de PO în Vercel după merge-urile #65–#67** (24 nov. 2026): `FILES_S3_*` (furnizorul de
+      stocare: recomandat Cloudflare R2), `CRON_SECRET`, un token Vercel nou pentru sesiunea Claude (cel salvat e refuzat).
+
 ## De completat pe site
 
 - [ ] **Datele de plată ale fiecărei gospodării** (titular, IBAN, bancă, preț furaj): Contul meu → Vedere gospodar →
@@ -127,11 +130,11 @@ _Ultima actualizare: 22 noiembrie 2026_
       [PROPUS]; verificarea titularului la bancă; aceeași protecție la schimbarea numărului de telefon al gospodarului.
 - [x] **Supra-rezervarea locurilor** (CG-04) – reparat în PR #59 (registru de locuri atomic + reconciliere, teste E2E).
       Perioada de grație pentru o rezervare rămasă fără comandă: 10 minute [PROPUS].
-- [ ] **Alertele de expirare a documentelor** (decis de PO 23.11.2026: compania anunță gospodarul din timp): în cod,
-      data de expirare pe documentele gospodăriei, job zilnic (60 / 30 / 14 / 7 zile), lista „Expiră în curând” în panou,
-      apel obligatoriu al operatorului la 7 zile (CLAUDE-04 F-02).
+- [x] **Alertele de expirare a documentelor** (decis de PO 23.11.2026): implementat în PR #67 (praguri 60/30/14/7,
+      job zilnic, „sună gospodarul” la 7 zile). **De făcut de PO după merge:** `CRON_SECRET` în Vercel.
 - [ ] **PIN curier**: test de concurență dedicat + PIN de ridicare păstrat ca hash (CG-02).
-- [ ] **Izolarea între gospodării**: matrice RLS completă + test IDOR automat pe codul actual (CG-05).
+- [x] **Izolarea între gospodării pe codul actual** (CG-05): test IDOR E2E + matricea de dovezi în PR #66.
+- [ ] **RLS pe schema-țintă** (CG-05): toate tabelele cu `household_id`, scriere, pool, mandat revocat — odată cu migrarea.
 
 ## De verificat zootehnic
 

@@ -105,6 +105,11 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
   de la PUII MEI. Documentele care expiră: **compania** anunță gospodarul din timp → alerte în sistem (60 / 30 / 14 / 7
   zile, apel la 7 zile). Supra-rezervarea locurilor: reparată (PR #59).
 
+- **24 nov. 2026:** PO: „continuă cu pașii propuși fără să-ți scriu; verific când revin” + ChatGPT ținut la curent după
+  fiecare pas (CLAUDE.md). Unite: #56 (PIN client), #59 (locuri), #61 (IBAN etapa 1), #64 (PIN curier). Deschise, în
+  ordinea de merge: #65 (fișiere în stocare S3 + reparație alocare), #66 (test izolare gospodării), #67 (alerte expirare).
+  Neon: limita de 10 branch-uri de previzualizare (PO a șters branch-uri vechi).
+
 ## Setări și servicii
 
 - Vercel: `DATABASE_URL` (Neon), `ADMIN_USER`, `ADMIN_PASSWORD`; de adăugat `SESSION_SECRET`, `RESEND_API_KEY`,
