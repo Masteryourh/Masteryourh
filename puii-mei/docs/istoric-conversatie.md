@@ -111,6 +111,11 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
   #68 (MFA pentru schimbarea IBAN-ului: pagina Securitate din panoul gospodarului), #69 (NAV-001: jurnalul în Admin,
   „Înapoi” contextual, open redirect reparat la login), #70 (AUD-001: jurnal de audit pentru toate acțiunile).
   Neon: limita de 10 branch-uri de previzualizare (PO a șters branch-uri vechi).
+- **24 nov. 2026 (decizia fondatorului, prin ChatGPT pe #62): Admin Central Command Center.** Admin e centrul
+  operațional: fiecare entitate are pagină în Admin, navigarea rămâne în spațiul curent, „Deschide website ↗” în tab
+  nou, fără impersonare. PR #71 (scos butonul „Cum funcționează?” din josul paginii), #72 (comanda din țarc ieșea din
+  Admin; înlocuit de #73), **#73** (pagina Admin a comenzii, contract, documente, etichete; verificare automată a
+  traversărilor; constituția §6A + ADR-011). Ordinea de merge: #69 → #70 → #73.
 
 ## Setări și servicii
 

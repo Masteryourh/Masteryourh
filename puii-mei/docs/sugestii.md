@@ -68,9 +68,10 @@ _Ultima actualizare: 22 noiembrie 2026_
       Clienții din aceeași rețea mobilă pot avea același IP (NAT) – de reevaluat după lansare, din jurnale.
 - [ ] **Română / engleză** – amânat de utilizator (22 nov. 2026); întâi site-ul public, apoi panourile.
 
-- [ ] **NAV-001, restul linkurilor din Admin** (24 nov. 2026): registrele de documente, alerta de document și
-      etichetele din livrări încă duc în spațiul gospodarului; de mutat în Admin cu același tipar ca jurnalul (#69).
-      Păstrarea scroll-ului la „Înapoi” (NAV-T14) — neimplementată.
+- [x] **NAV-001, restul linkurilor din Admin** (24 nov. 2026): mutate în Admin în PR #73 (Admin Central Command Center).
+- [ ] **Admin Command Center, rămase** (24 nov. 2026, după #73): păstrarea scroll-ului la „Înapoi” pentru paginile
+      fără ancoră (NAV-T14); „Reia Admin” (ultima stare salvată), dacă se dorește; investițiile și calitatea pe
+      gospodărie ca entități separate în Admin. Merge #72 sau închiderea lui (înlocuit de #73) — fără răspuns.
 - [ ] **AUD-001, etapa 2** (24 nov. 2026, după #70): separarea rolurilor SQL (aplicația fără drept de a șterge
       triggerul), export extern semnat (WORM), interfață de căutare / export pentru investigații (cu audit al
       accesului), retenția pe categorii (jurist / DPO), auditul vizualizărilor sensibile, `householdId` completat la
