@@ -85,11 +85,13 @@ _Ultima actualizare: 22 noiembrie 2026_
       de reacție al managerului, ce acțiuni AI rămân cu confirmare umană (propunere: plăți, efectiv, veterinar, blocări).
 - [ ] **Durabilitate E0** (24 nov. 2026, propus pe #62): Neon plătit cu PITR (~20 $/lună), copie zilnică imuabilă la
       alt furnizor (ex. R2), test automat de restaurare săptămânal — așteaptă acordul pe buget și furnizor.
-- [ ] **Consolidare (mandat #62, 24 nov. 2026)**: C1 citiri țintite (#74) și C2 outbox (#76) livrate, CI verde, fără
-      merge. Urmează C4 backup + restore verificat (fără furnizor nou), C3 benchmark de scriere (lock-ul global de audit),
-      C5 paginare Admin / agregate. Review 01–05 + SQL PR60 în #75. Decizii deschise: R07 (scope multi-gospodărie în
-      RLS), R12 (offline pentru justificări), R15 (sesiuni), roluri SQL separate pe Neon, destinația backup-ului de
-      producție, pagină Admin pentru mesajele netrimise (outbox dead/skipped). #72 de închis (înlocuit de #73).
+- [ ] **Consolidare (mandat #62, 24 nov. 2026)**: unite în main #69, #70, #73, #74 (citiri țintite), #76 (outbox), #71;
+      #72 închis. Pagina Admin „Mesaje netrimise” în #77 (fără merge). Urmează C3 benchmark de scriere (lock-ul global
+      de audit) și C5 paginare Admin / agregate. Review 01–05 + SQL PR60 în #75. Recomandări acceptate de fondator
+      („cum zici tu”), trimise pe #62: R07 scope `uuid[]` în RLS, R12 offline pentru observații + justificări, R15
+      cookie + sessionVersion până la E1, roluri SQL separate și migrări versionate la E1.
+- [ ] **Backup de producție (C4)** (24 nov. 2026): **amânat de fondator** („o integrăm mai târziu”); până atunci PITR-ul
+      inclus în Neon. De reluat: destinație, buget, test automat de restaurare.
 - [ ] **AUD-001, etapa 2** (24 nov. 2026, după #70): separarea rolurilor SQL (aplicația fără drept de a șterge
       triggerul), export extern semnat (WORM), interfață de căutare / export pentru investigații (cu audit al
       accesului), retenția pe categorii (jurist / DPO), auditul vizualizărilor sensibile, `householdId` completat la
