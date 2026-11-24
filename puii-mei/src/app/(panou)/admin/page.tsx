@@ -151,7 +151,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
               <tr><td colSpan={9} className="px-4 py-6 text-center text-muted">Nicio precomandă încă.</td></tr>
             )}
             {preorders.map((p) => (
-              <tr key={p.id} className="align-top">
+              <tr key={p.id} id={`comanda-${p.number}`} className="scroll-mt-24 align-top target:bg-amber-50 target:ring-2 target:ring-amber-400">
                 <td className="px-4 py-3 font-mono text-xs">
                   {p.number}
                   {p.parentNumber && <div className="mt-1 text-[10px] text-slate-500">parte din {p.parentNumber}</div>}

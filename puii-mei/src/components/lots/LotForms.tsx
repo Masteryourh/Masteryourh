@@ -87,7 +87,7 @@ export function NewLotForm({ farmSlug, returnTo, needsApproval = false, maxPens 
 }
 
 /** Rândul unui lot, cu editare și închidere / redeschidere pentru precomenzi. */
-export function LotAdminRow({ lot, farmName, returnTo, canApprove = false, maxPens, orders = [] }: { lot: Lot; farmName?: string; returnTo: string; canApprove?: boolean; maxPens?: number; orders?: Preorder[] }) {
+export function LotAdminRow({ lot, farmName, returnTo, canApprove = false, maxPens, orders = [], ordersHref = returnTo }: { lot: Lot; farmName?: string; returnTo: string; canApprove?: boolean; maxPens?: number; orders?: Preorder[]; /** Pagina cu lista comenzilor, din același spațiu. */ ordersHref?: string }) {
   const status = lotStatus(lot);
   return (
     <details className="rounded-xl bg-white ring-1 ring-slate-200">
@@ -106,7 +106,7 @@ export function LotAdminRow({ lot, farmName, returnTo, canApprove = false, maxPe
           {lot.approval?.status === "respins" && <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-900">respins</span>}
         </span>
       </summary>
-      <PensPanel lot={lot} returnTo={returnTo} orders={orders} />
+      <PensPanel lot={lot} returnTo={returnTo} orders={orders} ordersHref={ordersHref} />
       {lot.approval?.status === "respins" && lot.approval.reason && (
         <p className="border-t border-slate-200 bg-red-50 px-4 py-2 text-sm text-red-900">
           Motivul respingerii: {lot.approval.reason}. Corectează și salvează; lotul intră din nou la aprobare.
@@ -151,7 +151,7 @@ export function LotAdminRow({ lot, farmName, returnTo, canApprove = false, maxPe
 }
 
 /** Țarcurile lotului: câți pui are fiecare, starea și butonul „Pornește țarcul” când e plin. */
-function PensPanel({ lot, returnTo, orders }: { lot: Lot; returnTo: string; orders: Preorder[] }) {
+function PensPanel({ lot, returnTo, orders, ordersHref }: { lot: Lot; returnTo: string; orders: Preorder[]; ordersHref: string }) {
   if (lot.approval?.status === "asteapta" || lot.approval?.status === "respins") return null;
   const pens = penView(lot);
   const inPen = penOrders(lot, orders);
@@ -176,11 +176,9 @@ function PensPanel({ lot, returnTo, orders }: { lot: Lot; returnTo: string; orde
               <ul className="mt-2 space-y-1 border-t border-slate-200 pt-2 text-xs">
                 {inPen.get(p.n)!.map((o) => (
                   <li key={o.number} className="flex flex-wrap items-baseline justify-between gap-x-2">
-                    {o.token ? (
-                      <a href={`/comanda/${o.token}`} className="font-mono font-semibold text-slate-800 underline">{o.number}</a>
-                    ) : (
-                      <span className="font-mono font-semibold">{o.number}</span>
-                    )}
+                    {/* Comanda se deschide în ACELAȘI spațiu (lista de comenzi din Admin / din panoul gospodarului),
+                        nu în panoul clientului, care e un spațiu separat (NAV-001). */}
+                    <a href={`${ordersHref}#comanda-${o.number}`} className="font-mono font-semibold text-slate-800 underline">{o.number}</a>
                     <span className="text-slate-600">
                       {o.name} · {o.birds} pui
                       {o.birds < o.total ? ` (din ${o.total}; și în țarcul ${o.pens.filter((x) => x !== p.n).join(", ")})` : ""}
