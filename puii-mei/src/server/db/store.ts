@@ -40,6 +40,11 @@ export interface DocumentStore {
    * Pe fișiere JSON (doar dezvoltare locală) NU există anulare: scrierile făcute înainte de eroare rămân.
    */
   atomic<R>(fn: () => Promise<R>): Promise<R>;
+  /**
+   * Rulează `fn` după commit-ul tranzacției curente (outbox: efectele externe după commit); la anulare nu rulează.
+   * În afara unei tranzacții rulează imediat. Erorile din `fn` nu afectează tranzacția (deja confirmată).
+   */
+  afterCommit(fn: () => Promise<void>): Promise<void>;
   /** Jurnalul de audit, doar adăugare, cu lanț de amprente (vezi src/server/audit.ts). */
   auditAppend(e: AuditRecord, hash: (prev: string | null, e: AuditRecord) => string): Promise<void>;
   auditList(filter: { householdId?: string; actorId?: string; resourceId?: string; correlationId?: string; limit?: number }): Promise<StoredAuditEvent[]>;
