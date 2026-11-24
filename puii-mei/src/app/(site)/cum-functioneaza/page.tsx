@@ -86,7 +86,7 @@ export default function HowItWorksPage() {
           <Faq />
         </Container>
       </section>
-      <CtaBand />
+      <CtaBand showHowItWorks={false} />
     </>
   );
 }
