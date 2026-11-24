@@ -102,7 +102,7 @@ export default async function LiveDeliveriesPage() {
                 <td className="px-4 py-3">v{p.version}{p.replacedTokens.length ? ` (${p.replacedTokens.length} înlocuite)` : ""}</td>
                 <td className="px-4 py-3">{time.format(new Date(p.createdAt))} · {p.createdBy}</td>
                 <td className="px-4 py-3">
-                  <Link href={`/cont/gospodar/etichete?ids=${p.id}`} className="font-semibold text-forest-700 underline">Vezi</Link>
+                  <Link href={`/admin/livrari/etichete?ids=${p.id}`} className="font-semibold text-forest-700 underline">Vezi</Link>
                 </td>
               </tr>
             ))}

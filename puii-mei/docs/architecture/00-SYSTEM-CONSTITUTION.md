@@ -99,6 +99,33 @@
 
 **SC-025 [PROPUS]** Extinderea la alte produse se face prin module/verticale și configurații de domeniu, fără presupunerea că regulile pentru pui sunt universal aplicabile.
 
+## 6A. Spațiile de lucru și Admin Central Command Center
+
+> Decizia fondatorului, 24.11.2026 (consemnată de ChatGPT în PR #62; ADR-011). Implementare: PR-urile Claude #69, #70
+> și PR-ul „Admin Central Command Center”.
+
+**SC-048 [CONFIRMAT]** Admin e centrul operațional. Fiecare entitate administrabilă (comandă, lot, țarc, gospodărie,
+jurnal, documente, etichete, livrare, contract, plăți, audit) are reprezentare **în spațiul Admin**. Adminul nu
+folosește pagini ale altui spațiu pentru a le vedea.
+
+**SC-049 [CONFIRMAT]** Navigarea rămâne în spațiul curent (public, client, gospodar, curier, investitor, admin).
+Trecerea în alt spațiu e **explicită și vizibilă** („Schimbă spațiul”, cu banner și întoarcere). Website-ul public se
+deschide doar dintr-un link discret „Deschide website ↗”, în tab nou.
+
+**SC-050 [CONFIRMAT]** „Înapoi” revine exact la locul de origine din același spațiu (filtre, pagină, lot / țarc deschis),
+validat pe server ca rută internă a spațiului, cu fallback la pagina părinte. Nu există redirecționări în afara
+site-ului (open redirect).
+
+**SC-051 [CONFIRMAT]** Actorul real și autorizarea se stabilesc pe server, pentru fiecare rută și acțiune. O inspecție
+din Admin nu e impersonare: adminul nu acționează ca gospodar, iar drepturile de modificare rămân cele din politicile
+aprobate (fără acces nelimitat).
+
+**SC-052 [CONFIRMAT]** Adresele din Admin nu conțin coduri secrete ale clienților (ex. codul de urmărire al comenzii);
+o comandă se identifică prin numărul ei.
+
+**SC-053 [PROPUS]** Verificarea automată a traversărilor (test unitar pe cod + test E2E pe paginile Admin) face parte
+din CI. Un link nou care iese din Admin fără marcaj explicit oprește integrarea.
+
 ## 7. Agenți AI
 
 **SC-026 [PROPUS]** Agenții AI primesc identitate tehnică, scop, permisiuni minime, instrumente aprobate, limite de cost și timp, jurnale și posibilitate de oprire imediată.

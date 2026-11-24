@@ -40,7 +40,7 @@ export default async function InterestAdminPage() {
     <Container className="py-8">
       <h1 className="text-3xl font-semibold">Interes pentru produse noi</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted">
-        Înscrieri prin pagina <Link href="/in-curand" className="font-semibold text-forest-700 underline">În curând</Link>,
+        Înscrieri prin pagina <Link href="/in-curand" target="_blank" rel="noopener noreferrer" className="font-semibold text-forest-700 underline">În curând ↗</Link>,
         pe județe, comparate cu gospodăriile care au spus că pot produce aceste produse.
       </p>
 

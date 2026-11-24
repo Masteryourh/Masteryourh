@@ -35,6 +35,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         { href: "/admin/interes", label: "Interes produse", icon: "interes" },
         { href: "/admin/utilizatori", label: "Utilizatori", icon: "utilizatori" },
         { href: "/admin/legislatie", label: "Legislație și surse", icon: "legislatie" },
+        // nav-permis: schimbare EXPLICITĂ de spațiu (NAV-06); în spațiul gospodarului apare bannerul „Înapoi în Admin”.
         { href: "/cont/gospodar", label: "Schimbă spațiul: vedere gospodar", icon: "vedere" },
       ]}
     >

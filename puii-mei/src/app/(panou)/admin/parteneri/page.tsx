@@ -38,7 +38,7 @@ export default async function PartnerApplicationsPage({ searchParams }: PageProp
           <h1 className="text-3xl font-semibold">Solicitări de parteneriat</h1>
           <p className="mt-1 text-sm text-muted">
             Gospodării și investitori care au aplicat prin pagina{" "}
-            <Link href="/devino-partener" className="font-semibold text-forest-700 underline">Devino partener</Link>.
+            <Link href="/devino-partener" target="_blank" rel="noopener noreferrer" className="font-semibold text-forest-700 underline">Devino partener ↗</Link>.
           </p>
         </div>
       </div>

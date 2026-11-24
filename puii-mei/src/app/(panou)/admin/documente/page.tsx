@@ -78,7 +78,7 @@ export default async function AdminDocumentsPage({ searchParams }: PageProps<"/a
       <h2 className="mt-6 text-lg">Registre pe gospodării</h2>
       <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {totals.map((t) => (
-          <Link key={t.farm.slug} href={`/cont/gospodar/documente?gospodarie=${t.farm.slug}`} className="rounded-xl bg-white p-4 ring-1 ring-slate-200 hover:ring-slate-400">
+          <Link key={t.farm.slug} href={`/admin/gospodarii/${t.farm.slug}/documente?inapoi=${encodeURIComponent("/admin/documente")}`} className="rounded-xl bg-white p-4 ring-1 ring-slate-200 hover:ring-slate-400">
             <p className="font-semibold">{t.farm.name}</p>
             <p className="text-sm text-slate-600">Cheltuieli {formatLei(t.total)} · venituri {formatLei(t.income)}</p>
           </Link>

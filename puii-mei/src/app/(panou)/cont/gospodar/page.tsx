@@ -147,7 +147,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
             <h1 className="mt-1 text-3xl font-light tracking-tight sm:text-4xl">{farm.name}</h1>
             <p className="text-sm text-[var(--pd-muted)]">{farm.owner} · {farm.village}, jud. {farm.county}</p>
           </div>
-          <Link href={`/gospodarii/${farm.slug}`} className="rounded-full border border-white/15 px-4 py-2 text-sm text-[var(--pd-text)] hover:bg-white/10">
+          <Link href={`/gospodarii/${farm.slug}`} target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-sm text-[var(--pd-text)] hover:bg-white/10">
             Profilul public ↗
           </Link>
         </div>

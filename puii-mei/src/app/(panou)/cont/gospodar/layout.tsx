@@ -14,6 +14,7 @@ export default async function FarmerLayout({ children }: LayoutProps<"/cont/gosp
     { href: "/cont/gospodar/legislatie", label: "Legislație și reguli" },
     { href: "/cont/gospodar/securitate", label: "Securitate" },
   ];
+  // nav-permis: întoarcerea explicită în Admin (doar pentru administrator).
   if (user.role === "admin") items.push({ href: "/admin", label: "← Panou admin" });
   return (
     <PanelShell user={user} title="Contul gospodarului" home="/cont/gospodar" items={items}>
@@ -21,6 +22,7 @@ export default async function FarmerLayout({ children }: LayoutProps<"/cont/gosp
         // NAV-06: trecerea Admin → spațiul gospodarului e explicită și vizibilă; adminul nu devine gospodar.
         <div role="status" data-workspace-banner className="mx-4 mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm text-white sm:mx-6 lg:mx-8">
           <span>Ești <strong>administrator</strong> în spațiul gospodarului (vedere de verificare).</span>
+          {/* nav-permis: întoarcerea explicită în Admin */}
           <Link href="/admin" className="rounded-lg bg-white px-3 py-1 font-semibold text-slate-900">← Înapoi în Admin</Link>
         </div>
       )}

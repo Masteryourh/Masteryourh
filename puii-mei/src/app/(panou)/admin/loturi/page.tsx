@@ -13,6 +13,8 @@ export const metadata: Metadata = { title: "Loturi", robots: { index: false, fol
 
 export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/loturi">) {
   const sp = await searchParams;
+  // Întoarcerea de la o comandă (NAV / CORE): lotul ei se deschide, iar ancora (#tarc-…) duce la țarc.
+  const openLot = typeof sp.deschis === "string" ? sp.deschis : "";
   const [lots, farms, orders] = await Promise.all([lotRepository.list({ all: true }), farmRepository.listAll(), preorderRepository.list()]);
   const farmName = new Map(farms.map((f) => [f.slug, f.name]));
   const pending = lots.filter((l) => l.approval?.status === "asteapta");
@@ -36,7 +38,7 @@ export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/
           <p className="text-sm text-slate-600">Loturi propuse de gospodari. Apar la precomandă doar după aprobare.</p>
           <div className="mt-2 space-y-2">
             {pending.map((l) => (
-              <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove orders={orders} ordersHref="/admin" />
+              <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove orders={orders} adminOrders open={l.code === openLot} />
             ))}
           </div>
           <h2 className="mt-8 text-lg">Toate loturile</h2>
@@ -44,7 +46,7 @@ export default async function AdminLotsPage({ searchParams }: PageProps<"/admin/
       )}
       <div id="loturi" className="mt-6 space-y-2">
         {lots.filter((l) => l.approval?.status !== "asteapta").map((l) => (
-          <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove orders={orders} ordersHref="/admin" />
+          <LotAdminRow key={l.code} lot={l} farmName={farmName.get(l.farmSlug)} returnTo="/admin/loturi" canApprove orders={orders} adminOrders open={l.code === openLot} />
         ))}
       </div>
 

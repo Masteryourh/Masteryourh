@@ -34,7 +34,7 @@ export async function adminAlerts(): Promise<AdminAlert[]> {
     at: doc.expiresOn!,
     title: `Document care expiră · ${farmName.get(doc.farmSlug!) ?? doc.farmSlug}`,
     text: `${farmName.get(doc.farmSlug!) ?? doc.farmSlug}: ${reminderText(doc.title, days)}`,
-    href: `/cont/gospodar/documente?gospodarie=${doc.farmSlug}#documente`,
+    href: `/admin/gospodarii/${doc.farmSlug}/documente#documente`,
   }));
   return [...docs, ...growth, ...tours
     .flatMap((t) =>

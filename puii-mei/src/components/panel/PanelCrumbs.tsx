@@ -27,9 +27,9 @@ const LABELS: Record<string, string> = {
   "/cont/gospodar/legislatie": "Legislație",
   "/cont/investitor": "Investițiile mele",
 };
-const LAST: Record<string, string> = { regim: "Regim și suprafață", jurnal: "Jurnal de creștere" };
+const LAST: Record<string, string> = { regim: "Regim și suprafață", jurnal: "Jurnal de creștere", contract: "Contract", etichete: "Etichete", documente: "Documente și cheltuieli" };
 /** Pagina de detaliu, după secțiunea din care face parte. */
-const DETAIL: Record<string, string> = { ture: "Tura de livrare", livrari: "Tura de livrare", investitii: "Investiția", investitor: "Investiția", gospodarii: "Fișa gospodăriei" };
+const DETAIL: Record<string, string> = { ture: "Tura de livrare", livrari: "Tura de livrare", investitii: "Investiția", investitor: "Investiția", gospodarii: "Fișa gospodăriei", comenzi: "Comanda" };
 
 /** Traseul în panou (ex. Panou admin › Gospodării › Regim) + „← Înapoi la …” pe telefon. Ascuns pe pagina principală. */
 export function PanelCrumbs() {
@@ -40,7 +40,10 @@ export function PanelCrumbs() {
   // altfel, părintele din traseu (fallback determinist: refresh, link direct, tab nou).
   const space = parts[0] === "admin" ? "/admin" : `/${parts.slice(0, 2).join("/")}`;
   const origin = safeInternalPath(search.get("inapoi"), space);
-  const originLabel = origin ? (LABELS[origin.split(/[?#]/)[0]] ?? (origin.split(/[?#]/)[0].split("/").length > 3 ? "Fișa gospodăriei" : "pagina anterioară")) : null;
+  // Eticheta originii, după aceleași reguli ca traseul (ex. „Loturi”, „Comanda”, „Fișa gospodăriei”).
+  const originPath = origin ? origin.split(/[?#]/)[0] : "";
+  const oSegs = originPath.split("/").filter(Boolean);
+  const originLabel = origin ? (LABELS[originPath] ?? LAST[oSegs.at(-1) ?? ""] ?? DETAIL[oSegs.at(-2) ?? ""] ?? "pagina anterioară") : null;
   const rootLen = parts[0] === "admin" ? 1 : 2;
   if (parts.length <= rootLen) return null;
   const crumbs = parts

@@ -19,7 +19,7 @@ export default async function EditFarmPage({ params, searchParams }: PageProps<"
     <Container className="max-w-3xl py-8">
       <h1 className="mt-3 text-3xl font-semibold">{farm.name}</h1>
       <p className="mt-1 text-sm text-muted">
-        Adresă pe site: <Link href={`/gospodarii/${farm.slug}`} className="font-mono text-forest-700 underline">/gospodarii/{farm.slug}</Link>
+        Adresă pe site: <Link href={`/gospodarii/${farm.slug}`} target="_blank" rel="noopener noreferrer" className="font-mono text-forest-700 underline">/gospodarii/{farm.slug} ↗</Link>
         {!farm.active && " (ascunsă)"}
       </p>
       <p className="mt-3 flex flex-wrap gap-2 text-sm">
@@ -28,6 +28,9 @@ export default async function EditFarmPage({ params, searchParams }: PageProps<"
         </Link>
         <Link href={`/admin/gospodarii/${farm.slug}/regim`} className="rounded-full px-4 py-1.5 font-semibold text-forest-700 ring-1 ring-forest-900/15">
           Regim și suprafață
+        </Link>
+        <Link href={`/admin/gospodarii/${farm.slug}/documente?inapoi=${encodeURIComponent(`/admin/gospodarii/${farm.slug}`)}`} className="rounded-full px-4 py-1.5 font-semibold text-forest-700 ring-1 ring-forest-900/15">
+          Documente și cheltuieli
         </Link>
       </p>
       {farm.source === "demo" && (
