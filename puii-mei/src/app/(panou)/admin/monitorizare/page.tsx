@@ -31,7 +31,7 @@ export default async function MonitoringPage() {
           {alerts.map((a) => (
             <li key={a.id} className="rounded-lg bg-red-50 p-3 text-sm text-red-900">
               <strong>{farmName.get(a.farmSlug)}</strong> · lotul {a.lotCode}: {a.text}{" "}
-              <Link href={`/cont/gospodar/jurnal?gospodarie=${a.farmSlug}`} className="font-semibold underline">Jurnal</Link>
+              <Link href={`/admin/gospodarii/${a.farmSlug}/jurnal?inapoi=${encodeURIComponent("/admin/monitorizare")}`} className="font-semibold underline">Jurnal</Link>
             </li>
           ))}
         </ul>
@@ -57,7 +57,7 @@ export default async function MonitoringPage() {
                   <td className="px-3 py-2">{move ? formatDate(move.date) : "—"}</td>
                   <td className="px-3 py-2">{photo ? formatDate(photo.date) : "—"}</td>
                   <td className="px-3 py-2">{mine.filter((e) => e.type === "veterinar").length}</td>
-                  <td className="px-3 py-2"><Link href={`/cont/gospodar/jurnal?gospodarie=${l.farmSlug}`} className="font-semibold underline">Jurnal</Link></td>
+                  <td className="px-3 py-2"><Link href={`/admin/gospodarii/${l.farmSlug}/jurnal?inapoi=${encodeURIComponent("/admin/monitorizare")}`} className="font-semibold underline">Jurnal</Link></td>
                 </tr>
               );
             })}

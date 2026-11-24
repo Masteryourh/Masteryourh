@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { safeInternalPath } from "@/lib/safe-return";
 
 /** Denumirile secțiunilor din panouri, pentru traseu și „Înapoi la …”. */
 const LABELS: Record<string, string> = {
@@ -26,14 +27,20 @@ const LABELS: Record<string, string> = {
   "/cont/gospodar/legislatie": "Legislație",
   "/cont/investitor": "Investițiile mele",
 };
-const LAST: Record<string, string> = { regim: "Regim și suprafață" };
+const LAST: Record<string, string> = { regim: "Regim și suprafață", jurnal: "Jurnal de creștere" };
 /** Pagina de detaliu, după secțiunea din care face parte. */
 const DETAIL: Record<string, string> = { ture: "Tura de livrare", livrari: "Tura de livrare", investitii: "Investiția", investitor: "Investiția", gospodarii: "Fișa gospodăriei" };
 
 /** Traseul în panou (ex. Panou admin › Gospodării › Regim) + „← Înapoi la …” pe telefon. Ascuns pe pagina principală. */
 export function PanelCrumbs() {
   const pathname = usePathname();
+  const search = useSearchParams();
   const parts = pathname.split("/").filter(Boolean);
+  // NAV-03 / NAV-09: „Înapoi” la pagina de origine (cu filtrele ei), doar dacă e o rută internă din ACELAȘI spațiu;
+  // altfel, părintele din traseu (fallback determinist: refresh, link direct, tab nou).
+  const space = parts[0] === "admin" ? "/admin" : `/${parts.slice(0, 2).join("/")}`;
+  const origin = safeInternalPath(search.get("inapoi"), space);
+  const originLabel = origin ? (LABELS[origin.split(/[?#]/)[0]] ?? (origin.split(/[?#]/)[0].split("/").length > 3 ? "Fișa gospodăriei" : "pagina anterioară")) : null;
   const rootLen = parts[0] === "admin" ? 1 : 2;
   if (parts.length <= rootLen) return null;
   const crumbs = parts
@@ -47,11 +54,12 @@ export function PanelCrumbs() {
     .filter((c, i, all) => c.known || i === all.length - 1 || DETAIL[c.href.split("/").pop()!] === undefined);
   // Paginile de tip „Detalii” fără pagină de listă proprie (ex. /cont/gospodar/ture) trimit la secțiunea de sus.
   const parent = [...crumbs.slice(0, -1)].reverse().find((c) => c.known);
+  const back = origin ? { href: origin, label: originLabel! } : parent;
   return (
     <nav aria-label="Unde ești" className="px-4 pt-4 text-sm sm:px-6 lg:px-8 print:hidden">
-      {parent && (
-        <Link href={parent.href} className="inline-flex items-center gap-1 font-semibold text-[var(--pd-text)] sm:hidden">
-          <span aria-hidden>←</span> Înapoi la {parent.label}
+      {back && (
+        <Link href={back.href} data-nav-back className={`inline-flex items-center gap-1 font-semibold text-[var(--pd-text)] ${origin ? "mb-2" : "sm:hidden"}`}>
+          <span aria-hidden>←</span> Înapoi la {back.label}
         </Link>
       )}
       <ol className="hidden flex-wrap items-center gap-1.5 text-[var(--pd-muted)] sm:flex">

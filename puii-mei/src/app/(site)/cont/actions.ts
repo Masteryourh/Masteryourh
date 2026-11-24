@@ -7,6 +7,7 @@ import { verifyPassword, hashPassword } from "@/server/password";
 import { setupLinkValid, userRepository } from "@/server/repositories/users";
 import { envAdmin, startSession } from "@/server/session";
 import { safeEqual, sessionSecretReady } from "@/server/session-token";
+import { safeInternalPath } from "@/lib/safe-return";
 
 export type AuthFormState = { status: "idle" } | { status: "error"; message: string; email?: string };
 
@@ -26,10 +27,8 @@ function fail(key: string) {
 }
 
 /** Acceptă doar adrese interne, ca redirecționarea să nu poată duce în afara site-ului. */
-function safeReturn(value: FormDataEntryValue | null) {
-  const v = typeof value === "string" ? value : "";
-  return v.startsWith("/") && !v.startsWith("//") ? v : null;
-}
+/** NAV-09: doar rute interne (refuză `//gazda`, `/\\gazda`, scheme, `..`). */
+const safeReturn = (value: FormDataEntryValue | null) => safeInternalPath(value);
 
 export async function login(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();

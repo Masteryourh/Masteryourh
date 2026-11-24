@@ -6,13 +6,14 @@ import { LoginForm } from "@/components/forms/AuthForms";
 import { roleHome } from "@/lib/roles";
 import { site } from "@/lib/site";
 import { getCurrentUser } from "@/server/session";
+import { safeInternalPath } from "@/lib/safe-return";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Intră în cont", robots: { index: false, follow: false } };
 
 export default async function LoginPage({ searchParams }: PageProps<"/cont/autentificare">) {
   const { inapoi } = await searchParams;
-  const returnTo = typeof inapoi === "string" && inapoi.startsWith("/") && !inapoi.startsWith("//") ? inapoi : undefined;
+  const returnTo = safeInternalPath(inapoi) ?? undefined;
   const user = await getCurrentUser();
   if (user) redirect(returnTo ?? roleHome[user.role]);
 
