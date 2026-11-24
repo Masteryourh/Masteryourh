@@ -7,6 +7,7 @@ import { emailSchema, nameSchema } from "@/lib/validation/common";
 import { requireAdmin } from "@/server/auth";
 import { farmRepository } from "@/server/repositories/catalog";
 import { newSetupLink, userRepository } from "@/server/repositories/users";
+import { auditedAction } from "@/server/audit";
 
 export type UserFormState =
   | { status: "idle" }
@@ -27,7 +28,7 @@ const createSchema = z
     }
   });
 
-export async function createUser(_prev: UserFormState, formData: FormData): Promise<UserFormState> {
+async function createUser__impl(_prev: UserFormState, formData: FormData): Promise<UserFormState> {
   await requireAdmin();
   const raw = Object.fromEntries(
     [...formData.entries()].filter(([k]) => !k.startsWith("$ACTION")),
@@ -51,7 +52,7 @@ export async function createUser(_prev: UserFormState, formData: FormData): Prom
 }
 
 /** Link nou de setare a parolei (invitație retrimisă sau parolă uitată). */
-export async function regenerateLink(formData: FormData) {
+async function regenerateLink__impl(formData: FormData) {
   await requireAdmin();
   const user = await userRepository.byId(String(formData.get("id") ?? ""));
   if (!user) throw new Error("Contul nu există");
@@ -60,7 +61,7 @@ export async function regenerateLink(formData: FormData) {
 }
 
 /** Dezactivare / reactivare. Dezactivarea închide imediat toate sesiunile contului. */
-export async function toggleUserStatus(formData: FormData) {
+async function toggleUserStatus__impl(formData: FormData) {
   const me = await requireAdmin();
   const user = await userRepository.byId(String(formData.get("id") ?? ""));
   if (!user) throw new Error("Contul nu există");
@@ -77,7 +78,7 @@ export async function toggleUserStatus(formData: FormData) {
  * Resetarea codului de confirmare (MFA) — telefon pierdut, după verificarea identității prin telefon. Închide și
  * sesiunile contului; utilizatorul activează din nou codul din pagina Securitate.
  */
-export async function resetUserMfa(formData: FormData) {
+async function resetUserMfa__impl(formData: FormData) {
   await requireAdmin();
   const user = await userRepository.byId(String(formData.get("id") ?? ""));
   if (!user) throw new Error("Contul nu există");
@@ -86,7 +87,7 @@ export async function resetUserMfa(formData: FormData) {
 }
 
 /** Ștergerea definitivă a unui cont (nu și a propriului cont). */
-export async function deleteUser(formData: FormData) {
+async function deleteUser__impl(formData: FormData) {
   const admin = await requireAdmin();
   const id = String(formData.get("id") ?? "");
   if (id === admin.id) throw new Error("Nu îți poți șterge propriul cont.");
@@ -96,3 +97,10 @@ export async function deleteUser(formData: FormData) {
   console.info(`[puii-mei] Cont șters de ${admin.name}: ${user.email}`);
   revalidatePath("/admin/utilizatori");
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const createUser = auditedAction({ action: "admin.utilizatori.createUser", workspace: "admin", resourceType: "utilizatori", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, createUser__impl);
+export const regenerateLink = auditedAction({ action: "admin.utilizatori.regenerateLink", workspace: "admin", resourceType: "utilizatori", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, regenerateLink__impl);
+export const toggleUserStatus = auditedAction({ action: "admin.utilizatori.toggleUserStatus", workspace: "admin", resourceType: "utilizatori", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, toggleUserStatus__impl);
+export const resetUserMfa = auditedAction({ action: "admin.utilizatori.resetUserMfa", workspace: "admin", resourceType: "utilizatori", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, resetUserMfa__impl);
+export const deleteUser = auditedAction({ action: "admin.utilizatori.deleteUser", workspace: "admin", resourceType: "utilizatori", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, deleteUser__impl);

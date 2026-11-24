@@ -9,6 +9,7 @@ import { requireAdmin } from "@/server/auth";
 import { sendEmail } from "@/server/email";
 import { documentRepository, investmentRepository, saveUpload } from "@/server/repositories/documents";
 import { userRepository } from "@/server/repositories/users";
+import { auditedAction } from "@/server/audit";
 
 const t = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const refresh = () => {
@@ -21,7 +22,7 @@ async function notifyInvestor(investorId: string, subject: string, text: string)
   if (u?.email) await sendEmail({ to: u.email, subject, text: `${text}\n\n${site.url}/cont/investitor`, html: `<p>${text}</p><p><a href="${site.url}/cont/investitor">Contul tău</a></p>` });
 }
 
-export async function createInvestmentAction(formData: FormData) {
+async function createInvestmentAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const investorId = t(formData, "investorId");
   const investor = await userRepository.byId(investorId);
@@ -52,7 +53,7 @@ export async function createInvestmentAction(formData: FormData) {
   redirect(`/admin/investitii/${inv.id}?salvat=1`);
 }
 
-export async function updateInvestmentAction(formData: FormData) {
+async function updateInvestmentAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const inv = await investmentRepository.get(t(formData, "id"));
   if (!inv) redirect("/admin/investitii");
@@ -77,7 +78,7 @@ export async function updateInvestmentAction(formData: FormData) {
 }
 
 /** Eveniment în cronologia investiției (ex. „Adăpost finalizat”, „Raport trimestrial”). */
-export async function addInvestmentEventAction(formData: FormData) {
+async function addInvestmentEventAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const inv = await investmentRepository.get(t(formData, "id"));
   if (!inv) redirect("/admin/investitii");
@@ -94,7 +95,7 @@ export async function addInvestmentEventAction(formData: FormData) {
 }
 
 /** Contract, act adițional, raport: atașat investiției, vizibil investitorului. */
-export async function uploadInvestmentDocumentAction(formData: FormData) {
+async function uploadInvestmentDocumentAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const inv = await investmentRepository.get(t(formData, "id"));
   if (!inv) redirect("/admin/investitii");
@@ -129,7 +130,7 @@ export async function uploadInvestmentDocumentAction(formData: FormData) {
 }
 
 /** Suma reținută pe pui livrat (gol = încă de stabilit). */
-export async function setRepaymentRateAction(formData: FormData) {
+async function setRepaymentRateAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const inv = await investmentRepository.get(t(formData, "id"));
   if (!inv) redirect("/admin/investitii");
@@ -145,7 +146,7 @@ export async function setRepaymentRateAction(formData: FormData) {
 }
 
 /** Rata plătită de gospodar dintr-un lot vândut. Suma goală = pui livrați × suma pe pui. */
-export async function addRepaymentAction(formData: FormData) {
+async function addRepaymentAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const inv = await investmentRepository.get(t(formData, "id"));
   if (!inv) redirect("/admin/investitii");
@@ -170,3 +171,11 @@ export async function addRepaymentAction(formData: FormData) {
   revalidatePath("/cont/gospodar", "layout");
   redirect(`/admin/investitii/${inv.id}?salvat=1#rambursare`);
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const createInvestmentAction = auditedAction({ action: "admin.investitii.createInvestment", workspace: "admin", resourceType: "investitii", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, createInvestmentAction__impl);
+export const updateInvestmentAction = auditedAction({ action: "admin.investitii.updateInvestment", workspace: "admin", resourceType: "investitii", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, updateInvestmentAction__impl);
+export const addInvestmentEventAction = auditedAction({ action: "admin.investitii.addInvestmentEvent", workspace: "admin", resourceType: "investitii", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, addInvestmentEventAction__impl);
+export const uploadInvestmentDocumentAction = auditedAction({ action: "admin.investitii.uploadInvestmentDocument", workspace: "admin", resourceType: "investitii", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, uploadInvestmentDocumentAction__impl);
+export const setRepaymentRateAction = auditedAction({ action: "admin.investitii.setRepaymentRate", workspace: "admin", resourceType: "investitii", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, setRepaymentRateAction__impl);
+export const addRepaymentAction = auditedAction({ action: "admin.investitii.addRepayment", workspace: "admin", resourceType: "investitii", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, addRepaymentAction__impl);

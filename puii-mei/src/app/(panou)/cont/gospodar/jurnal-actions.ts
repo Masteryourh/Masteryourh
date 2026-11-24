@@ -8,6 +8,7 @@ import { canManageFarm } from "@/server/delivery";
 import { lotRepository } from "@/server/repositories/catalog";
 import { photoRepository } from "@/server/repositories/delivery";
 import { growthLogRepository } from "@/server/repositories/growth-log";
+import { auditedAction } from "@/server/audit";
 
 export type GrowthFormState = { status: "idle" } | { status: "ok"; message: string } | { status: "error"; error: string };
 
@@ -20,7 +21,7 @@ const num = (v: FormDataEntryValue | null) => {
  * O înregistrare în jurnalul de creștere: mutarea țarcului (cu poziția GPS), hrănire, apă, tratament,
  * curățenie, pierderi, poza săptămânii, verificare veterinară. Jurnalul nu se modifică ulterior.
  */
-export async function addGrowthEntryAction(_p: GrowthFormState, formData: FormData): Promise<GrowthFormState> {
+async function addGrowthEntryAction__impl(_p: GrowthFormState, formData: FormData): Promise<GrowthFormState> {
   const user = await requireRole(["gospodar"]);
   const lot = await lotRepository.byCode(String(formData.get("lotCode") ?? ""), { all: true });
   if (!lot || !canManageFarm(user, lot.farmSlug)) return { status: "error", error: "Neautorizat." };
@@ -59,3 +60,6 @@ export async function addGrowthEntryAction(_p: GrowthFormState, formData: FormDa
   revalidatePath("/comanda", "layout");
   return { status: "ok", message: `${growthEntryLabels[type]}${pen ? ` · țarcul ${pen}` : ""}: notat.` };
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const addGrowthEntryAction = auditedAction({ action: "household.jurnal.addGrowthEntry", workspace: "household", resourceType: "jurnal", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, addGrowthEntryAction__impl);

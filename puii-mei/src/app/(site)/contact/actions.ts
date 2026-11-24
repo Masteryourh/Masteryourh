@@ -4,13 +4,14 @@ import { flattenErrors } from "@/lib/validation/common";
 import { contactSchema } from "@/lib/validation/contact";
 import { contactRepository } from "@/server/repositories/contact";
 import { notifyNewContactMessage } from "@/server/notifications";
+import { auditedAction } from "@/server/audit";
 
 export type ContactFormState =
   | { status: "idle" }
   | { status: "error"; errors: Record<string, string>; values: Record<string, string> }
   | { status: "success"; name: string };
 
-export async function submitContact(
+async function submitContact__impl(
   _prev: ContactFormState,
   formData: FormData,
 ): Promise<ContactFormState> {
@@ -39,3 +40,6 @@ export async function submitContact(
     };
   }
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const submitContact = auditedAction({ action: "public.contact.submitContact", workspace: "public", resourceType: "contact", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, submitContact__impl);

@@ -13,10 +13,11 @@ import { notifyFarm, notifyOrderEvent } from "@/server/notifications";
 import { processWaitingPreorders } from "@/server/allocation";
 import { releaseSeats, reserveSeats } from "@/server/seats";
 import { confirmIbanByPhone, rejectIban } from "@/server/iban";
+import { auditedAction } from "@/server/audit";
 
 const allowed: PreorderStatus[] = ["noua", "confirmata", "alocata-lot", "in-livrare", "livrata", "anulata"];
 
-export async function updatePreorderStatus(formData: FormData) {
+async function updatePreorderStatus__impl(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "") as PreorderStatus;
@@ -36,7 +37,7 @@ export async function updatePreorderStatus(formData: FormData) {
 }
 
 /** Alocă lotul unei precomenzi (necesar ca gospodarul s-o vadă și să-i genereze eticheta). */
-export async function updatePreorderLot(formData: FormData) {
+async function updatePreorderLot__impl(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const raw = String(formData.get("lotCode") ?? "");
@@ -62,7 +63,7 @@ export async function updatePreorderLot(formData: FormData) {
 }
 
 /** Confirmarea telefonică a unei schimbări de IBAN (altă persoană decât cea care a cerut-o, la un număr cunoscut). */
-export async function confirmIbanAction(formData: FormData) {
+async function confirmIbanAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const farmSlug = String(formData.get("farmSlug") ?? "");
   const r = await confirmIbanByPhone(admin, farmSlug, String(formData.get("changeId") ?? ""), String(formData.get("phone") ?? ""), String(formData.get("note") ?? "").trim() || undefined);
@@ -70,10 +71,16 @@ export async function confirmIbanAction(formData: FormData) {
   redirect(`/admin?${r.ok ? `ibanConfirmat=${encodeURIComponent(farmSlug)}` : `eroareIban=${encodeURIComponent(r.error)}`}#iban`);
 }
 
-export async function rejectIbanAction(formData: FormData) {
+async function rejectIbanAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const farmSlug = String(formData.get("farmSlug") ?? "");
   const r = await rejectIban(admin, farmSlug, String(formData.get("changeId") ?? ""), String(formData.get("reason") ?? ""));
   revalidatePath("/", "layout");
   redirect(`/admin?${r.ok ? `ibanRespins=${encodeURIComponent(farmSlug)}` : `eroareIban=${encodeURIComponent(r.error)}`}#iban`);
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const updatePreorderStatus = auditedAction({ action: "admin.comenzi.updatePreorderStatus", workspace: "admin", resourceType: "comenzi", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, updatePreorderStatus__impl);
+export const updatePreorderLot = auditedAction({ action: "admin.comenzi.updatePreorderLot", workspace: "admin", resourceType: "comenzi", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, updatePreorderLot__impl);
+export const confirmIbanAction = auditedAction({ action: "admin.comenzi.confirmIban", workspace: "admin", resourceType: "comenzi", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, confirmIbanAction__impl);
+export const rejectIbanAction = auditedAction({ action: "admin.comenzi.rejectIban", workspace: "admin", resourceType: "comenzi", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, rejectIbanAction__impl);

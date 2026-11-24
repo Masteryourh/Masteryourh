@@ -3,9 +3,10 @@
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/server/auth";
 import { migrateBatch } from "@/server/files/migrate";
+import { auditedAction } from "@/server/audit";
 
 /** Mută următoarele fișiere vechi din baza de date în stocarea externă (pe loturi, ca să nu depășească timpul). */
-export async function migrateFilesAction() {
+async function migrateFilesAction__impl() {
   await requireAdmin();
   let q: string;
   try {
@@ -16,3 +17,6 @@ export async function migrateFilesAction() {
   }
   redirect(`/admin/documente?${q}#stocare`);
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const migrateFilesAction = auditedAction({ action: "admin.storage.migrateFiles", workspace: "admin", resourceType: "storage", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, migrateFilesAction__impl);

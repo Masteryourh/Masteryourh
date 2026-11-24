@@ -8,6 +8,7 @@ import { legalRepository } from "@/server/repositories/legal";
 import { userRepository } from "@/server/repositories/users";
 import { sendEmail } from "@/server/email";
 import { site } from "@/lib/site";
+import { auditedAction } from "@/server/audit";
 
 const t = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 
@@ -30,7 +31,7 @@ const done = (q: string) => {
   redirect(`/admin/legislatie?${q}`);
 };
 
-export async function createLegalAction(formData: FormData) {
+async function createLegalAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const d = read(formData);
   if ("error" in d) done(`eroare=${encodeURIComponent(d.error!)}`);
@@ -46,7 +47,7 @@ export async function createLegalAction(formData: FormData) {
   }
 }
 
-export async function updateLegalAction(formData: FormData) {
+async function updateLegalAction__impl(formData: FormData) {
   await requireAdmin();
   const id = t(formData, "id");
   if (formData.get("archive") === "1" || formData.get("archive") === "0") {
@@ -60,3 +61,7 @@ export async function updateLegalAction(formData: FormData) {
     done("salvat=1");
   }
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const createLegalAction = auditedAction({ action: "admin.legislatie.createLegal", workspace: "admin", resourceType: "legislatie", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, createLegalAction__impl);
+export const updateLegalAction = auditedAction({ action: "admin.legislatie.updateLegal", workspace: "admin", resourceType: "legislatie", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, updateLegalAction__impl);

@@ -1,7 +1,7 @@
 import "server-only";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { DocumentStore, TransactStep } from "./store";
+import type { AuditRecord, DocumentStore, StoredAuditEvent, TransactStep } from "./store";
 
 /**
  * Stocare minimală pe disc (JSON) pentru prima versiune.
@@ -45,6 +45,22 @@ function withLock<R>(name: string, fn: () => Promise<R>): Promise<R> {
 }
 
 export const jsonStore: DocumentStore = {
+  /** Fără anulare pe fișiere (doar dezvoltare locală): vezi DocumentStore.atomic. */
+  atomic: <R>(fn: () => Promise<R>) => fn(),
+  auditAppend(e: AuditRecord, hash: (prev: string | null, e: AuditRecord) => string) {
+    return withLock("audit-events", async () => {
+      const items = await readCollection<StoredAuditEvent>("audit-events");
+      const prev = items.at(-1)?.eventHash ?? null;
+      items.push({ ...e, seq: items.length + 1, prevHash: prev, eventHash: hash(prev, e), recordedAt: new Date().toISOString() });
+      await writeCollection("audit-events", items);
+    });
+  },
+  async auditList(f: { householdId?: string; actorId?: string; resourceId?: string; correlationId?: string; limit?: number }) {
+    return (await readCollection<StoredAuditEvent>("audit-events"))
+      .filter((e) => (!f.householdId || e.householdId === f.householdId) && (!f.actorId || e.actorId === f.actorId) && (!f.resourceId || e.resourceId === f.resourceId) && (!f.correlationId || e.correlationId === f.correlationId))
+      .reverse()
+      .slice(0, f.limit ?? 200);
+  },
   list: readCollection,
   async get<T extends { id: string }>(name: string, id: string) {
     return (await readCollection<T>(name)).find((i) => i.id === id) ?? null;

@@ -8,6 +8,7 @@ import { documentRepository } from "./repositories/documents";
 import { farmRepository } from "./repositories/catalog";
 import { userRepository } from "./repositories/users";
 import { sendSms, smsEnabled } from "./sms";
+import { systemEvent } from "./audit";
 
 /**
  * Alertele de expirare a documentelor (decizia PO 23.11.2026: compania anunță gospodarul din timp; CLAUDE-04 F-02).
@@ -35,6 +36,7 @@ export async function sendDocumentReminders(now = new Date()) {
       { id: r.key },
     );
     if (!claimed) continue;
+    await systemEvent("document.expiry.reminder", "documente", { householdId: r.doc.farmSlug!, resourceId: r.doc.id, changes: { threshold: r.threshold, days: r.days } });
     const farm = r.doc.farmSlug!;
     const text = reminderText(r.doc.title, r.days);
     await notifyFarm(farm, r.days < 0 ? "Document expirat" : "Document care expiră", `${text}\n${site.url}/cont/gospodar/documente#documente`);

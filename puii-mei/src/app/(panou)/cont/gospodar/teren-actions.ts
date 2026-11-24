@@ -8,12 +8,13 @@ import { notifyAdmins } from "@/server/notifications";
 import { documentRepository, saveUpload } from "@/server/repositories/documents";
 import { landRepository } from "@/server/repositories/land";
 import { site } from "@/lib/site";
+import { auditedAction } from "@/server/audit";
 
 /**
  * Gospodarul declară suprafața verde pentru creștere și încarcă actul de proprietate / folosință.
  * Puii mei o măsoară în teren și o confirmă; abia atunci se pot crea loturi.
  */
-export async function declareLandAction(formData: FormData) {
+async function declareLandAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const farmSlug = String(formData.get("farmSlug") ?? "");
   if (!canManageFarm(user, farmSlug)) throw new Error("Neautorizat");
@@ -59,3 +60,6 @@ export async function declareLandAction(formData: FormData) {
   revalidatePath("/admin", "layout");
   redirect(`${back}${error ? `eroareTeren=${encodeURIComponent(error)}` : "salvatTeren=1"}#teren`);
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const declareLandAction = auditedAction({ action: "household.teren.declareLand", workspace: "household", resourceType: "teren", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, declareLandAction__impl);

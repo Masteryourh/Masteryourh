@@ -12,6 +12,7 @@ import { userRepository } from "@/server/repositories/users";
 import { landRepository } from "@/server/repositories/land";
 import { pensForArea, GROWTH } from "@/lib/growth";
 import { processWaitingPreorders } from "@/server/allocation";
+import { auditedAction } from "@/server/audit";
 
 const t = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const page = (slug: string, q: string) => `/admin/gospodarii/${encodeURIComponent(slug)}/regim?${q}`;
@@ -25,7 +26,7 @@ const refresh = () => {
 };
 
 /** Limite proprii pe gospodărie (gol = limita implicită), cu motivul lor. */
-export async function saveLimitsAction(formData: FormData) {
+async function saveLimitsAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const slug = t(formData, "slug");
   if (!(await farmRepository.bySlug(slug, { includeInactive: true }))) redirect("/admin/gospodarii");
@@ -60,7 +61,7 @@ export async function saveLimitsAction(formData: FormData) {
 }
 
 /** Avertizare, suspendare, excludere sau reactivare, cu motiv obligatoriu. */
-export async function setStandingAction(formData: FormData) {
+async function setStandingAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const slug = t(formData, "slug");
   const farm = await farmRepository.bySlug(slug, { includeInactive: true });
@@ -104,7 +105,7 @@ export async function setStandingAction(formData: FormData) {
 }
 
 /** Adminul confirmă suprafața măsurată în teren (sau o corectează) și, opțional, permite loturi simultane. */
-export async function verifyLandAction(formData: FormData) {
+async function verifyLandAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const slug = t(formData, "slug");
   const m2 = Math.round(Number(t(formData, "verifiedM2").replace(",", ".")));
@@ -131,3 +132,8 @@ export async function verifyLandAction(formData: FormData) {
   refresh();
   redirect(page(slug, "salvat=1"));
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const saveLimitsAction = auditedAction({ action: "admin.regim.saveLimits", workspace: "admin", resourceType: "regim", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, saveLimitsAction__impl);
+export const setStandingAction = auditedAction({ action: "admin.regim.setStanding", workspace: "admin", resourceType: "regim", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, setStandingAction__impl);
+export const verifyLandAction = auditedAction({ action: "admin.regim.verifyLand", workspace: "admin", resourceType: "regim", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, verifyLandAction__impl);

@@ -8,6 +8,7 @@ import { requireRole } from "@/server/auth";
 import { canManageFarm } from "@/server/delivery";
 import { lotRepository } from "@/server/repositories/catalog";
 import { documentRepository, expenseRepository, saveUpload } from "@/server/repositories/documents";
+import { auditedAction } from "@/server/audit";
 
 const actor = (u: User) => `${u.name} (${u.role})`;
 const t = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
@@ -30,7 +31,7 @@ const refresh = () => {
 };
 
 /** Încarcă un document justificativ (factură, aviz, DSV, contract…). */
-export async function uploadDocumentAction(formData: FormData) {
+async function uploadDocumentAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const farmSlug = t(formData, "farmSlug");
   if (!canManageFarm(user, farmSlug)) throw new Error("Neautorizat");
@@ -114,7 +115,7 @@ const fiscalMissing = (invoiceNumber?: string, documentId?: string) =>
  * Adaugă o cheltuială sau un venit. Se poate salva ca ciornă (documentul se adaugă
  * ulterior) sau direct confirmat, dacă are numărul și documentul fiscal.
  */
-export async function addExpenseAction(formData: FormData) {
+async function addExpenseAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const farmSlug = t(formData, "farmSlug");
   if (!canManageFarm(user, farmSlug)) throw new Error("Neautorizat");
@@ -153,7 +154,7 @@ export async function addExpenseAction(formData: FormData) {
 }
 
 /** Completează sau corectează o ciornă (inclusiv actul adăugat ulterior); opțional o și confirmă. */
-export async function updateDraftExpenseAction(formData: FormData) {
+async function updateDraftExpenseAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const existing = await expenseRepository.get(t(formData, "id"));
   if (!existing || !canManageFarm(user, existing.farmSlug)) throw new Error("Neautorizat");
@@ -191,7 +192,7 @@ export async function updateDraftExpenseAction(formData: FormData) {
 }
 
 /** Anulează o cheltuială greșită (rămâne în registru, tăiată, cu motivul). */
-export async function voidExpenseAction(formData: FormData) {
+async function voidExpenseAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const expense = await expenseRepository.get(t(formData, "id"));
   if (!expense || !canManageFarm(user, expense.farmSlug)) throw new Error("Neautorizat");
@@ -204,7 +205,7 @@ export async function voidExpenseAction(formData: FormData) {
 }
 
 /** Adminul confirmă că a verificat documentul (original, sumă, dată). */
-export async function verifyDocumentAction(formData: FormData) {
+async function verifyDocumentAction__impl(formData: FormData) {
   const user = await requireRole(["admin"]);
   const doc = await documentRepository.get(t(formData, "id"));
   if (doc && !doc.verifiedAt) await documentRepository.verify(doc.id, actor(user));
@@ -212,3 +213,10 @@ export async function verifyDocumentAction(formData: FormData) {
   const back = t(formData, "inapoi");
   redirect(back.startsWith("/") ? back : "/admin/documente");
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const uploadDocumentAction = auditedAction({ action: "household.documente.uploadDocument", workspace: "household", resourceType: "documente", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, uploadDocumentAction__impl);
+export const addExpenseAction = auditedAction({ action: "household.documente.addExpense", workspace: "household", resourceType: "documente", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, addExpenseAction__impl);
+export const updateDraftExpenseAction = auditedAction({ action: "household.documente.updateDraftExpense", workspace: "household", resourceType: "documente", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, updateDraftExpenseAction__impl);
+export const voidExpenseAction = auditedAction({ action: "household.documente.voidExpense", workspace: "household", resourceType: "documente", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, voidExpenseAction__impl);
+export const verifyDocumentAction = auditedAction({ action: "household.documente.verifyDocument", workspace: "household", resourceType: "documente", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, verifyDocumentAction__impl);
