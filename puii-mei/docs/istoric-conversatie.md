@@ -117,6 +117,14 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
   Admin; înlocuit de #73), **#73** (pagina Admin a comenzii, contract, documente, etichete; verificare automată a
   traversărilor; constituția §6A + ADR-011). Ordinea de merge: #69 → #70 → #73.
 
+- **24 nov. 2026 (seara): arhitectura la scară națională (dezbaterea „Librarian”, #62).** Claude: review critic
+  (bibliotecarul ca nucleu și contract, nu ca serviciu central; 3 probleme de cod de reparat întâi), propunere de
+  durabilitate (PostgreSQL gestionat în UE, replicare, PITR, copie imuabilă la alt furnizor, test de restaurare
+  săptămânal; etape E0 / E1 / E2) și mecanismul de distribuire a sarcinilor (pull, fără dispecer central).
+  **Decizii fondator:** există **manageri locali și zonali**; gospodarul primește zilnic notificări cu sarcinile și
+  programările; fiecare sarcină are **câmp de justificare** → notificare la managerul local; managerul zonal vede
+  justificările și rezolvările; adminul vede tot; **AI: tot ce se poate automatiza**. De scris ADR-012 după aprobare.
+
 ## Setări și servicii
 
 - Vercel: `DATABASE_URL` (Neon), `ADMIN_USER`, `ADMIN_PASSWORD`; de adăugat `SESSION_SECRET`, `RESEND_API_KEY`,

@@ -78,6 +78,12 @@ _Ultima actualizare: 22 noiembrie 2026_
       (`pg_advisory_xact_lock`): lanț pe partiții + ancorare; 4) `AccessContext` obligatoriu + proiecții per rol + RLS;
       5) benchmark reproductibil (N1/N2) în CI; 6) URL-uri presemnate pentru fișiere, partiționare lunară audit/jurnal.
       Întrebări deschise: volum țintă, buget bază de date, RPO/RTO, întârzierea acceptată în dashboard-uri, AI, retenție.
+- [ ] **Sarcini și manageri** (24 nov. 2026, decizie fondator, de detaliat): roluri `manager_local` / `manager_zonal`,
+      tabel de sarcini (termen, justificare, rezolvare, escaladare), rezumat zilnic pentru gospodar, coada managerului
+      local, tablou zonal și național. Deschis: termenele pe tip de sarcină (zootehnist), delimitarea zonelor, termenul
+      de reacție al managerului, ce acțiuni AI rămân cu confirmare umană (propunere: plăți, efectiv, veterinar, blocări).
+- [ ] **Durabilitate E0** (24 nov. 2026, propus pe #62): Neon plătit cu PITR (~20 $/lună), copie zilnică imuabilă la
+      alt furnizor (ex. R2), test automat de restaurare săptămânal — așteaptă acordul pe buget și furnizor.
 - [ ] **AUD-001, etapa 2** (24 nov. 2026, după #70): separarea rolurilor SQL (aplicația fără drept de a șterge
       triggerul), export extern semnat (WORM), interfață de căutare / export pentru investigații (cu audit al
       accesului), retenția pe categorii (jurist / DPO), auditul vizualizărilor sensibile, `householdId` completat la
