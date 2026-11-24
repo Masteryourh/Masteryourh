@@ -4,9 +4,12 @@ import { Container } from "@/components/ui/Container";
 export function CtaBand({
   title = "Puii mei. Crescuți pentru tine.",
   text = "Rezervă acum din următorul lot. Te sunăm pentru confirmare și îți spunem detaliile avansului (pui de o zi + furaj), care se scade din prețul total.",
+  showHowItWorks = true,
 }: {
   title?: string;
   text?: string;
+  /** Fals pe pagina „Cum funcționează” (butonul ar trimite la aceeași pagină). */
+  showHowItWorks?: boolean;
 }) {
   return (
     <section className="py-16 sm:py-24">
@@ -21,9 +24,11 @@ export function CtaBand({
             <ButtonLink href="/precomanda" size="lg">
               Vreau să comand
             </ButtonLink>
-            <ButtonLink href="/cum-functioneaza" size="lg" variant="light">
-              Cum funcționează?
-            </ButtonLink>
+            {showHowItWorks && (
+              <ButtonLink href="/cum-functioneaza" size="lg" variant="light">
+                Cum funcționează?
+              </ButtonLink>
+            )}
           </div>
         </div>
       </Container>
