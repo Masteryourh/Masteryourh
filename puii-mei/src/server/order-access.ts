@@ -87,8 +87,8 @@ export async function requestOrderPin(numberInput: string): Promise<PinRequest> 
     const text = `Puii mei: PIN-ul pentru comanda ${p.number} este ${issued.pin}. Valabil ${PIN_HOURS} de ore.`;
     const sent =
       channel === "sms"
-        ? await sendSms(p.customer.phone, text)
-        : await sendEmail({ to: p.customer.email, subject: `PIN pentru comanda ${p.number}`, text, html: `<p>${text}</p>` });
+        ? await sendSms(p.customer.phone, text, { immediate: true })
+        : await sendEmail({ to: p.customer.email, subject: `PIN pentru comanda ${p.number}`, text, html: `<p>${text}</p>` }, { immediate: true });
     if (!sent) {
       // Trimiterea a eșuat: PIN-ul devine vizibil adminului, care îl trimite manual.
       channel = "manual";

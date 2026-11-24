@@ -15,6 +15,7 @@ export const INDEXED_FIELDS = {
   expenses: ["farmSlug"],
   investments: ["investorId", "farmSlug"],
   "growth-log": ["lotCode", "farmSlug"],
+  outbox: ["status"],
 } as const satisfies Record<string, readonly string[]>;
 
 /**

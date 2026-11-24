@@ -25,6 +25,11 @@ export function pgStore(connectionString: string): DocumentStore {
 
   // Tranzacția curentă (blocul `atomic`): toate interogările din interiorul lui folosesc ACEEAȘI conexiune.
   const tx = new AsyncLocalStorage<PoolClient>();
+  // Efectele de după commit, pe tranzacție (blocul `atomic` exterior). La anulare se aruncă.
+  const commitHooks = new WeakMap<PoolClient, Array<() => Promise<void>>>();
+  const runHooks = async (hooks: Array<() => Promise<void>> | undefined) => {
+    for (const h of hooks ?? []) await h().catch((err) => console.error("[puii-mei] Efect după commit eșuat", err));
+  };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const q = <R extends Record<string, any> = Record<string, any>>(text: string, params?: unknown[]) =>
     (tx.getStore() ?? pool).query<R>(text, params);
@@ -193,17 +198,31 @@ export function pgStore(connectionString: string): DocumentStore {
       await init();
       if (tx.getStore()) return fn();
       const c = await pool.connect();
+      let released = false;
       try {
         await c.query("begin");
+        commitHooks.set(c, []);
         const r = await tx.run(c, fn);
         await c.query("commit");
+        const hooks = commitHooks.get(c);
+        commitHooks.delete(c);
+        c.release();
+        released = true;
+        await runHooks(hooks);
         return r;
       } catch (err) {
-        await c.query("rollback").catch(() => undefined);
+        commitHooks.delete(c);
+        if (!released) await c.query("rollback").catch(() => undefined);
         throw err;
       } finally {
-        c.release();
+        if (!released) c.release();
       }
+    },
+    async afterCommit(fn: () => Promise<void>) {
+      const c = tx.getStore();
+      const hooks = c && commitHooks.get(c);
+      if (hooks) hooks.push(fn);
+      else await runHooks([fn]);
     },
     /**
      * Adaugă un eveniment de audit, legat prin amprentă de cel anterior. Blocarea consultativă (până la sfârșitul

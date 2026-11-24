@@ -16,8 +16,15 @@ export function toE164(phone: string) {
   return `+${d}`;
 }
 
-export async function sendSms(to: string, text: string) {
-  if (!smsEnabled()) return false;
+/** SMS prin outbox (vezi sendEmail): pleacă după commit. `immediate`: direct, cu rezultat (ex. PIN-ul). */
+export async function sendSms(to: string, text: string, { immediate = false } = {}) {
+  if (!to) return false;
+  if (immediate) return smsEnabled() && (await deliverSms({ to, text })).ok;
+  const { enqueue } = await import("./outbox");
+  return enqueue("sms", { to, text });
+}
+
+export async function deliverSms({ to, text }: { to: string; text: string }): Promise<{ ok: boolean; error?: string }> {
   const sid = process.env.TWILIO_ACCOUNT_SID!;
   try {
     const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
@@ -28,10 +35,14 @@ export async function sendSms(to: string, text: string) {
       },
       body: new URLSearchParams({ To: toE164(to), From: process.env.TWILIO_FROM!, Body: text }),
     });
-    if (!res.ok) console.error("[puii-mei] SMS-ul nu a putut fi trimis:", res.status, await res.text());
-    return res.ok;
+    if (!res.ok) {
+      const error = `${res.status} ${(await res.text()).slice(0, 200)}`;
+      console.error("[puii-mei] SMS-ul nu a putut fi trimis:", error);
+      return { ok: false, error };
+    }
+    return { ok: true };
   } catch (err) {
     console.error("[puii-mei] Eroare la trimiterea SMS-ului", err);
-    return false;
+    return { ok: false, error: err instanceof Error ? err.message : "eroare de rețea" };
   }
 }

@@ -48,6 +48,10 @@ function withLock<R>(name: string, fn: () => Promise<R>): Promise<R> {
 export const jsonStore: DocumentStore = {
   /** Fără anulare pe fișiere (doar dezvoltare locală): vezi DocumentStore.atomic. */
   atomic: <R>(fn: () => Promise<R>) => fn(),
+  /** Fără tranzacții pe fișiere: efectul rulează imediat. */
+  async afterCommit(fn: () => Promise<void>) {
+    await fn().catch((err) => console.error("[puii-mei] Efect după commit eșuat", err));
+  },
   auditAppend(e: AuditRecord, hash: (prev: string | null, e: AuditRecord) => string) {
     return withLock("audit-events", async () => {
       const items = await readCollection<StoredAuditEvent>("audit-events");
