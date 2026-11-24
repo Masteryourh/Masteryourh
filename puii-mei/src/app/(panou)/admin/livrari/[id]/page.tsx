@@ -20,7 +20,7 @@ export default async function AdminTourPage({ params }: PageProps<"/admin/livrar
   return (
     <Container className="py-8">
       <div className="mt-4">
-        <TourDetail tour={tour} user={user} />
+        <TourDetail tour={tour} user={user} space="admin" />
       </div>
       <section className="mt-10">
         <h2 className="text-xl font-semibold">Colete: ridicare ↔ primire</h2>

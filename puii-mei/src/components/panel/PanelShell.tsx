@@ -40,7 +40,7 @@ export function PanelShell({
               <span className="block text-xs font-semibold">{user.name}</span>
               <span className="block text-[11px] text-slate-500">{roleLabels[user.role]}</span>
             </span>
-            <a href="/" target="_blank" rel="noopener noreferrer" className="hidden text-xs text-slate-500 underline hover:text-slate-800 md:inline">Vezi site-ul ↗</a>
+            <a href="/" target="_blank" rel="noopener noreferrer" className="hidden text-xs text-slate-500 underline hover:text-slate-800 md:inline">Deschide website ↗</a>
             <ThemeToggle className="h-8 w-8 rounded-md border border-slate-300 bg-white hover:bg-slate-100" />
             <form action="/cont/iesire" method="post">
               <button className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-slate-100">Ieșire</button>
@@ -84,7 +84,7 @@ export function PanelShell({
               <button className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-slate-100">Ieșire</button>
             </form>
             <a href="/" target="_blank" rel="noopener noreferrer" className="text-xs text-slate-500 underline hover:text-slate-800">
-              Vezi site-ul ↗
+              Deschide website ↗
             </a>
           </div>
         </div>

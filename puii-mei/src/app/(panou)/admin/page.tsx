@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { LotStatusBadge } from "@/components/lots/LotStatusBadge";
@@ -151,9 +152,9 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
               <tr><td colSpan={9} className="px-4 py-6 text-center text-muted">Nicio precomandă încă.</td></tr>
             )}
             {preorders.map((p) => (
-              <tr key={p.id} className="align-top">
+              <tr key={p.id} id={`comanda-${p.number}`} className="scroll-mt-24 align-top target:bg-amber-50 target:ring-2 target:ring-amber-400">
                 <td className="px-4 py-3 font-mono text-xs">
-                  {p.number}
+                  <Link href={`/admin/comenzi/${encodeURIComponent(p.number)}?inapoi=${encodeURIComponent(`/admin#comanda-${p.number}`)}`} className="font-semibold underline">{p.number}</Link>
                   {p.parentNumber && <div className="mt-1 text-[10px] text-slate-500">parte din {p.parentNumber}</div>}
                   {!p.lotCode && p.allocation?.status === "alegere" && <div className="mt-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900">clientul alege</div>}
                   {!p.lotCode && p.allocation?.status === "asteapta" && <div className="mt-1 rounded bg-slate-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">în așteptare</div>}

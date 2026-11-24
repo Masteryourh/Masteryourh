@@ -147,7 +147,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
             <h1 className="mt-1 text-3xl font-light tracking-tight sm:text-4xl">{farm.name}</h1>
             <p className="text-sm text-[var(--pd-muted)]">{farm.owner} · {farm.village}, jud. {farm.county}</p>
           </div>
-          <Link href={`/gospodarii/${farm.slug}`} className="rounded-full border border-white/15 px-4 py-2 text-sm text-[var(--pd-text)] hover:bg-white/10">
+          <Link href={`/gospodarii/${farm.slug}`} target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-sm text-[var(--pd-text)] hover:bg-white/10">
             Profilul public ↗
           </Link>
         </div>
@@ -378,7 +378,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         <summary className="cursor-pointer text-sm font-semibold">Administrează loturile: lot nou, modificare, închidere</summary>
         <div className="mt-4 space-y-2">
           {lots.map((l) => (
-            <LotAdminRow key={l.code} lot={l} returnTo={backTo} canApprove={user.role === "admin"} maxPens={limits.pens} orders={farmPreorders} />
+            <LotAdminRow key={l.code} lot={l} returnTo={backTo} canApprove={user.role === "admin"} maxPens={limits.pens} orders={farmPreorders} ordersHref={backTo} />
           ))}
         </div>
         <h3 className="mt-6 mb-2 font-sans text-base font-semibold">Lot nou</h3>
@@ -409,7 +409,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
               <tr><td colSpan={8} className="px-4 py-6 text-center text-muted">Nicio precomandă alocată încă pe loturile tale.</td></tr>
             )}
             {farmPreorders.map((p) => (
-              <tr key={p.id}>
+              <tr key={p.id} id={`comanda-${p.number}`} className="scroll-mt-24 target:bg-amber-50 target:ring-2 target:ring-amber-400">
                 <td className="px-4 py-3 font-mono text-xs">{p.number}</td>
                 <td className="px-4 py-3">
                   <div className="font-medium">{p.customer.name}</div>

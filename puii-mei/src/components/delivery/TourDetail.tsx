@@ -21,7 +21,7 @@ const time = new Intl.DateTimeFormat("ro-RO", { day: "numeric", month: "short", 
 const btn = "rounded-full px-4 py-2 text-sm font-semibold";
 
 /** Detaliul unei ture, comun pentru gospodar și admin. */
-export async function TourDetail({ tour, user, highlightRequest }: { tour: Tour; user: User; highlightRequest?: string }) {
+export async function TourDetail({ tour, user, highlightRequest, space = "household" }: { tour: Tour; user: User; highlightRequest?: string; /** Spațiul paginii (linkurile rămân în el, SC-049). */ space?: "admin" | "household" }) {
   const [view, events, origin] = await Promise.all([loadTourView(tour), eventRepository.forTour(tour.id), requestOrigin()]);
   const link = courierTourUrl(origin, tour);
   const deadline = tourDeadline(tour);
@@ -43,7 +43,7 @@ export async function TourDetail({ tour, user, highlightRequest }: { tour: Tour;
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href={`/cont/gospodar/etichete?tura=${tour.id}`} className={`${btn} ring-1 ring-forest-900/15`}>Etichetele turei</Link>
+          <Link href={space === "admin" ? `/admin/livrari/etichete?tura=${tour.id}&inapoi=${encodeURIComponent(`/admin/livrari/${tour.id}`)}` : `/cont/gospodar/etichete?tura=${tour.id}`} className={`${btn} ring-1 ring-forest-900/15`}>Etichetele turei</Link>
           {tour.status === "planificata" && (
             <form action={cancelTourAction}>
               <input type="hidden" name="tourId" value={tour.id} />
