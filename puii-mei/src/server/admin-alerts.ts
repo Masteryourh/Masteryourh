@@ -25,7 +25,7 @@ export async function adminAlerts(): Promise<AdminAlert[]> {
     at: new Date().toISOString().slice(0, 10),
     title: `Monitorizare · lotul ${g.lotCode}`,
     text: `${farmName.get(g.farmSlug) ?? g.farmSlug} (lotul ${g.lotCode}): ${g.text}`,
-    href: `/cont/gospodar/jurnal?gospodarie=${g.farmSlug}`,
+    href: `/admin/gospodarii/${g.farmSlug}/jurnal`,
   }));
   // Documente ale gospodăriilor care expiră în cel mult 30 de zile (sau au expirat): compania anunță gospodarul.
   const docs = expiringDocuments((await documentRepository.list()).filter((d) => d.farmSlug), new Date(), 30).map(({ doc, days }) => ({

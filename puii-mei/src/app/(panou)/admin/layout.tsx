@@ -35,7 +35,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         { href: "/admin/interes", label: "Interes produse", icon: "interes" },
         { href: "/admin/utilizatori", label: "Utilizatori", icon: "utilizatori" },
         { href: "/admin/legislatie", label: "Legislație și surse", icon: "legislatie" },
-        { href: "/cont/gospodar", label: "Vedere gospodar", icon: "vedere" },
+        { href: "/cont/gospodar", label: "Schimbă spațiul: vedere gospodar", icon: "vedere" },
       ]}
     >
       {alerts.length > 0 && (

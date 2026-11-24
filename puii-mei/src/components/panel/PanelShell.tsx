@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import type { User } from "@/lib/domain";
 import { roleLabels } from "@/lib/roles";
@@ -50,7 +51,7 @@ export function PanelShell({
           <RailNav items={items} label={title} />
         </aside>
         <main id="continut" className="min-w-0 flex-1 pb-10">
-          <PanelCrumbs />
+          <Suspense fallback={null}><PanelCrumbs /></Suspense>
           {children}
         </main>
       </div>
@@ -89,7 +90,7 @@ export function PanelShell({
         </div>
       </aside>
       <main id="continut" className="min-w-0 flex-1 pb-10">
-        <PanelCrumbs />
+        <Suspense fallback={null}><PanelCrumbs /></Suspense>
         {children}
       </main>
     </div>
