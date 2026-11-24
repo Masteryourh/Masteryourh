@@ -90,3 +90,7 @@ Numerotarea urmează mandatul original, nu numerotarea istorică a fișierelor d
 |19|Extindere|de redactat|
 |20|Plan implementare|de redactat|
 Fiecare capitol: inventar verificat, contracte, date, permisiuni, fluxuri, erori, teste, decizii deschise. Reconciliere cu Claude și ADR înainte de baseline. Niciun capitol nu este declarat finalizat doar pentru existența fișierului.
+
+
+## Addendum v0.2 — Consulta
+Decizii fondator transmise de Claude în PR62, comentarii 7144648431 și 7144750950: ierarhie gospodar → manager local (o comună/UAT) → manager zonal (comunele circumscripției unei judecătorii) → admin național; notificare zilnică sarcini și programări; justificare pe fiecare sarcină, notificare local, vizibilitate zonal și admin; automatizare AI maximă. PROPUS: domeniu Operations/Tasks, nomenclator teritorial versionat, atribuiri temporale, outbox. SLA, termene escaladare, lista aprobărilor umane AI și buget E0 DESCHISE. Main verificat: pg-store.ts încă list integral, pool max3; PR65–68 închise, MFA prezent în main; PR69/70/73 deschise. Nu deducem merge doar din closed. Citirile țintite sunt următorul pas anunțat Claude, nu livrat verificat.
