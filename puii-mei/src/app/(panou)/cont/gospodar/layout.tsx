@@ -11,6 +11,7 @@ export default async function FarmerLayout({ children }: LayoutProps<"/cont/gosp
     { href: "/cont/gospodar/jurnal", label: "Jurnal de creștere" },
     { href: "/cont/gospodar/documente", label: "Documente și cheltuieli" },
     { href: "/cont/gospodar/legislatie", label: "Legislație și reguli" },
+    { href: "/cont/gospodar/securitate", label: "Securitate" },
   ];
   if (user.role === "admin") items.push({ href: "/admin", label: "← Panou admin" });
   return (

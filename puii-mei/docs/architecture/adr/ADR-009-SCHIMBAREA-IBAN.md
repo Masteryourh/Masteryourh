@@ -1,7 +1,7 @@
 # ADR-009 — Schimbarea contului bancar (IBAN) al gospodăriei
 
 **Data:** 23 noiembrie 2026 · **Statut:** politica ACCEPTATĂ de Product Owner (varianta b, în conversație, 23.11.2026);
-etapa 1 (fără MFA) implementată în PR `claude/sec-iban-schimbare`; MFA rămâne de implementat.
+etapa 1 unită (#61); etapa 2 (MFA) în PR `claude/mfa-iban`.
 **Răspunde la:** CG-03 (`CHATGPT-REVIEW-CLAUDE-PR55.md`), V-04 (`CLAUDE-VERIFICATION-V1.md`), T11 (`CLAUDE-03`).
 
 ## Context
@@ -49,8 +49,19 @@ Stări: `in-verificare → confirmat → activ`, sau `respins` / `anulat`.
 8. Fiecare pas e o singură tranzacție pe documentul gospodăriei (`store.transact`). Cererea identică repetată e
    idempotentă; o cerere nouă o înlocuiește pe cea în curs și reîncepe verificarea.
 
-## De făcut (etapa 2) [DESCHIS]
-- **MFA** pentru cererea de schimbare, cerut de politica (b). Etapa 1 îl înlocuiește temporar cu notificarea și apelul.
+## Etapa 2 — MFA (implementat, 24.11.2026)
+- Cod de unică folosință din aplicația de autentificare (TOTP, RFC 6238: 6 cifre, 30 s; testat cu vectorii oficiali
+  RFC 4226 / 6238). Activare din panou → Securitate (cod QR + cheie), activă doar după primul cod corect.
+- Cheia se păstrează **criptată** (AES-256-GCM, cheie derivată din SESSION_SECRET prin HKDF).
+- Un cod nu se poate folosi de două ori; 5 coduri greșite în 15 minute → blocare temporară.
+- **Schimbarea unui cont bancar existent** de către gospodar cere codul; fără MFA activ, cererea e refuzată, cu
+  îndrumare spre pagina Securitate. Primul cont al gospodăriei: doar apelul telefonic (nu există un cont vechi de
+  protejat) [PROPUS]. Adminul (contul din variabilele de mediu nu poate avea MFA) nu e supus codului, dar nu își
+  poate confirma propria cerere.
+- Telefon pierdut: adminul resetează codul din Admin → Utilizatori, după verificarea identității prin telefon;
+  sesiunile contului se închid.
+
+## De făcut [DESCHIS]
 - Cererea expiră dacă titularul nu poate fi sunat în 5 zile lucrătoare [PROPUS, neimplementat].
 - Sursa de adevăr bancară: verificarea că titularul contului e gospodăria (extras, confirmarea băncii) [DESCHIS].
 - Mandatul de reprezentare (`household.mandates`) nu există încă în cod. Când apare, schimbarea IBAN-ului cu mandat

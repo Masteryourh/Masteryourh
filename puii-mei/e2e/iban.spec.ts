@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
-import { randomBytes, randomUUID, scryptSync } from "node:crypto";
+import { createHmac, randomBytes, randomUUID, scryptSync } from "node:crypto";
 import pg from "pg";
 
 /**
@@ -59,9 +59,49 @@ async function login(browser: Browser, email: string, password: string, to: stri
 const farmer = (b: Browser) => login(b, EMAIL, PASSWORD, "/cont/gospodar");
 const admin = (b: Browser) => login(b, process.env.ADMIN_USER ?? "admin@test.ro", process.env.ADMIN_PASSWORD ?? "Parola12345", "/admin");
 
+/* MFA (etapa 2, ADR-009): schimbarea unui cont existent cere codul din aplicația de autentificare. */
+let mfaSecret = "";
+function totpAt(b32: string, step: number) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = 0, value = 0;
+  const bytes: number[] = [];
+  for (const ch of b32) {
+    value = (value << 5) | alphabet.indexOf(ch);
+    bits += 5;
+    if (bits >= 8) {
+      bytes.push((value >>> (bits - 8)) & 255);
+      bits -= 8;
+    }
+  }
+  const msg = Buffer.alloc(8);
+  msg.writeBigUInt64BE(BigInt(step));
+  const h = createHmac("sha1", Buffer.from(bytes)).update(msg).digest();
+  return String((h.readUInt32BE(h[h.length - 1] & 15) & 0x7fffffff) % 1_000_000).padStart(6, "0");
+}
+/** Un cod încă nefolosit (codurile folosite nu se mai acceptă): așteaptă, dacă e nevoie, pasul următor de 30 s. */
+async function freshCode() {
+  const last = (await db.query(`select (data->'mfa'->>'lastStep')::bigint as s from documents where collection = 'users' and id = $1`, [farmerId])).rows[0]?.s;
+  for (;;) {
+    const now = Math.floor(Date.now() / 30000);
+    const step = Math.max(now - 1, last === null || last === undefined ? now - 1 : Number(last) + 1);
+    if (step <= now + 1) return totpAt(mfaSecret, step);
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+}
+async function enableMfa(page: Page) {
+  await page.goto("/cont/gospodar/securitate");
+  await page.locator("button:has-text('Activează codul de confirmare')").click();
+  await page.waitForURL(/pas=scanare/);
+  mfaSecret = (await page.locator("[data-mfa-secret]").innerText()).replace(/\s/g, "");
+  await page.fill("input[name=code]", await freshCode());
+  await page.locator("button:has-text('Confirmă și activează')").click();
+  await page.waitForURL(/activat=1/);
+}
+
 async function requestIban(page: Page, value: string, farmSlug?: string) {
   await page.goto("/cont/gospodar");
   const form = page.locator("form", { has: page.locator("input[name=iban]") });
+  if (mfaSecret && (await form.locator("input[name=mfaCode]").count())) await form.locator("input[name=mfaCode]").fill(await freshCode());
   await form.locator("input[name=holder]").fill("Ana Ciornei");
   await form.locator("input[name=iban]").fill(value);
   await form.locator("input[name=bank]").fill("Banca Test");
@@ -92,6 +132,7 @@ test("primul cont: invizibil clienților până la apelul de confirmare, apoi ac
 
 test("schimbarea contului: contul vechi rămâne activ până la confirmare + 24 h; jurnalul are IBAN-ul mascat", async ({ browser }) => {
   const f = await farmer(browser);
+  await enableMfa(f); // schimbarea contului existent cere codul de confirmare
   await requestIban(f, B);
   expect((await payment()).iban).toBe(A);
 

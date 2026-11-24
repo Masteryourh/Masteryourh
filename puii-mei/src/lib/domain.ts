@@ -477,6 +477,8 @@ export interface User {
   setupExpiresAt?: string;
   createdAt: string;
   lastLoginAt?: string;
+  /** MFA (cod din aplicația de autentificare): cheia criptată, activă după confirmarea primului cod. */
+  mfa?: { secret: string; enabledAt?: string; lastStep?: number; pending?: boolean };
 }
 
 /* ------------------------------------------------------------------ */

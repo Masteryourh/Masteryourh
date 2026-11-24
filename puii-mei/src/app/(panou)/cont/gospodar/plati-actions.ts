@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { requireRole } from "@/server/auth";
 import { canManageFarm } from "@/server/delivery";
 import { setFeedReceived } from "@/server/orders";
-import { normalizeIban } from "@/server/repositories/farm-payments";
+import { farmPaymentRepository, normalizeIban } from "@/server/repositories/farm-payments";
+import { checkMfaCode, mfaEnabled } from "@/server/mfa";
 import { reportUnrequested, savePaymentDetails } from "@/server/iban";
 
 const refresh = () => {
@@ -32,6 +33,17 @@ export async function saveFarmPaymentAction(formData: FormData) {
   else if (!(price > 0 && price < 50)) error = "Prețul furajului trebuie să fie între 0 și 50 lei / kg.";
   else if (!(chick > 0 && chick < 100)) error = "Prețul puiului de o zi trebuie să fie între 0 și 100 lei.";
   if (error) redirect(`${back}eroarePlata=${encodeURIComponent(error)}#plata-hrana`);
+  // MFA (ADR-009, varianta b): schimbarea unui cont bancar EXISTENT cere codul din aplicația de autentificare
+  // (pentru gospodari). Primul cont al gospodăriei se verifică doar prin apelul telefonic.
+  const current = await farmPaymentRepository.bySlug(farmSlug);
+  const changesAccount = Boolean(current?.iban) && (current!.iban !== iban || current!.holder !== holder || current!.bank !== bank);
+  if (changesAccount && user.role === "gospodar") {
+    if (!mfaEnabled(user)) {
+      redirect(`${back}eroarePlata=${encodeURIComponent("Pentru schimbarea contului bancar activează întâi codul de confirmare: Securitate (în meniu).")}#plata-hrana`);
+    }
+    const check = await checkMfaCode(user.id, String(formData.get("mfaCode") ?? ""));
+    if (!check.ok) redirect(`${back}eroarePlata=${encodeURIComponent(check.error)}#plata-hrana`);
+  }
   // Prețurile se schimbă imediat; un cont bancar nou intră în verificare (clienții văd contul activ până la confirmare).
   const change = await savePaymentDetails(
     user,
