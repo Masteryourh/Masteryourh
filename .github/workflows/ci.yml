@@ -60,6 +60,11 @@ jobs:
       ADMIN_PASSWORD: ci-parola-de-test-1234
       PORT: "3005"
       BASE_URL: http://localhost:3005
+      # Stocarea fișierelor: server S3 de test (e2e/fake-s3.mjs, verifică semnătura SigV4); chei doar de test.
+      FILES_S3_ENDPOINT: http://127.0.0.1:9100
+      FILES_S3_BUCKET: puii-mei-test
+      FILES_S3_ACCESS_KEY_ID: ci-test-id
+      FILES_S3_SECRET_ACCESS_KEY: ci-test-secret
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -72,6 +77,11 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Build
         run: npm run build
+      - name: Pornește stocarea S3 de test
+        run: |
+          nohup node e2e/fake-s3.mjs > fake-s3.log 2>&1 &
+          for i in $(seq 1 20); do curl -sf http://127.0.0.1:9100/__debug/list > /dev/null && exit 0; sleep 0.5; done
+          echo "Stocarea de test nu a pornit"; cat fake-s3.log; exit 1
       - name: Pornește serverul
         run: |
           export SESSION_SECRET="$(openssl rand -hex 32)"

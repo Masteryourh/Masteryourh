@@ -343,11 +343,14 @@ export interface TourEvent {
   alert?: boolean;
 }
 
-/** Fotografie (JPEG/PNG comprimat), stocată ca base64. */
+/** Fotografie (JPEG/PNG comprimat): conținutul în stocarea externă (`blobKey`) sau, vechi / fără stocare externă, base64 în `data`. */
 export interface StoredPhoto {
   id: string;
   mime: string;
-  data: string;
+  data?: string | null;
+  blobKey?: string;
+  size?: number;
+  sha256?: string;
   at: string;
   /** Contextul: „parcel:<id>”, „tour:<id>” etc. – pentru controlul accesului. */
   owner: string;
@@ -480,7 +483,7 @@ export interface User {
 /* Documente, cheltuieli, investiții (etapele 3–4)                     */
 /* ------------------------------------------------------------------ */
 
-/** Fișier încărcat (stocat în baza de date; pentru volum mare se mută pe Vercel Blob). */
+/** Fișier încărcat: conținutul în stocarea externă (`blobKey`) sau, vechi / fără stocare externă, base64 în `data`. */
 export interface StoredFile {
   id: string;
   name: string;
@@ -488,7 +491,8 @@ export interface StoredFile {
   size: number;
   /** Amprenta SHA-256 a conținutului: dovada că fișierul nu a fost modificat. */
   sha256: string;
-  data: string;
+  data?: string | null;
+  blobKey?: string;
   uploadedAt: string;
   uploadedBy: string;
 }

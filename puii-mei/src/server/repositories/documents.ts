@@ -1,8 +1,9 @@
 import "server-only";
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import type { Expense, FarmDocument, Investment, StoredFile } from "@/lib/domain";
 import { FILE_LIMITS } from "@/lib/documents";
 import { store } from "@/server/db/store";
+import { readContent, sha256, storeContent } from "@/server/files/content";
 
 const FILES = "files";
 const DOCS = "documents";
@@ -18,13 +19,14 @@ export async function saveUpload(file: File, uploadedBy: string): Promise<Stored
   const mime = file.type || "application/octet-stream";
   if (!FILE_LIMITS.mimes.includes(mime)) throw new Error("Tip de fișier neacceptat. Folosește PDF, imagine, Word sau Excel.");
   const buf = Buffer.from(await file.arrayBuffer());
+  const id = randomUUID();
   const stored: StoredFile = {
-    id: randomUUID(),
+    id,
     name: file.name.replace(/[^\p{L}\p{N}._ -]/gu, "_").slice(0, 120) || "document",
     mime,
     size: buf.length,
-    sha256: createHash("sha256").update(buf).digest("hex"),
-    data: buf.toString("base64"),
+    sha256: sha256(buf),
+    ...(await storeContent("files", id, buf, mime)),
     uploadedAt: new Date().toISOString(),
     uploadedBy,
   };
@@ -33,6 +35,8 @@ export async function saveUpload(file: File, uploadedBy: string): Promise<Stored
 
 export const fileRepository = {
   get: (id: string) => store.get<StoredFile>(FILES, id),
+  /** Conținutul fișierului (din stocarea externă sau din baza de date), cu verificarea amprentei SHA-256. */
+  content: (file: StoredFile) => readContent(file),
 };
 
 export const documentRepository = {
