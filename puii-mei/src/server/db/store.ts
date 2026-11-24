@@ -28,7 +28,41 @@ export interface DocumentStore {
   ): Promise<R>;
   /** Șterge documente: toată colecția sau doar id-urile date. Întoarce câte s-au șters. */
   remove(collection: string, ids?: string[]): Promise<number>;
+  /**
+   * Bloc atomic (AUD-001): pe PostgreSQL, toate scrierile din `fn` sunt o singură tranzacție (o eroare anulează tot).
+   * Pe fișiere JSON (doar dezvoltare locală) NU există anulare: scrierile făcute înainte de eroare rămân.
+   */
+  atomic<R>(fn: () => Promise<R>): Promise<R>;
+  /** Jurnalul de audit, doar adăugare, cu lanț de amprente (vezi src/server/audit.ts). */
+  auditAppend(e: AuditRecord, hash: (prev: string | null, e: AuditRecord) => string): Promise<void>;
+  auditList(filter: { householdId?: string; actorId?: string; resourceId?: string; correlationId?: string; limit?: number }): Promise<StoredAuditEvent[]>;
 }
+
+/** Evenimentul de audit (AUD-001), deja redactat: fără parole, PIN-uri, tokenuri, IBAN în clar. */
+export type AuditRecord = {
+  id: string;
+  schemaVersion: 1;
+  occurredAt: string;
+  action: string;
+  result: "ok" | "refuzat" | "eroare";
+  actorType: "human" | "system" | "client" | "courier";
+  actorId: string | null;
+  actorRole: string | null;
+  onBehalfOfHouseholdId: string | null;
+  workspace: string;
+  sourceKind: "web" | "job" | "system";
+  householdId: string | null;
+  resourceType: string | null;
+  resourceId: string | null;
+  correlationId: string;
+  requestId: string | null;
+  ipHash: string | null;
+  userAgent: string | null;
+  reason: string | null;
+  changes: Record<string, unknown> | null;
+  unavailable: string[];
+};
+export type StoredAuditEvent = AuditRecord & { seq: number; prevHash: string | null; eventHash: string; recordedAt: string };
 
 export type TransactStep<T, R> = { patch?: Partial<T>; result: R };
 

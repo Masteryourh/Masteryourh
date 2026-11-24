@@ -7,6 +7,7 @@ import { flattenErrors } from "@/lib/validation/common";
 import { confirmationSchema } from "@/lib/validation/confirmation";
 import { logClientConfirmation, openRating } from "@/server/delivery";
 import { parcelRepository, photoRepository } from "@/server/repositories/delivery";
+import { auditedAction } from "@/server/audit";
 
 export type ConfirmationFormState =
   | { status: "idle" }
@@ -15,7 +16,7 @@ export type ConfirmationFormState =
 const MAX_PHOTO_BYTES = 1.5 * 1024 * 1024;
 
 /** Lista de verificare a clientului + 4 fotografii. După trimitere nu se mai poate modifica. */
-export async function submitConfirmation(
+async function submitConfirmation__impl(
   token: string,
   _prev: ConfirmationFormState,
   formData: FormData,
@@ -76,3 +77,6 @@ export async function submitConfirmation(
   revalidatePath("/cont/gospodar", "layout");
   redirect(`/evaluare/${rated.ratingToken}?multumim=1`);
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const submitConfirmation = auditedAction({ action: "customer.confirmare.submitConfirmation", workspace: "customer", resourceType: "confirmare", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, submitConfirmation__impl);

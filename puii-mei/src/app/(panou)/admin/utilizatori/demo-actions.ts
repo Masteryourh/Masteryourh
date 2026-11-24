@@ -7,6 +7,7 @@ import { hashPassword } from "@/server/password";
 import { farmRepository } from "@/server/repositories/catalog";
 import { investmentRepository } from "@/server/repositories/documents";
 import { userRepository } from "@/server/repositories/users";
+import { auditedAction } from "@/server/audit";
 
 export type DemoAccountsState =
   | { status: "idle" }
@@ -23,7 +24,7 @@ function readablePassword() {
  * Conturi de test, gata de folosit: câte un gospodar pentru fiecare gospodărie fără cont
  * și un investitor cu o investiție demonstrativă. Parolele se afișează o singură dată.
  */
-export async function createDemoAccounts(): Promise<DemoAccountsState> {
+async function createDemoAccounts__impl(): Promise<DemoAccountsState> {
   const admin = await requireAdmin();
   const [farms, users] = await Promise.all([farmRepository.listAll(), userRepository.list()]);
   const accounts: { name: string; email: string; password: string; role: string }[] = [];
@@ -77,3 +78,6 @@ export async function createDemoAccounts(): Promise<DemoAccountsState> {
   revalidatePath("/admin", "layout");
   return { status: "done", accounts, skipped };
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const createDemoAccounts = auditedAction({ action: "admin.demo.createDemoAccounts", workspace: "admin", resourceType: "demo", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, createDemoAccounts__impl);

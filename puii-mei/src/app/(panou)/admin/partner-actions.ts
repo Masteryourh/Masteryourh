@@ -7,10 +7,11 @@ import { farmEditSchema } from "@/lib/validation/partner";
 import { requireAdmin } from "@/server/auth";
 import { applicationRepository, investorRepository } from "@/server/repositories/applications";
 import { farmRepository } from "@/server/repositories/catalog";
+import { auditedAction } from "@/server/audit";
 
 const statuses: FarmApplicationStatus[] = ["noua", "in-evaluare", "vizita-programata", "aprobata", "respinsa"];
 
-export async function updateApplication(formData: FormData) {
+async function updateApplication__impl(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "") as FarmApplicationStatus;
@@ -21,7 +22,7 @@ export async function updateApplication(formData: FormData) {
 }
 
 /** Creează profilul public al gospodăriei dintr-o solicitare aprobată. */
-export async function createFarmFromApplication(formData: FormData) {
+async function createFarmFromApplication__impl(formData: FormData) {
   await requireAdmin();
   const app = await applicationRepository.byId(String(formData.get("id") ?? ""));
   if (!app) throw new Error("Solicitarea nu există");
@@ -49,7 +50,7 @@ export async function createFarmFromApplication(formData: FormData) {
   redirect(`/admin/gospodarii/${farm.slug}?nou=1`);
 }
 
-export async function saveFarm(formData: FormData) {
+async function saveFarm__impl(formData: FormData) {
   await requireAdmin();
   const slug = String(formData.get("slug") ?? "");
   const farm = await farmRepository.bySlug(slug, { includeInactive: true });
@@ -64,7 +65,7 @@ export async function saveFarm(formData: FormData) {
   redirect(`/admin/gospodarii/${slug}?salvat=1`);
 }
 
-export async function toggleFarmActive(formData: FormData) {
+async function toggleFarmActive__impl(formData: FormData) {
   await requireAdmin();
   const farm = await farmRepository.bySlug(String(formData.get("slug") ?? ""), { includeInactive: true });
   if (!farm) throw new Error("Gospodăria nu există");
@@ -72,7 +73,7 @@ export async function toggleFarmActive(formData: FormData) {
   revalidatePath("/", "layout");
 }
 
-export async function updateInvestorApplication(formData: FormData) {
+async function updateInvestorApplication__impl(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "") as FarmApplicationStatus;
@@ -81,3 +82,10 @@ export async function updateInvestorApplication(formData: FormData) {
   await investorRepository.update(id, { status, internalNote });
   revalidatePath("/admin", "layout");
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const updateApplication = auditedAction({ action: "admin.partner.updateApplication", workspace: "admin", resourceType: "partner", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, updateApplication__impl);
+export const createFarmFromApplication = auditedAction({ action: "admin.partner.createFarmFromApplication", workspace: "admin", resourceType: "partner", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, createFarmFromApplication__impl);
+export const saveFarm = auditedAction({ action: "admin.partner.saveFarm", workspace: "admin", resourceType: "partner", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, saveFarm__impl);
+export const toggleFarmActive = auditedAction({ action: "admin.partner.toggleFarmActive", workspace: "admin", resourceType: "partner", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, toggleFarmActive__impl);
+export const updateInvestorApplication = auditedAction({ action: "admin.partner.updateInvestorApplication", workspace: "admin", resourceType: "partner", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, updateInvestorApplication__impl);

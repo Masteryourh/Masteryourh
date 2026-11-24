@@ -8,6 +8,7 @@ import { setupLinkValid, userRepository } from "@/server/repositories/users";
 import { envAdmin, startSession } from "@/server/session";
 import { safeEqual, sessionSecretReady } from "@/server/session-token";
 import { safeInternalPath } from "@/lib/safe-return";
+import { auditedAction } from "@/server/audit";
 
 export type AuthFormState = { status: "idle" } | { status: "error"; message: string; email?: string };
 
@@ -30,7 +31,7 @@ function fail(key: string) {
 /** NAV-09: doar rute interne (refuză `//gazda`, `/\\gazda`, scheme, `..`). */
 const safeReturn = (value: FormDataEntryValue | null) => safeInternalPath(value);
 
-export async function login(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
+async function login__impl(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   if (!email || !password) return { status: "error", message: "Completează emailul și parola.", email };
@@ -74,7 +75,7 @@ const passwordSchema = z
   .refine((d) => d.password === d.confirm, { message: "Parolele nu coincid.", path: ["confirm"] });
 
 /** Setarea parolei din linkul de invitație / resetare. */
-export async function activateAccount(token: string, _prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
+async function activateAccount__impl(token: string, _prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const user = await userRepository.bySetupToken(token);
   if (!user || !setupLinkValid(user)) {
     return { status: "error", message: "Linkul nu mai este valid. Cere unul nou administratorului." };
@@ -94,3 +95,7 @@ export async function activateAccount(token: string, _prev: AuthFormState, formD
   await startSession(updated ?? user);
   redirect(roleHome[user.role]);
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const login = auditedAction({ action: "public.cont.login", workspace: "public", resourceType: "cont", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, login__impl);
+export const activateAccount = auditedAction({ action: "public.cont.activateAccount", workspace: "public", resourceType: "cont", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, activateAccount__impl);

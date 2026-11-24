@@ -18,6 +18,7 @@ import {
   startTour,
 } from "@/server/delivery";
 import { parcelRepository, photoRepository, tourRepository } from "@/server/repositories/delivery";
+import { auditedAction } from "@/server/audit";
 
 export type CourierState = { status: "idle" } | { status: "error"; error?: string; errors: Record<string, string> } | { status: "ok" };
 
@@ -82,7 +83,7 @@ const refresh = (tour: Tour) => {
 
 /* --------------------------- acces --------------------------- */
 
-export async function pairAction(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
+async function pairAction__impl(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
   const tour = await tourRepository.byToken(token);
   if (!tour) return fail({}, "Tura nu există.");
   const errors: Record<string, string> = {};
@@ -97,7 +98,7 @@ export async function pairAction(token: string, _p: CourierState, fd: FormData):
   return { status: "ok" };
 }
 
-export async function requestPinAction(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
+async function requestPinAction__impl(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
   const tour = await tourRepository.byToken(token);
   if (!tour) return fail({}, "Tura nu există.");
   if (tour.courier?.personalPinHash) return fail({}, "Tura are deja un curier.");
@@ -125,7 +126,7 @@ export async function checkPinRequest(token: string): Promise<"asteapta" | "apro
   return tour.pinRequest.status;
 }
 
-export async function setPinAction(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
+async function setPinAction__impl(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
   const tour = await authorizedTour(token);
   if (!tour) return fail({}, "Sesiunea a expirat. Deschide din nou linkul turei.");
   const pin = str(fd, "pin");
@@ -136,7 +137,7 @@ export async function setPinAction(token: string, _p: CourierState, fd: FormData
   return { status: "ok" };
 }
 
-export async function pinLoginAction(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
+async function pinLoginAction__impl(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
   const tour = await tourRepository.byToken(token);
   if (!tour) return fail({}, "Tura nu există.");
   const res = await loginWithPersonalPin(tour, str(fd, "pin"));
@@ -151,7 +152,7 @@ export async function pinLoginAction(token: string, _p: CourierState, fd: FormDa
 
 /* --------------------------- traseu --------------------------- */
 
-export async function startAction(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
+async function startAction__impl(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
   const tour = await authorizedTour(token);
   if (!tour) return fail({}, "Sesiunea a expirat. Deschide din nou linkul turei.");
   const errors: Record<string, string> = {};
@@ -187,7 +188,7 @@ async function parcelForCourier(courierToken: string) {
   return { parcel, tour };
 }
 
-export async function loadAction(courierToken: string, _p: CourierState, fd: FormData): Promise<CourierState> {
+async function loadAction__impl(courierToken: string, _p: CourierState, fd: FormData): Promise<CourierState> {
   const ctx = await parcelForCourier(courierToken);
   if (!ctx) return fail({}, "Sesiunea a expirat. Deschide din nou linkul turei.");
   const errors: Record<string, string> = {};
@@ -207,7 +208,7 @@ export async function loadAction(courierToken: string, _p: CourierState, fd: For
   return { status: "ok" };
 }
 
-export async function deliverAction(courierToken: string, _p: CourierState, fd: FormData): Promise<CourierState> {
+async function deliverAction__impl(courierToken: string, _p: CourierState, fd: FormData): Promise<CourierState> {
   const ctx = await parcelForCourier(courierToken);
   if (!ctx) return fail({}, "Sesiunea a expirat. Deschide din nou linkul turei.");
   const errors: Record<string, string> = {};
@@ -231,7 +232,7 @@ export async function deliverAction(courierToken: string, _p: CourierState, fd: 
   return { status: "ok" };
 }
 
-export async function finishAction(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
+async function finishAction__impl(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
   const tour = await authorizedTour(token);
   if (!tour) return fail({}, "Sesiunea a expirat. Deschide din nou linkul turei.");
   const errors: Record<string, string> = {};
@@ -252,7 +253,7 @@ export async function finishAction(token: string, _p: CourierState, fd: FormData
   return { status: "ok" };
 }
 
-export async function extensionAction(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
+async function extensionAction__impl(token: string, _p: CourierState, fd: FormData): Promise<CourierState> {
   const tour = await authorizedTour(token);
   if (!tour) return fail({}, "Sesiunea a expirat. Deschide din nou linkul turei.");
   const errors: Record<string, string> = {};
@@ -276,3 +277,13 @@ export async function extensionAction(token: string, _p: CourierState, fd: FormD
   return { status: "ok" };
 }
 
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const pairAction = auditedAction({ action: "courier.livrare.pair", workspace: "courier", resourceType: "livrare", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, pairAction__impl);
+export const requestPinAction = auditedAction({ action: "courier.livrare.requestPin", workspace: "courier", resourceType: "livrare", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, requestPinAction__impl);
+export const setPinAction = auditedAction({ action: "courier.livrare.setPin", workspace: "courier", resourceType: "livrare", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, setPinAction__impl);
+export const pinLoginAction = auditedAction({ action: "courier.livrare.pinLogin", workspace: "courier", resourceType: "livrare", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, pinLoginAction__impl);
+export const startAction = auditedAction({ action: "courier.livrare.start", workspace: "courier", resourceType: "livrare", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, startAction__impl);
+export const loadAction = auditedAction({ action: "courier.livrare.load", workspace: "courier", resourceType: "livrare", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, loadAction__impl);
+export const deliverAction = auditedAction({ action: "courier.livrare.deliver", workspace: "courier", resourceType: "livrare", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, deliverAction__impl);
+export const finishAction = auditedAction({ action: "courier.livrare.finish", workspace: "courier", resourceType: "livrare", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, finishAction__impl);
+export const extensionAction = auditedAction({ action: "courier.livrare.extension", workspace: "courier", resourceType: "livrare", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, extensionAction__impl);

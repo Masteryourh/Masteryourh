@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { FarmPaymentDetails } from "@/lib/domain";
 import { store } from "@/server/db/store";
 import { activateIfDue, maskIban, type PaymentDoc } from "@/server/iban-core";
+import { systemEvent } from "@/server/audit";
 
 const COLLECTION = "farm-payments";
 export const IBAN_AUDIT = "iban-audit";
@@ -31,12 +32,17 @@ export const farmPaymentRepository = {
     const doc = await store.get<FarmPaymentDetails>(COLLECTION, slug);
     const c = doc?.ibanChange;
     if (!doc || !c || c.status !== "confirmat" || Date.now() < Date.parse(c.activatesAfter)) return doc;
-    const activated = await store.transact<FarmPaymentDetails, boolean>(COLLECTION, slug, (cur) => {
-      if (!cur) return { result: false };
-      const next = activateIfDue(cur as PaymentDoc, new Date());
-      return next === cur ? { result: false } : { patch: next, result: true };
+    // Activarea și evenimentul de audit al sistemului: în aceeași tranzacție (AUD-001, bank.change.activated).
+    await store.atomic(async () => {
+      const activated = await store.transact<FarmPaymentDetails, boolean>(COLLECTION, slug, (cur) => {
+        if (!cur) return { result: false };
+        const next = activateIfDue(cur as PaymentDoc, new Date());
+        return next === cur ? { result: false } : { patch: next, result: true };
+      });
+      if (!activated) return;
+      await auditIban({ farmSlug: slug, changeId: c.id, action: "activata", actor: "sistem", iban: c.iban });
+      await systemEvent("bank.change.activated", "plati", { householdId: slug, resourceId: c.id, changes: { contBancar: maskIban(c.iban) } });
     });
-    if (activated) await auditIban({ farmSlug: slug, changeId: c.id, action: "activata", actor: "sistem", iban: c.iban });
     return store.get<FarmPaymentDetails>(COLLECTION, slug);
   },
   async list(): Promise<FarmPaymentDetails[]> {

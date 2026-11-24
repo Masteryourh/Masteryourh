@@ -4,13 +4,14 @@ import { flattenErrors } from "@/lib/validation/common";
 import { investorApplicationSchema, partnerApplicationSchema } from "@/lib/validation/partner";
 import { applicationRepository, investorRepository } from "@/server/repositories/applications";
 import { notifyNewFarmApplication, notifyNewInvestorApplication } from "@/server/notifications";
+import { auditedAction } from "@/server/audit";
 
 export type PartnerFormState =
   | { status: "idle" }
   | { status: "error"; errors: Record<string, string>; values: Record<string, string> }
   | { status: "success"; name: string };
 
-export async function submitPartnerApplication(
+async function submitPartnerApplication__impl(
   _prev: PartnerFormState,
   formData: FormData,
 ): Promise<PartnerFormState> {
@@ -40,7 +41,7 @@ export async function submitPartnerApplication(
   }
 }
 
-export async function submitInvestorApplication(
+async function submitInvestorApplication__impl(
   _prev: PartnerFormState,
   formData: FormData,
 ): Promise<PartnerFormState> {
@@ -72,3 +73,7 @@ export async function submitInvestorApplication(
     };
   }
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const submitPartnerApplication = auditedAction({ action: "public.devino-partener.submitPartnerApplication", workspace: "public", resourceType: "devino-partener", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, submitPartnerApplication__impl);
+export const submitInvestorApplication = auditedAction({ action: "public.devino-partener.submitInvestorApplication", workspace: "public", resourceType: "devino-partener", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, submitInvestorApplication__impl);

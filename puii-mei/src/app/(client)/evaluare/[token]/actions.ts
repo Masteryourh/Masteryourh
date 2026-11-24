@@ -5,12 +5,13 @@ import { ratingState } from "@/lib/delivery";
 import { flattenErrors } from "@/lib/validation/common";
 import { ratingSchema } from "@/lib/validation/confirmation";
 import { parcelRepository as confirmationRepository } from "@/server/repositories/delivery";
+import { auditedAction } from "@/server/audit";
 
 export type RatingFormState =
   | { status: "idle" }
   | { status: "error"; errors: Record<string, string>; values: Record<string, string> };
 
-export async function submitRating(token: string, _prev: RatingFormState, formData: FormData): Promise<RatingFormState> {
+async function submitRating__impl(token: string, _prev: RatingFormState, formData: FormData): Promise<RatingFormState> {
   const raw = Object.fromEntries(
     [...formData.entries()].filter(([k]) => !k.startsWith("$ACTION")),
   ) as Record<string, string>;
@@ -30,3 +31,6 @@ export async function submitRating(token: string, _prev: RatingFormState, formDa
   revalidatePath("/admin", "layout");
   return { status: "idle" };
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const submitRating = auditedAction({ action: "customer.evaluare.submitRating", workspace: "customer", resourceType: "evaluare", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, submitRating__impl);

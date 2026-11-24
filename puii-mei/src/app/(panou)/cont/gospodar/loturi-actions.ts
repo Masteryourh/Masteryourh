@@ -14,6 +14,7 @@ import { processWaitingPreorders } from "@/server/allocation";
 import { notifyAdmins, notifyFarm } from "@/server/notifications";
 import { site } from "@/lib/site";
 import { setLotCapacity } from "@/server/seats";
+import { auditedAction } from "@/server/audit";
 
 const SPECIES: Species[] = ["pui", "curcani", "rate", "fazani"];
 
@@ -54,7 +55,7 @@ function validate(d: ReturnType<typeof readLot>) {
 }
 
 /** Lot nou (gospodarul pentru gospodăria lui, adminul pentru oricare). */
-export async function createLotAction(formData: FormData) {
+async function createLotAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const farmSlug = String(formData.get("farmSlug") ?? "");
   if (!canManageFarm(user, farmSlug)) throw new Error("Neautorizat");
@@ -81,7 +82,7 @@ export async function createLotAction(formData: FormData) {
 }
 
 /** Modificarea unui lot: număr de păsări, date, închidere / redeschidere pentru precomenzi. */
-export async function updateLotAction(formData: FormData) {
+async function updateLotAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const code = String(formData.get("code") ?? "");
   const lot = await lotRepository.byCode(code, { all: true });
@@ -126,7 +127,7 @@ export async function updateLotAction(formData: FormData) {
 }
 
 /** Adminul aprobă sau respinge un lot propus de gospodar. */
-export async function decideLotAction(formData: FormData) {
+async function decideLotAction__impl(formData: FormData) {
   const admin = await requireRole(["admin"]);
   const lot = await lotRepository.byCode(String(formData.get("code") ?? ""), { all: true });
   if (!lot || lot.approval?.status !== "asteapta") redirect(back(formData, "lotSalvat=1"));
@@ -152,7 +153,7 @@ export async function decideLotAction(formData: FormData) {
  * Pornirea unui țarc: puii de o zi au intrat în gospodărie. Se poate doar când țarcul e plin
  * (40 de precomenzi) și în fereastra de 7 zile de la primul țarc al lotului.
  */
-export async function startPenAction(formData: FormData) {
+async function startPenAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const lot = await lotRepository.byCode(String(formData.get("code") ?? ""), { all: true });
   if (!lot || !canManageFarm(user, lot.farmSlug)) throw new Error("Neautorizat");
@@ -176,3 +177,9 @@ export async function startPenAction(formData: FormData) {
   refresh();
   redirect(back(formData, `lotSalvat=${lot.code}`));
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const createLotAction = auditedAction({ action: "household.loturi.createLot", workspace: "household", resourceType: "loturi", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, createLotAction__impl);
+export const updateLotAction = auditedAction({ action: "household.loturi.updateLot", workspace: "household", resourceType: "loturi", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, updateLotAction__impl);
+export const decideLotAction = auditedAction({ action: "household.loturi.decideLot", workspace: "household", resourceType: "loturi", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, decideLotAction__impl);
+export const startPenAction = auditedAction({ action: "household.loturi.startPen", workspace: "household", resourceType: "loturi", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, startPenAction__impl);

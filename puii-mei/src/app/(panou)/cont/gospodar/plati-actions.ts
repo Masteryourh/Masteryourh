@@ -8,6 +8,7 @@ import { setFeedReceived } from "@/server/orders";
 import { farmPaymentRepository, normalizeIban } from "@/server/repositories/farm-payments";
 import { checkMfaCode, mfaEnabled } from "@/server/mfa";
 import { reportUnrequested, savePaymentDetails } from "@/server/iban";
+import { auditedAction } from "@/server/audit";
 
 const refresh = () => {
   revalidatePath("/cont/gospodar", "layout");
@@ -17,7 +18,7 @@ const refresh = () => {
 };
 
 /** Datele contului în care clienții plătesc avansul pentru hrană. */
-export async function saveFarmPaymentAction(formData: FormData) {
+async function saveFarmPaymentAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const farmSlug = String(formData.get("farmSlug") ?? "");
   const back = `/cont/gospodar${user.role === "admin" ? `?gospodarie=${encodeURIComponent(farmSlug)}&` : "?"}`;
@@ -56,7 +57,7 @@ export async function saveFarmPaymentAction(formData: FormData) {
 }
 
 /** „Nu am cerut eu”: anulează cererea de schimbare a contului și blochează contul care a cerut-o. */
-export async function reportUnrequestedIbanAction(formData: FormData) {
+async function reportUnrequestedIbanAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const farmSlug = String(formData.get("farmSlug") ?? "");
   const back = `/cont/gospodar${user.role === "admin" ? `?gospodarie=${encodeURIComponent(farmSlug)}&` : "?"}`;
@@ -67,8 +68,13 @@ export async function reportUnrequestedIbanAction(formData: FormData) {
 }
 
 /** Confirmă (sau anulează confirmarea) primirii avansului pentru hrană. */
-export async function setFeedReceivedAction(formData: FormData) {
+async function setFeedReceivedAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   await setFeedReceived(String(formData.get("id") ?? ""), user, formData.get("received") === "1");
   refresh();
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const saveFarmPaymentAction = auditedAction({ action: "household.plati.saveFarmPayment", workspace: "household", resourceType: "plati", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, saveFarmPaymentAction__impl);
+export const reportUnrequestedIbanAction = auditedAction({ action: "household.plati.reportUnrequestedIban", workspace: "household", resourceType: "plati", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, reportUnrequestedIbanAction__impl);
+export const setFeedReceivedAction = auditedAction({ action: "household.plati.setFeedReceived", workspace: "household", resourceType: "plati", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, setFeedReceivedAction__impl);

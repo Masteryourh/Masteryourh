@@ -4,8 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/server/auth";
 import { priceSettingsRepository } from "@/server/repositories/settings";
+import { auditedAction } from "@/server/audit";
 
-export async function savePriceAction(formData: FormData) {
+async function savePriceAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const market = Number(String(formData.get("marketPricePerKg") ?? "").replace(",", "."));
   const markup = Number(String(formData.get("markupPct") ?? "").replace(",", "."));
@@ -22,3 +23,6 @@ export async function savePriceAction(formData: FormData) {
   revalidatePath("/", "layout");
   redirect("/admin/preturi?salvat=1");
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const savePriceAction = auditedAction({ action: "admin.preturi.savePrice", workspace: "admin", resourceType: "preturi", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, savePriceAction__impl);

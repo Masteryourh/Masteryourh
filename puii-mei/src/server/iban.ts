@@ -7,6 +7,7 @@ import { cancelChange, confirmByPhone, maskIban, rejectChange, requestChange, ty
 import { notifyAdmins, notifyFarm } from "./notifications";
 import { auditIban } from "./repositories/farm-payments";
 import { userRepository } from "./repositories/users";
+import { auditNote } from "./audit";
 import { sendSms, smsEnabled } from "./sms";
 
 /**
@@ -55,6 +56,7 @@ export async function savePaymentDetails(user: User, farmSlug: string, account: 
     },
     initial,
   );
+  auditNote({ householdId: farmSlug, resourceId: r.change?.id ?? null, changes: { contBancar: r.change ? maskIban(r.change.iban) : null, status: r.change?.status ?? "neschimbat" } });
   if (r.replaced) await auditIban({ farmSlug, changeId: r.replaced.id, action: "inlocuita", actor: actorOf(user).name, actorId: user.id, iban: r.replaced.iban });
   if (r.change && r.change.requestedAt === now.toISOString()) {
     await auditIban({ farmSlug, changeId: r.change.id, action: "cerere", actor: actorOf(user).name, actorId: user.id, iban: r.change.iban });
@@ -79,6 +81,7 @@ export async function confirmIbanByPhone(admin: User, farmSlug: string, changeId
     const res = confirmByPhone(cur as PaymentDoc, changeId, actorOf(admin), phone, new Date(), note);
     return res.ok ? { patch: res.doc, result: res } : { result: res };
   });
+  auditNote({ householdId: farmSlug, resourceId: changeId, changes: r.ok ? { contBancar: maskIban(r.change.iban), status: r.doc.ibanChange?.status } : {} });
   if (r.ok) {
     await auditIban({ farmSlug, changeId, action: "confirmata", actor: actorOf(admin).name, actorId: admin.id, iban: r.change.iban, note: `apel la ${phone}` });
     if (r.doc.ibanChange?.status === "activ") await auditIban({ farmSlug, changeId, action: "activata", actor: "sistem", iban: r.change.iban });
@@ -92,6 +95,7 @@ export async function rejectIban(admin: User, farmSlug: string, changeId: string
     const res = rejectChange(cur as PaymentDoc, changeId, actorOf(admin), reason, new Date());
     return res.ok ? { patch: res.doc, result: res } : { result: res };
   });
+  auditNote({ householdId: farmSlug, resourceId: changeId, changes: r.ok ? { contBancar: maskIban(r.change.iban), status: "respins" } : {} });
   if (r.ok) {
     await auditIban({ farmSlug, changeId, action: "respinsa", actor: actorOf(admin).name, actorId: admin.id, iban: r.change.iban, note: reason });
     await notifyFarm(farmSlug, "Schimbarea contului bancar a fost respinsă", `Cererea pentru ${maskIban(r.change.iban)} a fost respinsă: ${reason}. Clienții plătesc în continuare în contul vechi.`);
@@ -109,6 +113,7 @@ export async function reportUnrequested(user: User, farmSlug: string, changeId: 
     const res = cancelChange(cur as PaymentDoc, changeId, actorOf(user), new Date());
     return res.ok ? { patch: res.doc, result: res } : { result: res };
   });
+  auditNote({ householdId: farmSlug, resourceId: changeId, changes: r.ok ? { contBancar: maskIban(r.change.iban), status: "anulat" } : {} });
   if (!r.ok) return r;
   await auditIban({ farmSlug, changeId, action: "anulata", actor: actorOf(user).name, actorId: user.id, iban: r.change.iban, note: "Nu am cerut eu" });
   const requester = await userRepository.byId(r.change.requestedById);

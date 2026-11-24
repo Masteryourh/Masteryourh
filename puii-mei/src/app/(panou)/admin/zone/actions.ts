@@ -6,12 +6,13 @@ import { requireAdmin } from "@/server/auth";
 import { slugify } from "@/lib/slug";
 import { zoneRepository } from "@/server/repositories/catalog";
 import { deliverySettingsRepository } from "@/server/repositories/settings";
+import { auditedAction } from "@/server/audit";
 
 const back = (q: string) => redirect(`/admin/zone?${q}`);
 const num = (v: FormDataEntryValue | null) => Number(String(v ?? "").replace(",", ".").trim());
 
 /** Salvează o zonă (existentă sau nouă). */
-export async function saveZoneAction(formData: FormData) {
+async function saveZoneAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const existingId = String(formData.get("id") ?? "").trim();
   const name = String(formData.get("name") ?? "").trim().slice(0, 80);
@@ -49,7 +50,7 @@ export async function saveZoneAction(formData: FormData) {
   back(`salvat=${encodeURIComponent(name)}#zona-${id}`);
 }
 
-export async function saveFreeDeliveryAction(formData: FormData) {
+async function saveFreeDeliveryAction__impl(formData: FormData) {
   const admin = await requireAdmin();
   const v = num(formData.get("freeDeliveryFrom"));
   if (!Number.isFinite(v) || v < 0 || v > 100000) back("eroare=" + encodeURIComponent("Pragul trebuie să fie între 0 și 100.000 lei."));
@@ -57,3 +58,7 @@ export async function saveFreeDeliveryAction(formData: FormData) {
   revalidatePath("/", "layout");
   back("salvat=" + encodeURIComponent("Pragul de livrare gratuită"));
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const saveZoneAction = auditedAction({ action: "admin.zone.saveZone", workspace: "admin", resourceType: "zone", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, saveZoneAction__impl);
+export const saveFreeDeliveryAction = auditedAction({ action: "admin.zone.saveFreeDelivery", workspace: "admin", resourceType: "zone", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, saveFreeDeliveryAction__impl);

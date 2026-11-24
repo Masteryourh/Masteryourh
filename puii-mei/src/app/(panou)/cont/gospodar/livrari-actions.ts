@@ -13,6 +13,7 @@ import {
   resetCourierAccess,
 } from "@/server/delivery";
 import { tourRepository } from "@/server/repositories/delivery";
+import { auditedAction } from "@/server/audit";
 
 const refresh = () => {
   revalidatePath("/cont/gospodar", "layout");
@@ -20,7 +21,7 @@ const refresh = () => {
 };
 
 /** Generează (sau regenerează) eticheta unei comenzi și deschide pagina de tipărire. */
-export async function generateLabelAction(formData: FormData) {
+async function generateLabelAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const id = String(formData.get("id") ?? "");
   await generateLabel(id, user, { regenerate: formData.get("regenerate") === "1" });
@@ -30,7 +31,7 @@ export async function generateLabelAction(formData: FormData) {
 
 export type TourFormState = { status: "idle" } | { status: "error"; error: string };
 
-export async function createTourAction(_p: TourFormState, formData: FormData): Promise<TourFormState> {
+async function createTourAction__impl(_p: TourFormState, formData: FormData): Promise<TourFormState> {
   const user = await requireRole(["gospodar"]);
   const parcelIds = formData.getAll("parcelIds").map(String).filter(Boolean);
   const date = String(formData.get("date") ?? "");
@@ -50,7 +51,7 @@ export async function createTourAction(_p: TourFormState, formData: FormData): P
 }
 
 /** Mută o oprire în sus/jos sau recalculează traseul optim. */
-export async function routeAction(formData: FormData) {
+async function routeAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const tour = await tourRepository.byId(String(formData.get("tourId") ?? ""));
   if (!tour) throw new Error("Tura nu există");
@@ -69,13 +70,13 @@ export async function routeAction(formData: FormData) {
   refresh();
 }
 
-export async function cancelTourAction(formData: FormData) {
+async function cancelTourAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   await cancelTour(String(formData.get("tourId") ?? ""), user);
   refresh();
 }
 
-export async function pinRequestAction(formData: FormData) {
+async function pinRequestAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   await decidePinRequest(
     String(formData.get("tourId") ?? ""),
@@ -86,7 +87,7 @@ export async function pinRequestAction(formData: FormData) {
   refresh();
 }
 
-export async function courierAccessAction(formData: FormData) {
+async function courierAccessAction__impl(formData: FormData) {
   const user = await requireRole(["gospodar"]);
   const mode = formData.get("mode") === "resetare" ? "resetare" : "deblocare";
   await resetCourierAccess(String(formData.get("tourId") ?? ""), user, mode);
@@ -94,7 +95,7 @@ export async function courierAccessAction(formData: FormData) {
 }
 
 /** Doar adminul aprobă prelungirile (verificat și în decideExtension). */
-export async function extensionDecisionAction(formData: FormData) {
+async function extensionDecisionAction__impl(formData: FormData) {
   const user = await requireRole(["admin"]);
   const approve = formData.get("decision") === "aproba";
   const hours = Math.max(0, Math.min(12, Number(formData.get("hours") ?? 0)));
@@ -108,3 +109,12 @@ export async function extensionDecisionAction(formData: FormData) {
   );
   refresh();
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const generateLabelAction = auditedAction({ action: "household.livrari.generateLabel", workspace: "household", resourceType: "livrari", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, generateLabelAction__impl);
+export const createTourAction = auditedAction({ action: "household.livrari.createTour", workspace: "household", resourceType: "livrari", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, createTourAction__impl);
+export const routeAction = auditedAction({ action: "household.livrari.route", workspace: "household", resourceType: "livrari", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, routeAction__impl);
+export const cancelTourAction = auditedAction({ action: "household.livrari.cancelTour", workspace: "household", resourceType: "livrari", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, cancelTourAction__impl);
+export const pinRequestAction = auditedAction({ action: "household.livrari.pinRequest", workspace: "household", resourceType: "livrari", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, pinRequestAction__impl);
+export const courierAccessAction = auditedAction({ action: "household.livrari.courierAccess", workspace: "household", resourceType: "livrari", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, courierAccessAction__impl);
+export const extensionDecisionAction = auditedAction({ action: "household.livrari.extensionDecision", workspace: "household", resourceType: "livrari", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, extensionDecisionAction__impl);

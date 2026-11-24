@@ -8,6 +8,7 @@ import { preorderRepository } from "@/server/repositories/preorders";
 import { notifyOrderEvent } from "@/server/notifications";
 import { chooseWait, processWaitingPreorders, splitPreorder } from "@/server/allocation";
 import { releaseSeats } from "@/server/seats";
+import { auditedAction } from "@/server/audit";
 
 export type FindOrderState =
   | { status: "idle"; number?: string }
@@ -15,7 +16,7 @@ export type FindOrderState =
   | { status: "error"; error: string; number: string };
 
 /** Pasul 1: numărul precomenzii → PIN trimis pe telefonul clientului (valabil 24 de ore). */
-export async function requestPinAction(_p: FindOrderState, formData: FormData): Promise<FindOrderState> {
+async function requestPinAction__impl(_p: FindOrderState, formData: FormData): Promise<FindOrderState> {
   const number = String(formData.get("number") ?? "").trim();
   const r = await requestOrderPin(number);
   if (!r.ok) return { status: "error", error: r.error, number };
@@ -23,7 +24,7 @@ export async function requestPinAction(_p: FindOrderState, formData: FormData): 
 }
 
 /** Pasul 2: PIN-ul → acces 24 de ore la „Comanda mea”. */
-export async function verifyPinAction(prev: FindOrderState, formData: FormData): Promise<FindOrderState> {
+async function verifyPinAction__impl(prev: FindOrderState, formData: FormData): Promise<FindOrderState> {
   const number = String(formData.get("number") ?? "").trim();
   const r = await verifyOrderPin(number, String(formData.get("pin") ?? ""));
   if (!r.ok) {
@@ -33,7 +34,7 @@ export async function verifyPinAction(prev: FindOrderState, formData: FormData):
 }
 
 /** Clientul anunță că a plătit avansul pentru hrană. */
-export async function declarePaymentAction(formData: FormData) {
+async function declarePaymentAction__impl(formData: FormData) {
   const token = String(formData.get("token") ?? "");
   await requireOrderAccess(token);
   let error = "";
@@ -48,7 +49,7 @@ export async function declarePaymentAction(formData: FormData) {
 }
 
 /** Clientul își anulează precomanda, gratuit, cât timp nu e confirmată. */
-export async function cancelOrderAction(formData: FormData) {
+async function cancelOrderAction__impl(formData: FormData) {
   const token = String(formData.get("token") ?? "");
   const p = await requireOrderAccess(token);
   if (!p) redirect("/comanda");
@@ -63,7 +64,7 @@ export async function cancelOrderAction(formData: FormData) {
 }
 
 /** Comanda nu încape într-o singură gospodărie: clientul alege împărțirea sau așteptarea. */
-export async function allocationChoiceAction(formData: FormData) {
+async function allocationChoiceAction__impl(formData: FormData) {
   const token = String(formData.get("token") ?? "");
   const p = await requireOrderAccess(token);
   if (!p) redirect("/comanda");
@@ -74,3 +75,10 @@ export async function allocationChoiceAction(formData: FormData) {
   revalidatePath("/", "layout");
   redirect(`/comanda/${token}#alocare`);
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const requestPinAction = auditedAction({ action: "customer.comanda.requestPin", workspace: "customer", resourceType: "comanda", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, requestPinAction__impl);
+export const verifyPinAction = auditedAction({ action: "customer.comanda.verifyPin", workspace: "customer", resourceType: "comanda", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, verifyPinAction__impl);
+export const declarePaymentAction = auditedAction({ action: "customer.comanda.declarePayment", workspace: "customer", resourceType: "comanda", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, declarePaymentAction__impl);
+export const cancelOrderAction = auditedAction({ action: "customer.comanda.cancelOrder", workspace: "customer", resourceType: "comanda", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, cancelOrderAction__impl);
+export const allocationChoiceAction = auditedAction({ action: "customer.comanda.allocationChoice", workspace: "customer", resourceType: "comanda", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, allocationChoiceAction__impl);

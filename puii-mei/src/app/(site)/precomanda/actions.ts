@@ -13,8 +13,9 @@ import { farmRepository, zoneRepository } from "@/server/repositories/catalog";
 import { preorderRepository } from "@/server/repositories/preorders";
 import { notifyNewPreorder } from "@/server/notifications";
 import type { PreorderFormState } from "./form-state";
+import { auditedAction } from "@/server/audit";
 
-export async function submitPreorder(
+async function submitPreorder__impl(
   _prev: PreorderFormState,
   formData: FormData,
 ): Promise<PreorderFormState> {
@@ -93,3 +94,6 @@ export async function submitPreorder(
     };
   }
 }
+
+/* AUD-001: fiecare acțiune lasă un eveniment de audit, în aceeași tranzacție cu modificarea. */
+export const submitPreorder = auditedAction({ action: "customer.precomanda.submitPreorder", workspace: "customer", resourceType: "precomanda", fields: ["status", "lotCode", "reason", "decision", "category", "title", "amount", "date", "mode", "received", "choice", "declaredM2", "totalBirds", "startDate", "role", "standing", "kind", "pen", "type", "hours", "how"] }, submitPreorder__impl);
