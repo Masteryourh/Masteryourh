@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { store } from "./db/store";
-import { claim, claimable, failed, newMessage, skipped, succeeded, type EmailPayload, type OutboxKind, type OutboxMessage, type SmsPayload } from "./outbox-core";
+import { claim, claimable, failed, newMessage, resetForRetry, retryable, skipped, succeeded, type EmailPayload, type OutboxKind, type OutboxMessage, type SmsPayload } from "./outbox-core";
 
 /**
  * Outbox (C2): mesajul se scrie în colecția `outbox` în aceeași tranzacție cu modificarea (dacă tranzacția se anulează,
@@ -58,6 +58,25 @@ async function sendOne(id: string) {
     result: undefined,
   }));
   return res.ok ? "sent" : res.skipped ? "skipped" : "failed";
+}
+
+/** Mesajele care nu au plecat (în așteptare, în curs, eșuate definitiv, canal neconfigurat), cele mai noi întâi. */
+export async function unsentMessages(limit = 200) {
+  const items = await store.findBy<OutboxMessage>(COLLECTION, "status", ["pending", "sending", "dead", "skipped"]);
+  return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, limit);
+}
+
+/** Retrimitere manuală din Admin a unui mesaj eșuat definitiv; pleacă după commit-ul acțiunii. */
+export async function retryMessage(id: string) {
+  const ok = await store.transact<OutboxMessage, boolean>(COLLECTION, id, (cur) =>
+    retryable(cur) ? { patch: resetForRetry(new Date()), result: true } : { result: false },
+  );
+  if (ok) {
+    await store.afterCommit(async () => {
+      await drain([id], { extra: 0 });
+    });
+  }
+  return ok;
 }
 
 /**

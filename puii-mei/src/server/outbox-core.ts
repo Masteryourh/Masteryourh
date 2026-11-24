@@ -55,6 +55,14 @@ export function skipped(now: Date, reason: string): Partial<OutboxMessage> {
   return { status: "skipped", sentAt: now.toISOString(), payload: null, leaseUntil: undefined, lastError: reason.slice(0, 300) };
 }
 
+/** Doar mesajele „dead” care au încă conținutul pot fi retrimise manual (din Admin). */
+export const retryable = (m: OutboxMessage | null): m is OutboxMessage => Boolean(m && m.status === "dead" && m.payload);
+
+/** Retrimitere manuală: reîncepe numărătoarea încercărilor; eroarea anterioară rămâne vizibilă până la noul rezultat. */
+export function resetForRetry(now: Date): Partial<OutboxMessage> {
+  return { status: "pending", attempts: 0, nextAttemptAt: now.toISOString(), leaseUntil: undefined };
+}
+
 export function failed(m: OutboxMessage, now: Date, error: string): Partial<OutboxMessage> {
   if (m.attempts >= MAX_ATTEMPTS) return { status: "dead", leaseUntil: undefined, lastError: error.slice(0, 300) };
   const wait = BACKOFF_MS[Math.min(m.attempts, BACKOFF_MS.length) - 1] ?? BACKOFF_MS[0];

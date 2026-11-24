@@ -5,6 +5,7 @@ import { lotRepository } from "@/server/repositories/catalog";
 import Link from "next/link";
 import { AlertWatcher } from "@/components/admin/AlertWatcher";
 import { adminAlerts } from "@/server/admin-alerts";
+import { unsentMessages } from "@/server/outbox";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const newApplications = [...apps, ...investors].filter((a) => a.status === "noua").length;
   const pendingLots = (await lotRepository.list({ all: true })).filter((l) => l.approval?.status === "asteapta").length;
   const alerts = await adminAlerts();
+  const deadMessages = (await unsentMessages()).filter((m) => m.status === "dead").length;
   return (
     <PanelShell
       user={user}
@@ -35,6 +37,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         { href: "/admin/interes", label: "Interes produse", icon: "interes" },
         { href: "/admin/utilizatori", label: "Utilizatori", icon: "utilizatori" },
         { href: "/admin/legislatie", label: "Legislație și surse", icon: "legislatie" },
+        { href: "/admin/mesaje", label: "Mesaje netrimise", badge: deadMessages, icon: "mesaje" },
         // nav-permis: schimbare EXPLICITĂ de spațiu (NAV-06); în spațiul gospodarului apare bannerul „Înapoi în Admin”.
         { href: "/cont/gospodar", label: "Schimbă spațiul: vedere gospodar", icon: "vedere" },
       ]}
