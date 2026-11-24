@@ -85,6 +85,11 @@ _Ultima actualizare: 22 noiembrie 2026_
       de reacție al managerului, ce acțiuni AI rămân cu confirmare umană (propunere: plăți, efectiv, veterinar, blocări).
 - [ ] **Durabilitate E0** (24 nov. 2026, propus pe #62): Neon plătit cu PITR (~20 $/lună), copie zilnică imuabilă la
       alt furnizor (ex. R2), test automat de restaurare săptămânal — așteaptă acordul pe buget și furnizor.
+- [ ] **Consolidare (mandat #62, 24 nov. 2026)**: C1 citiri țintite (#74) și C2 outbox (#76) livrate, CI verde, fără
+      merge. Urmează C4 backup + restore verificat (fără furnizor nou), C3 benchmark de scriere (lock-ul global de audit),
+      C5 paginare Admin / agregate. Review 01–05 + SQL PR60 în #75. Decizii deschise: R07 (scope multi-gospodărie în
+      RLS), R12 (offline pentru justificări), R15 (sesiuni), roluri SQL separate pe Neon, destinația backup-ului de
+      producție, pagină Admin pentru mesajele netrimise (outbox dead/skipped). #72 de închis (înlocuit de #73).
 - [ ] **AUD-001, etapa 2** (24 nov. 2026, după #70): separarea rolurilor SQL (aplicația fără drept de a șterge
       triggerul), export extern semnat (WORM), interfață de căutare / export pentru investigații (cu audit al
       accesului), retenția pe categorii (jurist / DPO), auditul vizualizărilor sensibile, `householdId` completat la
