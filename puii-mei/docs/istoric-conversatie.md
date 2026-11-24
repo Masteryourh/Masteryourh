@@ -108,7 +108,8 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
 - **24 nov. 2026:** PO: „continuă cu pașii propuși fără să-ți scriu; verific când revin” + ChatGPT ținut la curent după
   fiecare pas (CLAUDE.md). Unite: #56 (PIN client), #59 (locuri), #61 (IBAN etapa 1), #64 (PIN curier). Deschise, în
   ordinea de merge: #65 (fișiere în stocare S3 + reparație alocare), #66 (test izolare gospodării), #67 (alerte expirare),
-  #68 (MFA pentru schimbarea IBAN-ului: pagina Securitate din panoul gospodarului).
+  #68 (MFA pentru schimbarea IBAN-ului: pagina Securitate din panoul gospodarului), #69 (NAV-001: jurnalul în Admin,
+  „Înapoi” contextual, open redirect reparat la login), #70 (AUD-001: jurnal de audit pentru toate acțiunile).
   Neon: limita de 10 branch-uri de previzualizare (PO a șters branch-uri vechi).
 
 ## Setări și servicii

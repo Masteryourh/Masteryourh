@@ -68,6 +68,14 @@ _Ultima actualizare: 22 noiembrie 2026_
       Clienții din aceeași rețea mobilă pot avea același IP (NAT) – de reevaluat după lansare, din jurnale.
 - [ ] **Română / engleză** – amânat de utilizator (22 nov. 2026); întâi site-ul public, apoi panourile.
 
+- [ ] **NAV-001, restul linkurilor din Admin** (24 nov. 2026): registrele de documente, alerta de document și
+      etichetele din livrări încă duc în spațiul gospodarului; de mutat în Admin cu același tipar ca jurnalul (#69).
+      Păstrarea scroll-ului la „Înapoi” (NAV-T14) — neimplementată.
+- [ ] **AUD-001, etapa 2** (24 nov. 2026, după #70): separarea rolurilor SQL (aplicația fără drept de a șterge
+      triggerul), export extern semnat (WORM), interfață de căutare / export pentru investigații (cu audit al
+      accesului), retenția pe categorii (jurist / DPO), auditul vizualizărilor sensibile, `householdId` completat la
+      toate acțiunile pe obiecte primite prin id.
+
 ## De configurat (Vercel / servicii)
 
 - [ ] **SMS pentru PIN-ul clientului** (Twilio): `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` în Vercel. Până atunci
