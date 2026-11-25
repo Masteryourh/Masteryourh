@@ -33,6 +33,18 @@ export interface DocumentStore {
     fn: (current: T | null) => Promise<TransactStep<T, R>> | TransactStep<T, R>,
     initial?: T,
   ): Promise<R>;
+  /**
+   * O pagină dintr-o colecție, cele mai noi întâi (după momentul creării). `after`: cursorul întors de pagina anterioară.
+   */
+  page<T>(collection: string, opts: { limit: number; after?: string | null }): Promise<{ items: T[]; next: string | null }>;
+  /**
+   * Agregare calculată în baza de date (fără transferul documentelor): număr și sume, opțional pe grupe și cu excluderi.
+   * Câmpurile pot avea un nivel de imbricare (`estimate.total`).
+   */
+  aggregate(
+    collection: string,
+    opts: { sum: string[]; groupBy?: string; exclude?: { field: string; values: string[] } },
+  ): Promise<Array<{ key: string | null; count: number; sums: Record<string, number> }>>;
   /** Șterge documente: toată colecția sau doar id-urile date. Întoarce câte s-au șters. */
   remove(collection: string, ids?: string[]): Promise<number>;
   /**

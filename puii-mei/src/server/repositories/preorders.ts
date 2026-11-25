@@ -18,6 +18,10 @@ export interface PreorderRepository {
   byTrackingToken(token: string): Promise<Preorder | null>;
   byNumber(number: string): Promise<Preorder | null>;
   byLots(codes: string[]): Promise<Preorder[]>;
+  /** Cele mai noi comenzi, pe pagini (cursor). */
+  page(limit: number, after?: string | null): Promise<{ items: Preorder[]; next: string | null }>;
+  /** Totaluri pentru comenzile neanulate, calculate în baza de date. */
+  activeTotals(): Promise<{ count: number; birds: number; value: number }>;
   family(rootNumber: string): Promise<Preorder[]>;
 }
 
@@ -61,6 +65,13 @@ export const preorderRepository: PreorderRepository = {
   async byNumber(number) {
     const n = number.trim().toUpperCase();
     return (await store.findBy<Preorder>(COLLECTION, "number", n))[0] ?? null;
+  },
+  page(limit, after) {
+    return store.page<Preorder>(COLLECTION, { limit, after });
+  },
+  async activeTotals() {
+    const [g] = await store.aggregate(COLLECTION, { sum: ["birds", "estimate.total"], exclude: { field: "status", values: ["anulata"] } });
+    return { count: g?.count ?? 0, birds: g?.sums.birds ?? 0, value: g?.sums["estimate.total"] ?? 0 };
   },
   /** Comenzile de pe loturile date (toate stările), în ordinea creării. */
   async byLots(codes: string[]) {

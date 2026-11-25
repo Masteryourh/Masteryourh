@@ -3,7 +3,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { Pool, type PoolClient } from "pg";
 import type { AuditRecord, DocumentStore, StoredAuditEvent, TransactStep } from "./store";
 import { pgSslConfig } from "./pg-ssl";
-import { allIndexDdl, assertContains, assertIndexed, fieldExpr } from "./indexes";
+import { allIndexDdl, assertContains, assertIndexed, decodeCursor, encodeCursor, fieldExpr, pathExpr } from "./indexes";
 
 /**
  * Stocare PostgreSQL: un tabel `documents` cu date JSONB, creat automat.
@@ -70,6 +70,8 @@ export function pgStore(connectionString: string): DocumentStore {
          event_hash text NOT NULL
        )`,
     );
+    // Paginarea (cele mai noi întâi) pe orice colecție.
+    await ddl(`CREATE INDEX IF NOT EXISTS documents_collection_created ON documents (collection, created_at DESC, id DESC)`);
     // Căutările directe (findBy): un index parțial pentru fiecare pereche (colecție, câmp) din indexes.ts.
     for (const sql of allIndexDdl()) await ddl(sql);
     await ddl(`CREATE INDEX IF NOT EXISTS audit_household_idx ON audit_events (household_id, occurred_at, seq)`);
@@ -122,6 +124,31 @@ export function pgStore(connectionString: string): DocumentStore {
         [list],
       );
       return res.rows.map((r) => r.data);
+    },
+    async page<T>(collection: string, { limit, after }: { limit: number; after?: string | null }) {
+      await init();
+      const n = Math.max(1, Math.min(200, Math.floor(limit)));
+      const cur = decodeCursor(after);
+      // Momentul ca text, cu microsecunde (un Date din JS le-ar rotunji la ms și ar repeta rânduri între pagini).
+      const res = await q<{ data: T; ts: string; id: string }>(
+        `SELECT data, created_at::text AS ts, id FROM documents WHERE collection = $1 ${cur ? "AND (created_at, id) < ($3::timestamptz, $4)" : ""}
+         ORDER BY created_at DESC, id DESC LIMIT $2`,
+        cur ? [collection, n + 1, cur[0], cur[1]] : [collection, n + 1],
+      );
+      const rows = res.rows.slice(0, n);
+      const last = rows.at(-1);
+      return { items: rows.map((r) => r.data), next: res.rows.length > n && last ? encodeCursor(last.ts, last.id) : null };
+    },
+    async aggregate(collection: string, { sum, groupBy, exclude }: { sum: string[]; groupBy?: string; exclude?: { field: string; values: string[] } }) {
+      await init();
+      const key = groupBy ? pathExpr(groupBy) : "NULL";
+      const sums = sum.map((f, i) => `COALESCE(SUM(NULLIF(${pathExpr(f)}, '')::numeric), 0) AS s${i}`);
+      const where = exclude ? `AND (${pathExpr(exclude.field)} IS NULL OR NOT (${pathExpr(exclude.field)} = ANY($2::text[])))` : "";
+      const res = await q<Record<string, string | null>>(
+        `SELECT ${key} AS key, COUNT(*) AS count${sums.length ? `, ${sums.join(", ")}` : ""} FROM documents WHERE collection = $1 ${where} GROUP BY 1`,
+        exclude ? [collection, exclude.values] : [collection],
+      );
+      return res.rows.map((r) => ({ key: r.key, count: Number(r.count), sums: Object.fromEntries(sum.map((f, i) => [f, Number(r[`s${i}`])])) }));
     },
     async findContaining<T>(collection: string, field: string, item: Record<string, string>) {
       assertContains(collection, field);
