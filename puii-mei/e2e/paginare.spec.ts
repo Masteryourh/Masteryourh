@@ -64,3 +64,44 @@ test("Admin › Precomenzi: paginare, totaluri complete, întoarcere pe aceeași
     await db.end();
   }
 });
+
+test("Admin › Precomenzi: căutare după număr, nume, telefon (cu sau fără spații) și e-mail", async ({ page }) => {
+  await page.goto("/cont/autentificare?inapoi=/admin");
+  await page.fill("input[name=email]", process.env.ADMIN_USER ?? "admin@test.ro");
+  await page.fill("input[name=password]", process.env.ADMIN_PASSWORD ?? "Parola12345");
+  await page.click("button[type=submit]");
+  await page.waitForURL((u) => u.pathname === "/admin");
+  const db = new pg.Client({ connectionString: url });
+  await db.connect();
+  try {
+    const template = (await db.query(`select data from documents where collection = 'preorders' limit 1`)).rows[0]?.data;
+    test.skip(!template, "nicio comandă de pornire în baza de test");
+    const id = `cautare-${Date.now()}`;
+    const doc = { ...template, id, number: "PM9002-CAUTA", status: "noua", lotCode: null, parentNumber: undefined, trackingToken: undefined, customer: { ...template.customer, name: "Ionela Căutătoarea", phone: "0744 987 654", email: "ionela.cauta@test.ro" } };
+    // Creată „acum o săptămână”: nu e pe prima pagină, deci o găsim doar prin căutare.
+    await db.query(`insert into documents (collection, id, data, created_at) values ('preorders', $1, $2, now() - interval '7 days')`, [id, JSON.stringify(doc)]);
+
+    const rows = page.locator("tr[id^=comanda-]");
+    for (const term of ["PM9002-CAUTA", "căutătoarea", "CĂUTĂTOAREA", "0744987654", "987 654", "ionela.cauta@"]) {
+      await page.goto(`/admin?cauta=${encodeURIComponent(term)}`);
+      await expect(page.locator("#comanda-PM9002-CAUTA"), `căutare: ${term}`).toBeVisible();
+    }
+    // Caractere speciale tratate ca text (fără eroare, fără „potrivește tot”).
+    await page.goto(`/admin?cauta=${encodeURIComponent("%_%")}`);
+    await expect(rows).toHaveCount(0);
+    await expect(page.getByText("Nicio comandă găsită")).toBeVisible();
+
+    // Formularul de căutare și întoarcerea din detalii la aceeași căutare.
+    await page.goto("/admin");
+    await page.fill("input[name=cauta]", "Căutătoarea");
+    await page.getByRole("button", { name: "Caută" }).click();
+    await page.waitForURL(/cauta=/);
+    await page.locator("#comanda-PM9002-CAUTA a", { hasText: "PM9002-CAUTA" }).click();
+    await page.waitForURL(/\/admin\/comenzi\/PM9002-CAUTA/);
+    await page.getByRole("link", { name: /Înapoi/ }).first().click();
+    await page.waitForURL((u) => u.pathname === "/admin" && u.searchParams.get("cauta") === "Căutătoarea");
+    await expect(page.locator("#comanda-PM9002-CAUTA")).toBeVisible();
+  } finally {
+    await db.end();
+  }
+});

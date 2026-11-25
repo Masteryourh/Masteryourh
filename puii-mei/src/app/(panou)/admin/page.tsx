@@ -36,9 +36,11 @@ const statusLabels: Record<PreorderStatus, string> = {
 export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const sp = await searchParams;
   const after = typeof sp.dupa === "string" ? sp.dupa : null;
+  const query = typeof sp.cauta === "string" ? sp.cauta.trim().slice(0, 80) : "";
   const [{ items: preorders, next }, totals, { items: messages }, messageCount, lots, farms, zones] = await Promise.all([
     // Pe pagini (cele mai noi întâi) și totaluri calculate în baza de date: fără citirea tuturor comenzilor.
-    preorderRepository.page(PAGE, after),
+    // Căutarea (număr, nume, telefon, e-mail) înlocuiește lista pe pagini; se face în baza de date.
+    query ? preorderRepository.search(query).then((items) => ({ items, next: null })) : preorderRepository.page(PAGE, after),
     preorderRepository.activeTotals(),
     contactRepository.page(MESSAGES),
     contactRepository.count(),
@@ -57,7 +59,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     .filter((p) => p.ibanChange && (p.ibanChange.status === "in-verificare" || p.ibanChange.status === "confirmat"))
     .map((p) => ({ farmSlug: p.id, change: p.ibanChange!, active: p.iban }));
   // Întoarcerea din detaliile comenzii revine pe aceeași pagină a listei.
-  const here = after ? `/admin?dupa=${encodeURIComponent(after)}` : "/admin";
+  const here = query ? `/admin?cauta=${encodeURIComponent(query)}` : after ? `/admin?dupa=${encodeURIComponent(after)}` : "/admin";
 
   return (
     <Container className="py-8">
@@ -144,7 +146,26 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       </div>
 
       <h2 id="precomenzi" className="mt-12 scroll-mt-6 text-2xl font-semibold">Precomenzi</h2>
-      <p className="mt-1 text-sm text-muted">{after ? "Comenzi mai vechi" : "Cele mai noi comenzi"}, câte {PAGE} pe pagină.</p>
+      <form action="/admin#precomenzi" role="search" className="mt-3 flex flex-wrap items-end gap-2 text-sm">
+        <label className="font-semibold">
+          Caută o comandă
+          <input
+            name="cauta"
+            type="search"
+            defaultValue={query}
+            minLength={2}
+            placeholder="ex. PM2611-B83BD, Popescu, 0722 123 456"
+            className="mt-1 block w-72 max-w-full rounded-lg border border-forest-900/15 px-3 py-1.5 font-normal"
+          />
+        </label>
+        <button className="rounded-lg bg-forest-700 px-3 py-1.5 font-semibold text-white">Caută</button>
+        {query && <Link href="/admin#precomenzi" className="px-2 py-1.5 font-semibold underline">Șterge căutarea</Link>}
+      </form>
+      <p className="mt-2 text-sm text-muted" data-precomenzi-info>
+        {query
+          ? `${preorders.length === 50 ? "Primele 50 de" : preorders.length} rezultate pentru „${query}” (număr, nume, telefon sau e-mail).`
+          : `${after ? "Comenzi mai vechi" : "Cele mai noi comenzi"}, câte ${PAGE} pe pagină.`}
+      </p>
       <div className="mt-4 overflow-x-auto rounded-2xl border border-forest-900/10 bg-white">
         <table className="w-full min-w-[1250px] text-left text-sm">
           <thead className="bg-cream-100 text-xs uppercase tracking-wider text-muted">
@@ -156,7 +177,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
           </thead>
           <tbody className="divide-y divide-forest-900/5">
             {preorders.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-6 text-center text-muted">{after ? "Nicio comandă mai veche." : "Nicio precomandă încă."}</td></tr>
+              <tr><td colSpan={9} className="px-4 py-6 text-center text-muted">{query ? "Nicio comandă găsită. Verifică numărul sau încearcă doar o parte din nume / telefon." : after ? "Nicio comandă mai veche." : "Nicio precomandă încă."}</td></tr>
             )}
             {preorders.map((p) => (
               <tr key={p.id} id={`comanda-${p.number}`} className="scroll-mt-24 align-top target:bg-amber-50 target:ring-2 target:ring-amber-400">
@@ -241,7 +262,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       </div>
 
       <nav aria-label="Paginile cu precomenzi" className="mt-3 flex flex-wrap gap-3 text-sm font-semibold">
-        {after && <Link href="/admin#precomenzi" className="rounded-lg px-3 py-1.5 ring-1 ring-forest-900/15">← Cele mai noi</Link>}
+        {(after || query) && <Link href="/admin#precomenzi" className="rounded-lg px-3 py-1.5 ring-1 ring-forest-900/15">← Cele mai noi</Link>}
         {next && <Link href={`/admin?dupa=${encodeURIComponent(next)}#precomenzi`} className="rounded-lg px-3 py-1.5 ring-1 ring-forest-900/15">Mai vechi →</Link>}
       </nav>
 

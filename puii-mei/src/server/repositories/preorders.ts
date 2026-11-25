@@ -20,6 +20,8 @@ export interface PreorderRepository {
   byLots(codes: string[]): Promise<Preorder[]>;
   /** Cele mai noi comenzi, pe pagini (cursor). */
   page(limit: number, after?: string | null): Promise<{ items: Preorder[]; next: string | null }>;
+  /** Căutare după număr, nume, telefon sau e-mail (cel mult 50, cele mai noi întâi). */
+  search(term: string): Promise<Preorder[]>;
   /** Totaluri pentru comenzile neanulate, calculate în baza de date. */
   activeTotals(): Promise<{ count: number; birds: number; value: number }>;
   family(rootNumber: string): Promise<Preorder[]>;
@@ -68,6 +70,18 @@ export const preorderRepository: PreorderRepository = {
   },
   page(limit, after) {
     return store.page<Preorder>(COLLECTION, { limit, after });
+  },
+  async search(term) {
+    const t = term.trim().slice(0, 80);
+    if (t.length < 2) return [];
+    // Numărul exact merge prin index; altfel căutare în nume / telefon / e-mail (și cifrele telefonului fără spații).
+    const exact = await this.byNumber(t);
+    if (exact) return [exact];
+    const digits = t.replace(/\D/g, "");
+    const byText = await store.search<Preorder>(COLLECTION, ["number", "customer.name", "customer.phone", "customer.email"], t, 50);
+    if (digits.length < 4 || byText.length) return byText;
+    // Telefon scris altfel decât la comandă (ex. „0722123456” vs „0722 123 456”): comparăm doar cifrele.
+    return store.search<Preorder>(COLLECTION, ["customer.phone"], digits, 50, { digitsOnly: true });
   },
   async activeTotals() {
     const [g] = await store.aggregate(COLLECTION, { sum: ["birds", "estimate.total"], exclude: { field: "status", values: ["anulata"] } });

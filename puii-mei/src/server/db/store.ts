@@ -45,6 +45,12 @@ export interface DocumentStore {
     collection: string,
     opts: { sum: string[]; groupBy?: string; exclude?: { field: string; values: string[] } },
   ): Promise<Array<{ key: string | null; count: number; sums: Record<string, number> }>>;
+  /**
+   * Căutare text (conține, fără diferență între litere mari / mici) în câmpurile date, făcută în baza de date; cele mai
+   * noi întâi, cel mult `limit`. Câmpurile pot avea un nivel de imbricare (`customer.name`). `digitsOnly`: compară doar
+   * cifrele (telefon scris cu sau fără spații).
+   */
+  search<T>(collection: string, fields: string[], term: string, limit: number, opts?: { digitsOnly?: boolean }): Promise<T[]>;
   /** Șterge documente: toată colecția sau doar id-urile date. Întoarce câte s-au șters. */
   remove(collection: string, ids?: string[]): Promise<number>;
   /**
