@@ -38,6 +38,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         { href: "/admin/utilizatori", label: "Utilizatori", icon: "utilizatori" },
         { href: "/admin/legislatie", label: "Legislație și surse", icon: "legislatie" },
         { href: "/admin/mesaje", label: "Mesaje netrimise", badge: deadMessages, icon: "mesaje" },
+        { href: "/admin/diagnostic", label: "Diagnostic tehnic", icon: "diagnostic" },
         // nav-permis: schimbare EXPLICITĂ de spațiu (NAV-06); în spațiul gospodarului apare bannerul „Înapoi în Admin”.
         { href: "/cont/gospodar", label: "Schimbă spațiul: vedere gospodar", icon: "vedere" },
       ]}

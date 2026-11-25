@@ -48,6 +48,11 @@ export interface DocumentStore {
   /** Șterge documente: toată colecția sau doar id-urile date. Întoarce câte s-au șters. */
   remove(collection: string, ids?: string[]): Promise<number>;
   /**
+   * Diagnostic: `n` drumuri dus-întors minime (`SELECT 1`) către bază, fiecare măsurat separat, în ms. Măsoară latența
+   * reală aplicație ↔ bază (rețea + server), fără date.
+   */
+  ping(n: number): Promise<number[]>;
+  /**
    * Bloc atomic (AUD-001): pe PostgreSQL, toate scrierile din `fn` sunt o singură tranzacție (o eroare anulează tot).
    * Pe fișiere JSON (doar dezvoltare locală) NU există anulare: scrierile făcute înainte de eroare rămân.
    */

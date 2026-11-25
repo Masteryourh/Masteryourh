@@ -112,7 +112,7 @@ test("verificare automată: niciun link din paginile Admin nu iese din Admin fă
     "/admin", "/admin/loturi", "/admin/livrari", "/admin/monitorizare", "/admin/calitate", "/admin/documente", "/admin/investitii",
     "/admin/parteneri", "/admin/gospodarii", `/admin/gospodarii/${farmSlug}`, `/admin/gospodarii/${farmSlug}/jurnal`,
     `/admin/gospodarii/${farmSlug}/documente`, `/admin/gospodarii/${farmSlug}/regim`, "/admin/preturi", "/admin/zone", "/admin/interes",
-    "/admin/utilizatori", "/admin/legislatie", "/admin/mesaje", `/admin/comenzi/${number}`, `/admin/comenzi/${number}/contract`, "/admin/livrari/etichete", `/admin/livrari/${tourId}`,
+    "/admin/utilizatori", "/admin/legislatie", "/admin/mesaje", "/admin/diagnostic", `/admin/comenzi/${number}`, `/admin/comenzi/${number}/contract`, "/admin/livrari/etichete", `/admin/livrari/${tourId}`,
   ];
   const bad: string[] = [];
   for (const path of pages) {

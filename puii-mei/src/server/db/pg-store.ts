@@ -289,6 +289,21 @@ export function pgStore(connectionString: string): DocumentStore {
       );
       return res.rows.map((r): StoredAuditEvent => ({ ...r.data, seq: Number(r.seq), prevHash: r.prev_hash, eventHash: r.event_hash, recordedAt: r.recorded_at.toISOString() }));
     },
+    async ping(n: number) {
+      await init();
+      const c = await pool.connect();
+      try {
+        const out: number[] = [];
+        for (let i = 0; i < Math.max(1, Math.min(50, n)); i++) {
+          const t = performance.now();
+          await c.query("SELECT 1");
+          out.push(performance.now() - t);
+        }
+        return out;
+      } finally {
+        c.release();
+      }
+    },
     async remove(collection: string, ids?: string[]) {
       await init();
       const res = ids

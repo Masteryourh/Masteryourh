@@ -143,6 +143,10 @@ export const jsonStore: DocumentStore = {
       return result;
     });
   },
+  /** Fără bază de date (fișiere): nimic de măsurat. */
+  async ping() {
+    return [];
+  },
   remove(name: string, ids?: string[]) {
     return withLock(name, async () => {
       const items = await readCollection<{ id: string }>(name);
