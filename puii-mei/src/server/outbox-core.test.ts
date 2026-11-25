@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { BACKOFF_MS, claim, claimable, failed, LEASE_MS, MAX_ATTEMPTS, newMessage, skipped, succeeded, type OutboxMessage } from "./outbox-core.ts";
+import { BACKOFF_MS, claim, claimable, failed, LEASE_MS, MAX_ATTEMPTS, newMessage, resetForRetry, retryable, skipped, succeeded, type OutboxMessage } from "./outbox-core.ts";
 
 const now = new Date("2026-11-24T12:00:00Z");
 const at = (ms: number) => new Date(now.getTime() + ms);
@@ -50,6 +50,16 @@ test("canal neconfigurat: „skipped”, fără reîncercări, fără conținut"
   assert.equal(s.status, "skipped");
   assert.equal(s.payload, null);
   assert.equal(claimable(s, at(10 * 86400_000)), false);
+});
+
+test("retrimiterea manuală: doar „dead” cu conținut; reîncepe încercările și e preluabilă imediat", () => {
+  const dead = { ...msg(), status: "dead", attempts: MAX_ATTEMPTS, lastError: "503" } as OutboxMessage;
+  assert.ok(retryable(dead));
+  assert.equal(retryable({ ...dead, payload: null }), false, "fără conținut (skipped / sent) nu se poate retrimite");
+  assert.equal(retryable({ ...msg(), status: "pending" } as OutboxMessage), false);
+  const r = { ...dead, ...resetForRetry(now) } as OutboxMessage;
+  assert.equal(r.attempts, 0);
+  assert.ok(claimable(r, now));
 });
 
 test("SMS: rezumatul nu conține textul (poate avea PIN sau date personale)", () => {
