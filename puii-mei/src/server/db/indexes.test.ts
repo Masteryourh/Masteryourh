@@ -65,3 +65,9 @@ test("cursorul de paginare: dus-întors; valori stricate sau străine → null (
   assert.equal(decodeCursor(Buffer.from(JSON.stringify({ a: 1 })).toString("base64url")), null);
   assert.equal(decodeCursor(undefined), null);
 });
+
+test("registrul de locuri nu citește toate comenzile (review #82, C1)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const src = readFileSync(new URL("../seats.ts", import.meta.url), "utf8");
+  assert.equal(/store\.list<[^>]*>\(\s*"preorders"/.test(src), false, "seats.ts trebuie să citească doar comenzile lotului (findBy lotCode + id-urile din registru)");
+});
