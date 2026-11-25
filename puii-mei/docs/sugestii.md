@@ -85,11 +85,11 @@ _Ultima actualizare: 22 noiembrie 2026_
       de reacție al managerului, ce acțiuni AI rămân cu confirmare umană (propunere: plăți, efectiv, veterinar, blocări).
 - [ ] **Durabilitate E0** (24 nov. 2026, propus pe #62): Neon plătit cu PITR (~20 $/lună), copie zilnică imuabilă la
       alt furnizor (ex. R2), test automat de restaurare săptămânal — așteaptă acordul pe buget și furnizor.
-- [ ] **Consolidare (mandat #62, 24 nov. 2026)**: unite în main #69, #70, #73, #74 (citiri țintite), #76 (outbox), #71;
-      #72 închis. Pagina Admin „Mesaje netrimise” în #77 (fără merge). Urmează C3 benchmark de scriere (lock-ul global
-      de audit) și C5 paginare Admin / agregate. Review 01–05 + SQL PR60 în #75. Recomandări acceptate de fondator
-      („cum zici tu”), trimise pe #62: R07 scope `uuid[]` în RLS, R12 offline pentru observații + justificări, R15
-      cookie + sessionVersion până la E1, roluri SQL separate și migrări versionate la E1.
+- [x] **Consolidare (mandat #62)**: unite în main #69, #70, #73, #74 (citiri țintite), #76 (outbox), #77 (Admin ›
+      Mesaje netrimise), #78 (benchmark scriere), #79 (paginare Admin + agregate), #71; #72 închis (24–25 nov. 2026).
+- [ ] **Rămase din consolidare** (25 nov. 2026): read model pentru `/cifre`; lanțul de audit pe gospodărie + ancorare
+      (decizie ChatGPT / fondator, date în CLAUDE-BENCH-C3-SCRIERE.md); măsurarea RTT-ului real Vercel ↔ Neon;
+      review-ul lotului 06–11 când e publicat. Recomandări acceptate (R07, R12, R15) — pe #62.
 - [ ] **Backup de producție (C4)** (24 nov. 2026): **amânat de fondator** („o integrăm mai târziu”); până atunci PITR-ul
       inclus în Neon. De reluat: destinație, buget, test automat de restaurare.
 - [ ] **AUD-001, etapa 2** (24 nov. 2026, după #70): separarea rolurilor SQL (aplicația fără drept de a șterge
