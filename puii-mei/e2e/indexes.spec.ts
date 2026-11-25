@@ -33,3 +33,16 @@ test("indexurile pentru căutările directe există și sunt folosite", async ({
     await db.end();
   }
 });
+
+test("Admin › Diagnostic tehnic: măsoară latența reală la baza de date", async ({ page }) => {
+  await page.goto("/cont/autentificare?inapoi=/admin/diagnostic");
+  await page.fill("input[name=email]", process.env.ADMIN_USER ?? "admin@test.ro");
+  await page.fill("input[name=password]", process.env.ADMIN_PASSWORD ?? "Parola12345");
+  await page.click("button[type=submit]");
+  await page.waitForURL((u) => u.pathname === "/admin/diagnostic");
+  const p50 = Number(await page.locator("[data-rtt-p50]").getAttribute("data-rtt-p50"));
+  expect(p50).toBeGreaterThan(0);
+  expect(p50).toBeLessThan(1000);
+  await expect(page.getByText("Rândul relevant din benchmark-ul de scriere")).toBeVisible();
+  await expect(page.getByText("Comandă după număr (index)")).toBeVisible();
+});
