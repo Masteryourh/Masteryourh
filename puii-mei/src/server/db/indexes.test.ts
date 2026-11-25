@@ -46,3 +46,22 @@ test("repository-urile nu mai caută un singur obiect citind toată colecția", 
     .flatMap((f) => (readFileSync(new URL(f, dir), "utf8").match(/store\.list<[^>]+>\([A-Z_]+\)\)\.find\(/g) ?? []).map((m) => `${f}: ${m}`));
   assert.deepEqual(bad, [], "folosește store.findBy (cu index) în loc de list().find()");
 });
+
+test("agregări: căi simple sau cu un nivel; orice altceva e refuzat (literal în SQL)", async () => {
+  const { pathExpr } = await import("./indexes.ts");
+  assert.equal(pathExpr("birds"), "(data->>'birds')");
+  assert.equal(pathExpr("estimate.total"), "(data->'estimate'->>'total')");
+  assert.throws(() => pathExpr("a.b.c"));
+  assert.throws(() => pathExpr("birds'); drop table documents; --"));
+});
+
+test("cursorul de paginare: dus-întors; valori stricate sau străine → null (prima pagină)", async () => {
+  const { decodeCursor, encodeCursor } = await import("./indexes.ts");
+  const c = encodeCursor("2026-11-25 10:00:00.123456+00", "abc");
+  assert.deepEqual(decodeCursor(c), ["2026-11-25 10:00:00.123456+00", "abc"]);
+  assert.deepEqual(decodeCursor(encodeCursor("2026-11-25T10:00:00.000Z", "x")), ["2026-11-25T10:00:00.000Z", "x"]);
+  assert.equal(decodeCursor("nu-e-cursor"), null);
+  assert.equal(decodeCursor(Buffer.from(JSON.stringify(["nu e data", "x"])).toString("base64url")), null);
+  assert.equal(decodeCursor(Buffer.from(JSON.stringify({ a: 1 })).toString("base64url")), null);
+  assert.equal(decodeCursor(undefined), null);
+});

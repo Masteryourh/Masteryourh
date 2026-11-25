@@ -59,6 +59,32 @@ export function containsDdl(collection: string, field: string) {
   return `CREATE INDEX IF NOT EXISTS ${indexName(collection, field)} ON documents USING gin ((data->'${field}') jsonb_path_ops) WHERE collection = '${collection}'`;
 }
 
+/** Câmp (sau câmp.subcâmp) folosit în agregări; ajunge în SQL ca literal, deci doar nume simple. */
+const PATH = /^[A-Za-z][A-Za-z0-9]{0,40}(\.[A-Za-z][A-Za-z0-9]{0,40})?$/;
+export function assertPath(path: string) {
+  if (!PATH.test(path)) throw new Error(`Câmp invalid: ${path}`);
+}
+/** Expresia text a unui câmp (cu un nivel de imbricare): `estimate.total` → data->'estimate'->>'total'. */
+export function pathExpr(path: string) {
+  assertPath(path);
+  const [a, b] = path.split(".");
+  return b ? `(data->'${a}'->>'${b}')` : `(data->>'${a}')`;
+}
+
+/** Cursorul de paginare (created_at + id), opac pentru pagină. */
+export const encodeCursor = (createdAt: string, id: string) => Buffer.from(JSON.stringify([createdAt, id])).toString("base64url");
+export function decodeCursor(c: string | undefined | null): [string, string] | null {
+  if (!c || c.length > 400) return null;
+  try {
+    const v = JSON.parse(Buffer.from(c, "base64url").toString("utf8"));
+    // Momentul vine din PostgreSQL ca text (ex. „2026-11-25 10:00:00.123456+00”), cu precizie de microsecunde.
+    const ts = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}(:?\d{2})?)$/;
+    return Array.isArray(v) && v.length === 2 && typeof v[0] === "string" && typeof v[1] === "string" && ts.test(v[0]) && v[1].length <= 200 ? [v[0], v[1]] : null;
+  } catch {
+    return null;
+  }
+}
+
 export const allIndexDdl = () => [
   ...Object.entries(INDEXED_FIELDS).flatMap(([c, fields]) => (fields as readonly string[]).map((f) => indexDdl(c, f))),
   ...Object.entries(CONTAINS_FIELDS).flatMap(([c, fields]) => (fields as readonly string[]).map((f) => containsDdl(c, f))),

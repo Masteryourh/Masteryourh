@@ -14,4 +14,9 @@ export const contactRepository = {
     const items = await store.list<ContactMessage>(COLLECTION);
     return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   },
+  /** Cele mai noi mesaje, pe pagini. */
+  page: (limit: number, after?: string | null) => store.page<ContactMessage>(COLLECTION, { limit, after }),
+  async count() {
+    return (await store.aggregate(COLLECTION, { sum: [] })).reduce((s, g) => s + g.count, 0);
+  },
 };

@@ -95,14 +95,13 @@ type StoredLot = Lot & { id: string };
  * Locurile rezervate = rezervările inițiale ale lotului + puii din precomenzile active alocate pe el.
  */
 async function allLots(): Promise<Lot[]> {
-  const [stored, preorders] = await Promise.all([
+  const [stored, perLot] = await Promise.all([
     store.list<StoredLot>(LOTS),
-    store.list<{ lotCode: string | null; birds: number; status: string }>("preorders"),
+    // Puii comandați pe fiecare lot, adunați în baza de date (fără citirea tuturor comenzilor).
+    store.aggregate("preorders", { sum: ["birds"], groupBy: "lotCode", exclude: { field: "status", values: ["anulata"] } }),
   ]);
   const booked = new Map<string, number>();
-  for (const p of preorders) {
-    if (p.lotCode && p.status !== "anulata") booked.set(p.lotCode, (booked.get(p.lotCode) ?? 0) + p.birds);
-  }
+  for (const g of perLot) if (g.key) booked.set(g.key, g.sums.birds);
   const storedCodes = new Set(stored.map((l) => l.code));
   return [...lots.filter((l) => !storedCodes.has(l.code)), ...stored].map((l) => ({
     ...l,

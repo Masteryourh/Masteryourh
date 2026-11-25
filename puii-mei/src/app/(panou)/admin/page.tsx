@@ -21,6 +21,9 @@ import { farmPaymentRepository } from "@/server/repositories/farm-payments";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Administrare", robots: { index: false, follow: false } };
 
+const PAGE = 50;
+const MESSAGES = 50;
+
 const statusLabels: Record<PreorderStatus, string> = {
   noua: "Nouă",
   confirmata: "Confirmată",
@@ -32,9 +35,13 @@ const statusLabels: Record<PreorderStatus, string> = {
 
 export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const sp = await searchParams;
-  const [preorders, messages, lots, farms, zones] = await Promise.all([
-    preorderRepository.list(),
-    contactRepository.list(),
+  const after = typeof sp.dupa === "string" ? sp.dupa : null;
+  const [{ items: preorders, next }, totals, { items: messages }, messageCount, lots, farms, zones] = await Promise.all([
+    // Pe pagini (cele mai noi întâi) și totaluri calculate în baza de date: fără citirea tuturor comenzilor.
+    preorderRepository.page(PAGE, after),
+    preorderRepository.activeTotals(),
+    contactRepository.page(MESSAGES),
+    contactRepository.count(),
     lotRepository.list(),
     farmRepository.listAll(),
     zoneRepository.listActive(),
@@ -49,9 +56,8 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const ibanPending = [...payments.values()]
     .filter((p) => p.ibanChange && (p.ibanChange.status === "in-verificare" || p.ibanChange.status === "confirmat"))
     .map((p) => ({ farmSlug: p.id, change: p.ibanChange!, active: p.iban }));
-  const active = preorders.filter((p) => p.status !== "anulata");
-  const totalBirds = active.reduce((s, p) => s + p.birds, 0);
-  const totalValue = active.reduce((s, p) => s + p.estimate.total, 0);
+  // Întoarcerea din detaliile comenzii revine pe aceeași pagină a listei.
+  const here = after ? `/admin?dupa=${encodeURIComponent(after)}` : "/admin";
 
   return (
     <Container className="py-8">
@@ -131,13 +137,14 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       )}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-4">
-        <Stat label="Precomenzi active" value={String(active.length)} />
-        <Stat label="Pui comandați" value={String(totalBirds)} />
-        <Stat label="Valoare estimativă" value={formatLei(totalValue)} />
-        <Stat label="Mesaje" value={String(messages.length)} />
+        <Stat label="Precomenzi active" value={String(totals.count)} />
+        <Stat label="Pui comandați" value={String(totals.birds)} />
+        <Stat label="Valoare estimativă" value={formatLei(totals.value)} />
+        <Stat label="Mesaje" value={String(messageCount)} />
       </div>
 
-      <h2 className="mt-12 text-2xl font-semibold">Precomenzi</h2>
+      <h2 id="precomenzi" className="mt-12 scroll-mt-6 text-2xl font-semibold">Precomenzi</h2>
+      <p className="mt-1 text-sm text-muted">{after ? "Comenzi mai vechi" : "Cele mai noi comenzi"}, câte {PAGE} pe pagină.</p>
       <div className="mt-4 overflow-x-auto rounded-2xl border border-forest-900/10 bg-white">
         <table className="w-full min-w-[1250px] text-left text-sm">
           <thead className="bg-cream-100 text-xs uppercase tracking-wider text-muted">
@@ -149,12 +156,12 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
           </thead>
           <tbody className="divide-y divide-forest-900/5">
             {preorders.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-6 text-center text-muted">Nicio precomandă încă.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-6 text-center text-muted">{after ? "Nicio comandă mai veche." : "Nicio precomandă încă."}</td></tr>
             )}
             {preorders.map((p) => (
               <tr key={p.id} id={`comanda-${p.number}`} className="scroll-mt-24 align-top target:bg-amber-50 target:ring-2 target:ring-amber-400">
                 <td className="px-4 py-3 font-mono text-xs">
-                  <Link href={`/admin/comenzi/${encodeURIComponent(p.number)}?inapoi=${encodeURIComponent(`/admin#comanda-${p.number}`)}`} className="font-semibold underline">{p.number}</Link>
+                  <Link href={`/admin/comenzi/${encodeURIComponent(p.number)}?inapoi=${encodeURIComponent(`${here}#comanda-${p.number}`)}`} className="font-semibold underline">{p.number}</Link>
                   {p.parentNumber && <div className="mt-1 text-[10px] text-slate-500">parte din {p.parentNumber}</div>}
                   {!p.lotCode && p.allocation?.status === "alegere" && <div className="mt-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900">clientul alege</div>}
                   {!p.lotCode && p.allocation?.status === "asteapta" && <div className="mt-1 rounded bg-slate-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">în așteptare</div>}
@@ -233,6 +240,11 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         </table>
       </div>
 
+      <nav aria-label="Paginile cu precomenzi" className="mt-3 flex flex-wrap gap-3 text-sm font-semibold">
+        {after && <Link href="/admin#precomenzi" className="rounded-lg px-3 py-1.5 ring-1 ring-forest-900/15">← Cele mai noi</Link>}
+        {next && <Link href={`/admin?dupa=${encodeURIComponent(next)}#precomenzi`} className="rounded-lg px-3 py-1.5 ring-1 ring-forest-900/15">Mai vechi →</Link>}
+      </nav>
+
       <h2 className="mt-12 text-2xl font-semibold">Loturi</h2>
       <div className="mt-4 overflow-x-auto rounded-2xl border border-forest-900/10 bg-white">
         <table className="w-full min-w-[700px] text-left text-sm">
@@ -259,6 +271,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       </div>
 
       <h2 className="mt-12 text-2xl font-semibold">Mesaje de contact</h2>
+      {messageCount > messages.length && <p className="mt-1 text-sm text-muted">Ultimele {messages.length} din {messageCount}.</p>}
       <ul className="mt-4 space-y-3">
         {messages.length === 0 && <li className="text-muted">Niciun mesaj.</li>}
         {messages.map((m) => (

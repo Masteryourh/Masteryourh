@@ -1,7 +1,7 @@
 import "server-only";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { assertContains, assertIndexed } from "./indexes";
+import { assertContains, assertIndexed, assertPath } from "./indexes";
 import type { AuditRecord, DocumentStore, StoredAuditEvent, TransactStep } from "./store";
 
 /**
@@ -67,6 +67,28 @@ export const jsonStore: DocumentStore = {
       .slice(0, f.limit ?? 200);
   },
   list: readCollection,
+  async page<T>(name: string, { limit, after }: { limit: number; after?: string | null }) {
+    // Pe fișiere (doar dezvoltare): ordinea inversă a adăugării; cursorul e id-ul ultimului element.
+    const all = (await readCollection<T & { id: string }>(name)).reverse();
+    const start = after ? all.findIndex((i) => i.id === after) + 1 : 0;
+    const items = all.slice(start, start + limit);
+    return { items, next: start + limit < all.length && items.length ? items[items.length - 1].id : null };
+  },
+  async aggregate(name: string, { sum, groupBy, exclude }: { sum: string[]; groupBy?: string; exclude?: { field: string; values: string[] } }) {
+    [...sum, ...(groupBy ? [groupBy] : []), ...(exclude ? [exclude.field] : [])].forEach(assertPath);
+    const get = (o: unknown, path: string) => path.split(".").reduce<unknown>((v, k) => (v as Record<string, unknown> | null)?.[k], o);
+    const groups = new Map<string | null, { count: number; sums: Record<string, number> }>();
+    for (const item of await readCollection<unknown>(name)) {
+      if (exclude && exclude.values.includes(String(get(item, exclude.field)))) continue;
+      const raw = groupBy ? get(item, groupBy) : null;
+      const key = raw === undefined || raw === null ? null : String(raw);
+      const g = groups.get(key) ?? { count: 0, sums: Object.fromEntries(sum.map((f) => [f, 0])) };
+      g.count++;
+      for (const f of sum) g.sums[f] += Number(get(item, f) ?? 0) || 0;
+      groups.set(key, g);
+    }
+    return [...groups].map(([key, g]) => ({ key, ...g }));
+  },
   async findContaining<T>(name: string, field: string, item: Record<string, string>) {
     assertContains(name, field);
     return (await readCollection<T>(name)).filter((i) => {
