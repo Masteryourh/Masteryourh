@@ -91,6 +91,14 @@ _Ultima actualizare: 22 noiembrie 2026_
       și trimite cifra; read model pentru `/cifre`; index trigram pentru căutare la volum mare; lanțul de audit pe gospodărie + ancorare
       (decizie ChatGPT / fondator, date în CLAUDE-BENCH-C3-SCRIERE.md); măsurarea RTT-ului real Vercel ↔ Neon;
       review-ul lotului 06–11 când e publicat. Recomandări acceptate (R07, R12, R15) — pe #62.
+- [ ] **Decizii din review-ul 06–11** (#82, 25 nov. 2026): baza onorariului (plăți verificate sau valoare contractuală)
+      și unitatea (lot sau ciclu) — cu contabilul; cine aprobă cheltuielile gospodăriei (conflict de interese cu
+      onorariul); regula la deficit din mortalitate (propus: buffer, apoi proporțional, cu substituire); rolul juridic
+      al companiei în contract (consultant / mandatar) — cu juristul; codul lotului public sau QR opac; server actions +
+      REST doar pentru integrări / offline. Remedierea C1 (seats.ts) unită în #83.
+- [ ] **Conectare Notion** (25 nov. 2026, cerut de fondator prin ChatGPT): claude.ai → Settings → Connectors → Notion
+      (doar paginile PUII MEI), apoi sesiune nouă; apoi „Consultă Notion” și verificarea registrelor Documentație /
+      Riscuri care apăreau goale.
 - [ ] **Backup de producție (C4)** (24 nov. 2026): **amânat de fondator** („o integrăm mai târziu”); până atunci PITR-ul
       inclus în Neon. De reluat: destinație, buget, test automat de restaurare.
 - [ ] **AUD-001, etapa 2** (24 nov. 2026, după #70): separarea rolurilor SQL (aplicația fără drept de a șterge
