@@ -74,6 +74,13 @@ export const jsonStore: DocumentStore = {
     const items = all.slice(start, start + limit);
     return { items, next: start + limit < all.length && items.length ? items[items.length - 1].id : null };
   },
+  async search<T>(name: string, fields: string[], term: string, limit: number, opts: { digitsOnly?: boolean } = {}) {
+    fields.forEach(assertPath);
+    const get = (o: unknown, path: string) => path.split(".").reduce<unknown>((v, k) => (v as Record<string, unknown> | null)?.[k], o);
+    const t = term.toLowerCase();
+    const norm = (v: unknown) => (opts.digitsOnly ? String(v ?? "").replace(/\D/g, "") : String(v ?? "").toLowerCase());
+    return (await readCollection<T>(name)).reverse().filter((i) => fields.some((f) => norm(get(i, f)).includes(t))).slice(0, limit);
+  },
   async aggregate(name: string, { sum, groupBy, exclude }: { sum: string[]; groupBy?: string; exclude?: { field: string; values: string[] } }) {
     [...sum, ...(groupBy ? [groupBy] : []), ...(exclude ? [exclude.field] : [])].forEach(assertPath);
     const get = (o: unknown, path: string) => path.split(".").reduce<unknown>((v, k) => (v as Record<string, unknown> | null)?.[k], o);

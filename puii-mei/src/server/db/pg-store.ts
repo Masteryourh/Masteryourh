@@ -139,6 +139,18 @@ export function pgStore(connectionString: string): DocumentStore {
       const last = rows.at(-1);
       return { items: rows.map((r) => r.data), next: res.rows.length > n && last ? encodeCursor(last.ts, last.id) : null };
     },
+    async search<T>(collection: string, fields: string[], term: string, limit: number, opts: { digitsOnly?: boolean } = {}) {
+      await init();
+      // Caracterele speciale din LIKE (% _ \) se tratează ca text obișnuit.
+      const pattern = `%${term.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+      const expr = (f: string) => (opts.digitsOnly ? `regexp_replace(${pathExpr(f)}, '\\D', '', 'g')` : pathExpr(f));
+      const where = fields.map((f) => `${expr(f)} ILIKE $2`).join(" OR ");
+      const res = await q<{ data: T }>(
+        `SELECT data FROM documents WHERE collection = $1 AND (${where}) ORDER BY created_at DESC, id DESC LIMIT $3`,
+        [collection, pattern, Math.max(1, Math.min(200, Math.floor(limit)))],
+      );
+      return res.rows.map((r) => r.data);
+    },
     async aggregate(collection: string, { sum, groupBy, exclude }: { sum: string[]; groupBy?: string; exclude?: { field: string; values: string[] } }) {
       await init();
       const key = groupBy ? pathExpr(groupBy) : "NULL";
