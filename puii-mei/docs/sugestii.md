@@ -28,7 +28,7 @@ _Ultima actualizare: 22 noiembrie 2026_
       preluați; dacă nu o preia nimeni, de stabilit ce se întâmplă cu avansul (puii și furajul sunt deja cumpărați).
       De gândit: lista de așteptare care preia automat locurile, termenul până la care se poate anula, cine returnează
       banii (gospodăria, direct clientului) și cum apare în registru și în contract.
-- [ ] **Căutare în Admin → Precomenzi** după număr, nume sau telefon (propus pe 22 nov. 2026, fără răspuns).
+- [x] **Căutare în Admin → Precomenzi** după număr, nume, telefon sau e-mail (PR #81, 25 nov. 2026).
 - [ ] **Comenzi pentru congelator** (cantități mari) pe lângă cele pentru consum imediat – anunțate pe „În curând” (PR #36).
 - [ ] **Alte produse din gospodărie** la precomandă: borcane, afumături, păstrăvi – anunțate pe „În curând”, cu înscriere
       de interes (PR #36); precomanda lor e de construit.
@@ -87,7 +87,8 @@ _Ultima actualizare: 22 noiembrie 2026_
       alt furnizor (ex. R2), test automat de restaurare săptămânal — așteaptă acordul pe buget și furnizor.
 - [x] **Consolidare (mandat #62)**: unite în main #69, #70, #73, #74 (citiri țintite), #76 (outbox), #77 (Admin ›
       Mesaje netrimise), #78 (benchmark scriere), #79 (paginare Admin + agregate), #71; #72 închis (24–25 nov. 2026).
-- [ ] **Rămase din consolidare** (25 nov. 2026): read model pentru `/cifre`; lanțul de audit pe gospodărie + ancorare
+- [ ] **Rămase din consolidare** (25 nov. 2026): **măsoară latența în Admin › Diagnostic tehnic pe site-ul live** (#80)
+      și trimite cifra; read model pentru `/cifre`; index trigram pentru căutare la volum mare; lanțul de audit pe gospodărie + ancorare
       (decizie ChatGPT / fondator, date în CLAUDE-BENCH-C3-SCRIERE.md); măsurarea RTT-ului real Vercel ↔ Neon;
       review-ul lotului 06–11 când e publicat. Recomandări acceptate (R07, R12, R15) — pe #62.
 - [ ] **Backup de producție (C4)** (24 nov. 2026): **amânat de fondator** („o integrăm mai târziu”); până atunci PITR-ul
@@ -163,7 +164,9 @@ _Ultima actualizare: 22 noiembrie 2026_
       Perioada de grație pentru o rezervare rămasă fără comandă: 10 minute [PROPUS].
 - [x] **Alertele de expirare a documentelor** (decis de PO 23.11.2026): implementat în PR #67 (praguri 60/30/14/7,
       job zilnic, „sună gospodarul” la 7 zile). **De făcut de PO după merge:** `CRON_SECRET` în Vercel.
-- [ ] **PIN curier**: test de concurență dedicat + PIN de ridicare păstrat ca hash (CG-02).
+- [ ] **PIN curier**: testul de concurență există (#64: 10 cereri simultane → un singur curier). PIN-ul de ridicare
+      păstrat ca hash ar împiedica gospodarul să-l vadă și să-l trimită curierului → **decizie de produs** (alternativă:
+      criptat în bază). Notat 25 nov. 2026.
 - [x] **Izolarea între gospodării pe codul actual** (CG-05): test IDOR E2E + matricea de dovezi în PR #66.
 - [ ] **RLS pe schema-țintă** (CG-05): toate tabelele cu `household_id`, scriere, pool, mandat revocat — odată cu migrarea.
 
