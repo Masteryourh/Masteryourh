@@ -75,6 +75,10 @@ jobs:
           cache: npm
           cache-dependency-path: puii-mei/package-lock.json
       - run: npm ci
+      - name: Schema-țintă (PR60 + patch-uri) — harness R01–R07
+        run: npm run test:sql-target
+        env:
+          HARNESS_ADMIN_URL: postgresql://postgres:postgres@localhost:5432/postgres
       - name: Browser Playwright
         run: npx playwright install --with-deps chromium
       - name: Build
