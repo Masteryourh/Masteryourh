@@ -1,5 +1,6 @@
 import "server-only";
-import { store, storageKind } from "./db/store";
+import { databaseUrl, store, storageKind } from "./db/store";
+import { dbRegion } from "@/lib/db-region";
 import { preorderRepository } from "./repositories/preorders";
 
 /** Percentila p dintr-o listă sortată crescător. */
@@ -25,6 +26,8 @@ export async function measureLatency(samples = 20) {
   return {
     storage: storageKind,
     region: process.env.VERCEL_REGION ?? null,
+    // Doar regiunea din numele serverului (ex. eu-central-1); niciodată adresa completă sau datele de acces.
+    db: dbRegion(databaseUrl),
     at: new Date().toISOString(),
     rtt: { samples: rtt.length, min: rtt[0] ?? null, p50: percentile(rtt, 0.5), p95: percentile(rtt, 0.95), max: rtt.at(-1) ?? null },
     ops,
