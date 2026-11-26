@@ -104,6 +104,12 @@ _Ultima actualizare: 22 noiembrie 2026_
       economică fail-closed), #88 (runbook backup + restore-check), #89 (benchmark căutare trigram). Toate cu CI verde.
 - [ ] **Politica economică — câmpurile deschise** (#87): formula onorariului, rezerva (și dacă se scade înainte de
       onorariu), pierderile după ziua 21, cine aprobă cheltuielile. Până atunci decontul final e blocat (fail-closed).
+- [x] **Regiunea Vercel aliniată cu Neon** (26 nov. 2026): funcțiile mutate din iad1 în fra1 (panoul Vercel); RTT la
+      bază 93 ms → 2,3 ms, pagina de diagnostic 5,9 s → 0,3 s. #92 (regiunea în vercel.json, ca apărare) — merge la decizie.
+- [ ] **Neon: curățenia branch-urilor** (26 nov. 2026, #91): 10/10 branch-uri (limita Free). Propus: ștergerea
+      preview-ului PR-ului #71 (unit) + TTL 72 h pe 8 preview-uri ale PR-urilor deschise; opțiunea „Automatically delete
+      obsolete Neon branches” în integrarea Neon ↔ Vercel. Așteaptă aprobarea fondatorului. POC-ul Object Storage
+      (Frankfurt, 5 GB gratuit) așteaptă un loc liber.
 - [ ] **Backup de producție (C4)** (24 nov. 2026): **amânat de fondator** („o integrăm mai târziu”); până atunci PITR-ul
       inclus în Neon. De reluat: destinație, buget, test automat de restaurare.
 - [ ] **AUD-001, etapa 2** (24 nov. 2026, după #70): separarea rolurilor SQL (aplicația fără drept de a șterge

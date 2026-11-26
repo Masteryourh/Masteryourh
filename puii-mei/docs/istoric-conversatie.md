@@ -131,6 +131,10 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
   eligibile sunt doar ale lotului; investițiile (amenajare, echipamente) separate; buget de rezervă pentru pierderi din
   mortalitate (de gândit); mortalitatea = primele 21 de zile. Notion conectat (citire). Consemnat pe #62.
 
+- **26 nov. 2026 — performanță:** diagnosticul live a arătat RTT 93 ms (funcții Vercel în iad1, baza Neon în
+  aws-eu-central-1). Fondatorul a mutat funcțiile în fra1: RTT 2,3 ms, pagina de diagnostic 5,9 s → 0,3 s. Cheia API Neon
+  salvată în mediu (formular securizat); inventarul Neon: 1 proiect, 10/10 branch-uri.
+
 ## Setări și servicii
 
 - Vercel: `DATABASE_URL` (Neon), `ADMIN_USER`, `ADMIN_PASSWORD`; de adăugat `SESSION_SECRET`, `RESEND_API_KEY`,
