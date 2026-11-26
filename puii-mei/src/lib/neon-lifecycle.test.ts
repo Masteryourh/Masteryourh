@@ -20,14 +20,16 @@ test("protecție: implicit, protejat, nume rezervat, părinte de alte branch-uri
   assert.equal(classify(child, all).kind, "temporar");
 });
 
-test("ștergere doar pentru preview al cărui branch git nu mai e activ și are minimum 24 h", () => {
+test("ștergere doar pentru preview al cărui PR nu mai e deschis și are minimum 24 h", () => {
   const branches = [MAIN, br("preview/vechi"), br("preview/activ"), br("preview/nou", { created_at: ago(2) })];
   const p = plan(branches, { now, activeGitBranches: new Set(["activ"]) });
   const act = Object.fromEntries(p.items.map((i) => [i.branch.name, i.decision.action]));
   assert.equal(act["main"], "keep");
   assert.equal(act["preview/vechi"], "delete");
   assert.equal(act["preview/activ"], "set-ttl");
-  assert.equal(act["preview/nou"], "set-ttl", "sub 24 h nu se șterge, chiar dacă git-ul nu mai e activ");
+  assert.equal(act["preview/nou"], "set-ttl", "sub 24 h nu se șterge, chiar dacă PR-ul nu mai e deschis");
+  const activ = p.items.find((i) => i.branch.name === "preview/activ")!.decision;
+  assert.deepEqual(activ, { action: "set-ttl", expiresAt: "2026-11-29T12:00:00Z", reason: "PR deschis: TTL 72 h de acum" }, "PR deschis: TTL de la rulare, nu de la creare");
 });
 
 test("fail-safe: fără lista branch-urilor git nu se șterge nimic", () => {

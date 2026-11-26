@@ -29,3 +29,32 @@ proiect (2 rezervă din 10). Branch-urile temporare au TTL 24–72 h. Nu se ște
 
 **Inventarul real e blocat** până fondatorul creează cheia API Neon (pașii de mai sus) și o salvează în formularul securizat
 al mediului.
+
+## Inventar real (dry-run, 2026-11-26T14:54Z, doar citire)
+```
+DRY-RUN (nicio modificare) · 1 proiect(e) · PR-uri deschise: 17
+
+## neon-crimson-basket (tiny-term-79368655, aws-eu-central-1, organizația „Vercel: DaRe”) — 10 branch-uri, după plan 9 (țintă 8, limită 10)
+| Branch | Creat | Expiră | Tip | Acțiune | Motiv |
+|---|---|---|---|---|---|
+| main | 2026-11-19T07:05 | — | protejat | keep | branch-ul implicit al proiectului |
+| preview/claude/puii-mei-website-cow4ch | 2026-11-19T07:44 | — | temporar | set-ttl → 2026-11-29T14:54:29Z | PR deschis: TTL 72 h de acum |
+| preview/docs/chatgpt-technical-architecture-v1 | 2026-11-22T22:13 | — | temporar | set-ttl → 2026-11-29T14:54:29Z | PR deschis: TTL 72 h de acum |
+| preview/docs/aud-001-forensic-audit | 2026-11-23T19:03 | — | temporar | set-ttl → 2026-11-29T14:54:29Z | PR deschis: TTL 72 h de acum |
+| preview/claude/cum-functioneaza-buton | 2026-11-24T13:06 | — | temporar | delete | PR-ul pentru „claude/cum-functioneaza-buton” nu mai e deschis (unit / închis), vârstă 49 h |
+| preview/docs/chatgpt-database-architecture-v1 | 2026-11-23T18:48 | — | temporar | set-ttl → 2026-11-29T14:54:29Z | PR deschis: TTL 72 h de acum |
+| preview/docs/chatgpt-pr55-independent-review | 2026-11-23T18:48 | — | temporar | set-ttl → 2026-11-29T14:54:29Z | PR deschis: TTL 72 h de acum |
+| preview/docs/founder-technical-requirements | 2026-11-23T18:48 | — | temporar | set-ttl → 2026-11-29T14:54:29Z | PR deschis: TTL 72 h de acum |
+| preview/docs/navigation-context-contract | 2026-11-23T18:58 | — | temporar | set-ttl → 2026-11-29T14:54:29Z | PR deschis: TTL 72 h de acum |
+| preview/docs/technical-spec-audit-baseline | 2026-11-22T22:09 | — | temporar | set-ttl → 2026-11-29T14:54:29Z | PR deschis: TTL 72 h de acum |
+> după plan rămân 9 branch-uri, peste ținta de 8 (limita planului: 10); cele protejate / necunoscute se curăță doar manual, cu aprobare
+```
+
+**Constatări:**
+1. **Proiectul e în `aws-eu-central-1` (Frankfurt)**, iar funcțiile Vercel rulează în `iad1` (SUA). Asta explică RTT-ul live
+   de 93 ms (#90). Remedierea: Vercel → Settings → Functions → Function Region = **fra1**.
+2. **10 / 10 branch-uri: limita Free e atinsă.** PR-urile noi nu mai pot primi branch de bază pentru preview.
+   Planul propune ștergerea unui singur branch (`preview/claude/cum-functioneaza-buton`, PR #71 unit) și TTL de 72 h pe
+   celelalte, toate legate de PR-uri încă deschise. Rămân 9 (peste ținta de 8) până se închid PR-urile de documentație.
+3. **Object Storage e disponibil în regiune**, dar POC-ul are nevoie de un branch izolat, deci de un loc liber, deci de
+   aprobarea curățeniei de mai sus.

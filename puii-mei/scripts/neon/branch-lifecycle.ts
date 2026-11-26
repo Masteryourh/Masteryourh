@@ -6,7 +6,7 @@
  *   opțional: --project <id>
  *
  * Autentificare: NEON_API_KEY (sau antetul injectat de proxy-ul mediului cloud). Cheia nu se afișează și nu se scrie
- * nicăieri. Branch-urile git active: `gh api` (dacă există) — altfel nicio ștergere (fail-safe).
+ * nicăieri. PR-urile deschise: `gh api` (dacă există) — altfel nicio ștergere (fail-safe).
  * Logica: src/lib/neon-lifecycle.ts (testată).
  */
 import { execFileSync } from "node:child_process";
@@ -25,22 +25,30 @@ async function neon<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 function activeGitBranches(): Set<string> | null {
   try {
-    const out = execFileSync("gh", ["api", "--paginate", "repos/Masteryourh/Masteryourh/branches", "--jq", ".[].name"], { encoding: "utf8" });
+    // Ownership PR: doar branch-urile cu PR DESCHIS țin în viață branch-ul de bază preview/<git>.
+    const out = execFileSync("gh", ["api", "--paginate", "repos/Masteryourh/Masteryourh/pulls?state=open&per_page=100", "--jq", ".[].head.ref"], { encoding: "utf8" });
     return new Set(out.split("\n").filter(Boolean));
   } catch {
     return null;
   }
 }
 
-const projects = (await neon<{ projects: { id: string; name: string; region_id: string }[] }>("/projects")).projects.filter((p) => !onlyProject || p.id === onlyProject);
+// O cheie personală dintr-o organizație cere org_id: se parcurg organizațiile utilizatorului.
+const orgs = (await neon<{ organizations: { id: string; name: string }[] }>("/users/me/organizations")).organizations;
+const projects: { id: string; name: string; region_id: string; org: string }[] = [];
+for (const o of orgs) {
+  for (const p of (await neon<{ projects: { id: string; name: string; region_id: string }[] }>(`/projects?org_id=${encodeURIComponent(o.id)}&limit=100`)).projects) {
+    if (!onlyProject || p.id === onlyProject) projects.push({ ...p, org: o.name });
+  }
+}
 const git = activeGitBranches();
 const now = new Date();
-console.log(`${apply ? "EXECUȚIE (--apply)" : "DRY-RUN (nicio modificare)"} · ${projects.length} proiect(e) · branch-uri git active: ${git ? git.size : "indisponibile ⇒ fără ștergeri"}\n`);
+console.log(`${apply ? "EXECUȚIE (--apply)" : "DRY-RUN (nicio modificare)"} · ${projects.length} proiect(e) · PR-uri deschise: ${git ? git.size : "indisponibile ⇒ fără ștergeri"}\n`);
 
 for (const p of projects) {
   const branches = (await neon<{ branches: NeonBranch[] }>(`/projects/${p.id}/branches`)).branches;
   const pl = plan(branches, { now, activeGitBranches: git });
-  console.log(`## ${p.name} (${p.id}, ${p.region_id}) — ${pl.count} branch-uri, după plan ${pl.afterPlan} (țintă 8, limită 10)`);
+  console.log(`## ${p.name} (${p.id}, ${p.region_id}, organizația „${p.org}”) — ${pl.count} branch-uri, după plan ${pl.afterPlan} (țintă 8, limită 10)`);
   console.log("| Branch | Creat | Expiră | Tip | Acțiune | Motiv |\n|---|---|---|---|---|---|");
   for (const i of pl.items) {
     const d = i.decision;

@@ -32,7 +32,10 @@ export type BranchPlan = { branch: NeonBranch; kind: "protejat" | "temporar"; de
 
 export type Context = {
   now: Date;
-  /** Branch-urile git încă active (existente sau cu PR deschis). Dacă e null, nu se șterge nimic (fail-safe). */
+  /**
+   * Branch-urile git cu PR DESCHIS (ownership PR: mandatul din 26.11). Un preview al cărui PR s-a închis / unit se curăță;
+   * cât PR-ul e deschis, branch-ul de bază primește TTL de la momentul rulării. Dacă e null, nu se șterge nimic.
+   */
   activeGitBranches: Set<string> | null;
 };
 
@@ -54,12 +57,17 @@ export function decide(b: NeonBranch, all: NeonBranch[], ctx: Context): BranchPl
   const git = b.name.startsWith("preview/") ? b.name.slice("preview/".length) : null;
   // Ștergere: doar branch-urile preview al căror branch git nu mai e activ, după vârsta minimă (nu în timpul unui test).
   if (git && ctx.activeGitBranches && !ctx.activeGitBranches.has(git) && age >= LIMITS.minAgeHours) {
-    return { branch: b, kind: c.kind, decision: { action: "delete", reason: `branch-ul git „${git}” nu mai e activ (PR închis / branch șters), vârstă ${Math.floor(age)} h` } };
+    return { branch: b, kind: c.kind, decision: { action: "delete", reason: `PR-ul pentru „${git}” nu mai e deschis (unit / închis), vârstă ${Math.floor(age)} h` } };
   }
-  // TTL nativ Neon (expires_at, max 30 de zile; noi: max 72 h de la creare, dar cel puțin 1 h de acum).
+  // TTL nativ Neon (expires_at, max 30 de zile). Preview cu PR deschis: 72 h de acum (un deploy nou îl recreează dacă
+  // expiră); alte temporare (tmp/, ci/): 72 h de la creare, dar cel puțin o oră de acum.
   if (!b.expires_at) {
-    const target = Math.max(Date.parse(b.created_at) + LIMITS.maxTtlHours * 3_600_000, ctx.now.getTime() + 3_600_000);
-    return { branch: b, kind: c.kind, decision: { action: "set-ttl", expiresAt: new Date(target).toISOString().replace(/\.\d{3}Z$/, "Z"), reason: "temporar fără expirare: TTL 72 h de la creare" } };
+    const openPr = Boolean(git && ctx.activeGitBranches?.has(git));
+    const target = openPr
+      ? ctx.now.getTime() + LIMITS.maxTtlHours * 3_600_000
+      : Math.max(Date.parse(b.created_at) + LIMITS.maxTtlHours * 3_600_000, ctx.now.getTime() + 3_600_000);
+    const iso = new Date(target).toISOString().replace(/\.\d{3}Z$/, "Z");
+    return { branch: b, kind: c.kind, decision: { action: "set-ttl", expiresAt: iso, reason: openPr ? "PR deschis: TTL 72 h de acum" : "temporar fără expirare: TTL 72 h de la creare" } };
   }
   return { branch: b, kind: c.kind, decision: { action: "keep", reason: `temporar, expiră la ${b.expires_at}` } };
 }
