@@ -127,6 +127,10 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
   Zone: **manager local = comuna**, **manager zonal = grup de comune ca circumscripțiile judecătoriilor**. Detaliile
   rămase (termene, reacția managerului, limite AI, buget E0) sunt notate în `sugestii.md`; se merge mai departe.
 
+- **26 nov. 2026 — decizii fondator (economie lot):** onorariul se calculează pe lot, din kg totale; cheltuielile
+  eligibile sunt doar ale lotului; investițiile (amenajare, echipamente) separate; buget de rezervă pentru pierderi din
+  mortalitate (de gândit); mortalitatea = primele 21 de zile. Notion conectat (citire). Consemnat pe #62.
+
 ## Setări și servicii
 
 - Vercel: `DATABASE_URL` (Neon), `ADMIN_USER`, `ADMIN_PASSWORD`; de adăugat `SESSION_SECRET`, `RESEND_API_KEY`,
