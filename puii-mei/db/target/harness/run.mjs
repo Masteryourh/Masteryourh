@@ -1,6 +1,6 @@
 /**
  * Harness izolat pentru schema-țintă (PR60 + patch-urile din db/target/patches): reproduce defectele R01–R07 (#75) și
- * verifică remedierile, cu rolul runtime real (non-owner, NOBYPASSRLS). Doar pe un server PostgreSQL 16 de TEST:
+ * verifică remedierile (patch 01) și invariantele din review-ul 06–11 (#82, patch 02), cu rolul runtime real (non-owner, NOBYPASSRLS). Doar pe un server PostgreSQL 16 de TEST:
  * creează și șterge baze `puii_target_*`. Nu atinge producția și nu face migrări.
  *
  *   HARNESS_ADMIN_URL=postgres://postgres@localhost:5433/postgres node db/target/harness/run.mjs
@@ -61,6 +61,8 @@ INSERT INTO commerce.order_lines(id,order_id,product_id,quantity,unit_price,curr
 INSERT INTO ai.agents(id,code,description,status) VALUES ('a9000000-0000-0000-0000-000000000001','plan','planificare','enabled');
 INSERT INTO ai.runs(id,agent_id,household_id,status,input_reference) VALUES
  ('${RUN_A}','a9000000-0000-0000-0000-000000000001','${A}','completed','x'),('${RUN_B}','a9000000-0000-0000-0000-000000000001','${B}','completed','x');
+INSERT INTO inventory.items(id,sku,name,item_type,unit) VALUES ('1e000000-0000-0000-0000-000000000001','FURAJ','Furaj','feed','kg');
+INSERT INTO inventory.stock_locations(id,household_id,name,location_type,created_at) VALUES ('10c00000-0000-0000-0000-00000000000a','${A}','Magazie A','warehouse',now());
 `;
 
 // Varianta „upstream” nu are rol runtime: îl creăm cu aceleași drepturi DML (ipoteza din draftul PR60).
@@ -103,6 +105,52 @@ const err = async (p) => {
   }
 };
 const count = async (db, sql, params) => Number((await db.query(sql, params)).rows[0].n);
+const exists = async (db, t) => (await db.query("SELECT to_regclass($1) IS NOT NULL AS e", [t])).rows[0].e;
+
+async function setScope(c, write, read, principal) {
+  const has = (await c.query(`SELECT to_regproc('app.set_scope') IS NOT NULL AS h`)).rows[0].h;
+  if (has) await c.query("SELECT app.set_scope($1, $2, $3::uuid[], 'tenant')", [principal ?? null, write, read ?? []]);
+  else await c.query("SELECT set_config('app.household_id', $1, true)", [write]);
+}
+/** O conexiune separată, în tranzacție deschisă, ca rol runtime cu scope (pentru testele de concurență). */
+async function runtimeConn(url, write, principal) {
+  const c = await client(url);
+  await c.query("BEGIN");
+  await c.query("SET LOCAL ROLE puii_runtime");
+  await setScope(c, write, [], principal);
+  return c;
+}
+/** `n` tranzacții simultane, fiecare pe conexiunea ei, ca runtime; întoarce câte au reușit. */
+async function parallel(url, n, write, fn) {
+  const res = await Promise.all(Array.from({ length: n }, async () => {
+    const c = await runtimeConn(url, write, null);
+    try {
+      await fn(c);
+      await c.query("COMMIT");
+      return true;
+    } catch {
+      await c.query("ROLLBACK").catch(() => {});
+      return false;
+    } finally {
+      await c.end();
+    }
+  }));
+  return res.filter(Boolean).length;
+}
+/** Ca asRuntime, dar confirmă tranzacția (pentru pregătirea datelor în teste în doi pași). */
+async function asRuntimeCommit(db, { write = null, principal = null }, fn) {
+  await db.query("BEGIN");
+  try {
+    await db.query("SET LOCAL ROLE puii_runtime");
+    await setScope(db, write, [], principal);
+    await fn();
+    await db.query("COMMIT");
+    return true;
+  } catch {
+    await db.query("ROLLBACK");
+    return false;
+  }
+}
 
 const TESTS = [
   ["R01", "owner fără FORCE nu ocolește RLS (context A ⇒ 1 lot)", async (db) => {
@@ -236,6 +284,111 @@ const TESTS = [
     const n = await count(db, "SELECT count(*) n FROM production.lots");
     return { protected: n === 0, detail: `loturi vizibile: ${n}` };
   })],
+
+  // ------------------------------------------------------------------------------- patch 02: invariantele din #82
+  ["F1a", "runtime nu scrie direct obligațiile de plată (un singur scriitor: Commerce)", (db) => asRuntime(db, { write: A }, async () => {
+    if (!(await exists(db, "commerce.payment_obligations"))) return { protected: false, detail: "absent în PR60 (07 și 09 îl revendică amândouă)" };
+    const e = await err(db.query(`INSERT INTO commerce.payment_obligations(household_id,order_id,kind,amount_minor,currency) VALUES ($1,$2,'advance',10000,'RON')`, [A, ORDER_A]));
+    return { protected: e === "42501", detail: e ? `refuzat (${e})` : "ACCEPTAT" };
+  })],
+  ["F1b", "Finance nu modifică obligația; doar adaugă potriviri; „plătit” e proiecție", (db) => asRuntime(db, { write: A, principal: UB }, async () => {
+    if (!(await exists(db, "commerce.payment_obligations"))) return { protected: false, detail: "absent în PR60" };
+    await db.query("SET LOCAL ROLE puii_commerce");
+    const id = (await db.query(`INSERT INTO commerce.payment_obligations(household_id,order_id,kind,amount_minor,currency) VALUES ($1,$2,'advance',10000,'RON') RETURNING id`, [A, ORDER_A])).rows[0].id;
+    await db.query("SET LOCAL ROLE puii_finance");
+    await db.query("SAVEPOINT f");
+    const e = await err(db.query(`UPDATE commerce.payment_obligations SET status = 'cancelled' WHERE id = $1`, [id]));
+    await db.query("ROLLBACK TO SAVEPOINT f");
+    await db.query(`INSERT INTO finance.payment_matches(household_id,obligation_id,amount_minor) VALUES ($1,$2,10000)`, [A, id]);
+    const settled = (await db.query(`SELECT settled FROM finance.obligation_status WHERE id = $1`, [id])).rows[0]?.settled;
+    return { protected: e === "42501" && settled === true, detail: `Finance UPDATE: ${e ?? "ACCEPTAT"}; potrivire + proiecție settled=${settled}` };
+  })],
+  ["F3a", "autorul nu-și poate aproba propria cheltuială", (db) => asRuntime(db, { write: A, principal: UA }, async () => {
+    const id = (await db.query(`INSERT INTO finance.cost_entries(id,household_id,cycle_id,category,amount,currency,status,occurred_on) VALUES (gen_random_uuid(),$1,'c0000000-0000-0000-0000-00000000000a','furaj',100,'RON','documented',current_date) RETURNING id`, [A])).rows[0].id;
+    const e = await err(db.query(`UPDATE finance.cost_entries SET status = 'approved' WHERE id = $1`, [id]));
+    return { protected: e !== null, detail: e ? `refuzat (${e})` : "ACCEPTAT (autorul și-a aprobat cheltuiala)" };
+  })],
+  ["POZ-F3", "(pozitiv) altă persoană aprobă cheltuiala", async (db) => {
+    let id;
+    const created = await asRuntimeCommit(db, { write: A, principal: UA }, async () => {
+      id = (await db.query(`INSERT INTO finance.cost_entries(id,household_id,cycle_id,category,amount,currency,status,occurred_on) VALUES (gen_random_uuid(),$1,'c0000000-0000-0000-0000-00000000000a','furaj',100,'RON','documented',current_date) RETURNING id`, [A])).rows[0].id;
+    });
+    if (!created) return { protected: false, detail: "creare eșuată" };
+    const r = await asRuntime(db, { write: A, principal: UB }, async () => {
+      const e = await err(db.query(`UPDATE finance.cost_entries SET status = 'approved' WHERE id = $1`, [id]));
+      return { protected: e === null, detail: e ? `refuzat (${e})` : "aprobat" };
+    });
+    await db.query("DELETE FROM finance.cost_entries WHERE id = $1", [id]);
+    return r;
+  }],
+  ["G1a", "genealogie: 60 + 50 din nodul de 100 ⇒ a doua muchie refuzată (conservare)", (db) => asRuntime(db, { write: A }, async () => {
+    if (!(await exists(db, "traceability.edges"))) return { protected: false, detail: "absent în PR60 (fără noduri / muchii cu cantități)" };
+    const node = async (q) => (await db.query(`INSERT INTO traceability.nodes(household_id,kind,quantity,unit) VALUES ($1,'lot',$2,'buc') RETURNING id`, [A, q])).rows[0].id;
+    const src = await node(100), d1 = await node(0), d2 = await node(0);
+    await db.query(`INSERT INTO traceability.edges(household_id,from_node,to_node,source_quantity,relation_type) VALUES ($1,$2,$3,60,'split')`, [A, src, d1]);
+    const e = await err(db.query(`INSERT INTO traceability.edges(household_id,from_node,to_node,source_quantity,relation_type) VALUES ($1,$2,$3,50,'split')`, [A, src, d2]));
+    return { protected: e !== null, detail: e ? `refuzat (${e})` : "ACCEPTAT (110 din 100)" };
+  })],
+  ["G1b", "genealogie: 10 muchii simultane de 15 din nodul de 100 ⇒ maximum 100", async (db, url) => {
+    if (!(await exists(db, "traceability.edges"))) return { protected: false, detail: "absent în PR60" };
+    const src = (await db.query(`INSERT INTO traceability.nodes(household_id,kind,quantity,unit) VALUES ($1,'lot',100,'buc') RETURNING id`, [A])).rows[0].id;
+    const dst = (await db.query(`INSERT INTO traceability.nodes(household_id,kind,quantity,unit) VALUES ($1,'batch',0,'buc') RETURNING id`, [A])).rows[0].id;
+    const ok = await parallel(url, 10, A, (c) => c.query(`INSERT INTO traceability.edges(household_id,from_node,to_node,source_quantity,relation_type) VALUES ($1,$2,$3,15,'split')`, [A, src, dst]));
+    const used = await count(db, "SELECT coalesce(sum(source_quantity),0) n FROM traceability.edges WHERE from_node = $1", [src]);
+    return { protected: used <= 100 && ok === 6, detail: `reușite: ${ok}, ieșiri: ${used}/100` };
+  }],
+  ["G1c", "genealogie: ciclu refuzat", (db) => asRuntime(db, { write: A }, async () => {
+    if (!(await exists(db, "traceability.edges"))) return { protected: false, detail: "absent în PR60" };
+    const node = async () => (await db.query(`INSERT INTO traceability.nodes(household_id,kind,quantity,unit) VALUES ($1,'lot',10,'buc') RETURNING id`, [A])).rows[0].id;
+    const x = await node(), y = await node();
+    await db.query(`INSERT INTO traceability.edges(household_id,from_node,to_node,source_quantity,relation_type) VALUES ($1,$2,$3,1,'x')`, [A, x, y]);
+    const e = await err(db.query(`INSERT INTO traceability.edges(household_id,from_node,to_node,source_quantity,relation_type) VALUES ($1,$2,$3,1,'x')`, [A, y, x]));
+    return { protected: e !== null, detail: e ? `refuzat (${e})` : "ACCEPTAT" };
+  })],
+  ["S1a", "stoc: 100 kg, 20 ieșiri simultane de 10 ⇒ soldul nu devine negativ", async (db, url) => {
+    await db.query(`INSERT INTO inventory.stock_movements(id,household_id,location_id,item_id,movement_type,quantity_delta,occurred_at,reference) VALUES (gen_random_uuid(),$1,'10c00000-0000-0000-0000-00000000000a','1e000000-0000-0000-0000-000000000001','receipt',100,now(),'recepție')`, [A]);
+    const ok = await parallel(url, 20, A, (c) => c.query(`INSERT INTO inventory.stock_movements(id,household_id,location_id,item_id,movement_type,quantity_delta,occurred_at,reference) VALUES (gen_random_uuid(),$1,'10c00000-0000-0000-0000-00000000000a','1e000000-0000-0000-0000-000000000001','issue',-10,now(),'consum')`, [A]));
+    const sum = await count(db, "SELECT coalesce(sum(quantity_delta),0) n FROM inventory.stock_movements WHERE item_id = '1e000000-0000-0000-0000-000000000001'");
+    await db.query("DELETE FROM inventory.stock_movements");
+    if (await exists(db, "inventory.stock_balances")) await db.query("DELETE FROM inventory.stock_balances");
+    // Protejat = soldul nu e negativ ȘI stocul existent a fost folosit (exact 10 ieșiri de 10 kg din 100).
+    return { protected: sum === 0 && ok === 10, detail: `ieșiri reușite: ${ok}, sold din mișcări: ${sum} kg` };
+  }],
+  ["S1b", "runtime nu poate modifica soldul direct", (db) => asRuntime(db, { write: A }, async () => {
+    if (!(await exists(db, "inventory.stock_balances"))) return { protected: false, detail: "absent în PR60 (soldul se calculează din mișcări, fără rând de blocat)" };
+    const e = await err(db.query(`INSERT INTO inventory.stock_balances(location_id,item_id,household_id,on_hand) VALUES ('10c00000-0000-0000-0000-00000000000a','1e000000-0000-0000-0000-000000000001',$1,1000)`, [A]));
+    return { protected: e === "42501", detail: e ? `refuzat (${e})` : "ACCEPTAT" };
+  })],
+  ["Q1a", "TOCTOU: verificare „fără hold” → hold confirmat în paralel → alocarea e refuzată", async (db, url) => {
+    const c1 = await runtimeConn(url, A, UA), c2 = await runtimeConn(url, A, UB);
+    try {
+      await c1.query("SELECT count(*) FROM compliance.holds WHERE status = 'active'"); // verificarea din aplicație: niciun hold
+      await c2.query(`INSERT INTO compliance.holds(id,household_id,cause,severity,affected_actions,status,opened_by,opened_at) VALUES (gen_random_uuid(),$1,'document expirat','stop','{allocate}','active',$2,now())`, [A, UB]);
+      await c2.query("COMMIT");
+      const e = await err(c1.query(`INSERT INTO commerce.allocations(id,household_id,lot_id,order_line_id,units,status,created_at) VALUES (gen_random_uuid(),$1,$2,'01000000-0000-0000-0000-000000000001',8,'active',now())`, [A, LOT_A]));
+      return { protected: e !== null, detail: e ? `alocare refuzată (${e})` : "ALOCARE ACCEPTATĂ după hold" };
+    } finally {
+      await c1.query("ROLLBACK").catch(() => {});
+      await c1.end();
+      await c2.end();
+      await db.query("DELETE FROM compliance.holds");
+      if (await exists(db, "compliance.compliance_state")) await db.query("DELETE FROM compliance.compliance_state");
+    }
+  }],
+  ["Q1b", "alocarea în curs ține gate-ul: hold-ul simultan așteaptă (serializare)", async (db, url) => {
+    const c1 = await runtimeConn(url, A, UA), c2 = await runtimeConn(url, A, UB);
+    try {
+      await c1.query(`INSERT INTO commerce.allocations(id,household_id,lot_id,order_line_id,units,status,created_at) VALUES (gen_random_uuid(),$1,$2,'01000000-0000-0000-0000-000000000001',8,'active',now())`, [A, LOT_A]);
+      await c2.query("SET LOCAL lock_timeout = '1s'");
+      const e = await err(c2.query(`INSERT INTO compliance.holds(id,household_id,cause,severity,affected_actions,status,opened_by,opened_at) VALUES (gen_random_uuid(),$1,'test','stop','{allocate}','active',$2,now())`, [A, UB]));
+      return { protected: e === "55P03", detail: e === "55P03" ? "hold-ul așteaptă alocarea în curs (lock)" : `hold inserat fără așteptare (${e ?? "ok"})` };
+    } finally {
+      await c1.query("ROLLBACK").catch(() => {});
+      await c2.query("ROLLBACK").catch(() => {});
+      await c1.end();
+      await c2.end();
+    }
+  }],
   ["POZ", "(pozitiv) A își creează un lot propriu", (db) => asRuntime(db, { write: A }, async () => {
     const e = await err(db.query(`INSERT INTO production.lots(id,household_id,cycle_id,code,status,capacity_units,reserved_units,version) VALUES (gen_random_uuid(),$1,'c0000000-0000-0000-0000-00000000000a','Z','planned',1,0,1)`, [A]));
     return { protected: e === null, detail: e ? `refuzat (${e})` : "acceptat" };
@@ -288,6 +441,6 @@ for (let i = 0; i < TESTS.length; i++) {
   const mark = (r) => `${r.protected ? "PROTEJAT" : "**DEFECT**"}: ${r.detail}`;
   console.log(`| ${u.id} | ${u.title} | ${mark(u)} | ${mark(p)} |`);
 }
-const reproduced = up.filter((r) => !r.protected && !["POZ", "R05b"].includes(r.id)).length;
+const reproduced = up.filter((r) => !r.protected && !r.id.startsWith("POZ") && r.id !== "R05b").length;
 console.log(`\nDefecte reproduse pe PR60: ${reproduced}. Defecte rămase după patch: ${failed}.`);
 process.exit(failed ? 1 : 0);
