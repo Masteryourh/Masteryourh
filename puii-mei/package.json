@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "node --experimental-strip-types --test 'src/**/*.test.ts'",
     "test:e2e": "playwright test",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "neon:branches": "NODE_USE_ENV_PROXY=1 node --no-warnings --experimental-strip-types scripts/neon/branch-lifecycle.ts"
   },
   "dependencies": {
     "aws4fetch": "1.0.20",
