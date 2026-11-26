@@ -99,6 +99,11 @@ _Ultima actualizare: 22 noiembrie 2026_
       actions + REST doar pentru integrări / offline.
 - [x] **Conectare Notion** (26 nov. 2026): conectorul funcționează (citire Headquarters + Sarcini). Registrele
       Documentație și Riscuri sunt goale, iar unele vederi au filtre fără valoare — raportat pe #62, nemodificat.
+- [ ] **PR-uri de unit la decizia fondatorului** (26 nov. 2026, mandat fără merge automat): #82 (review 06–11), #84
+      (schema-țintă R01–R07, harness PG16), #85 (invariante F1/F3/G1/S1/Q1), #86 (verificare C1), #87 (politica
+      economică fail-closed), #88 (runbook backup + restore-check), #89 (benchmark căutare trigram). Toate cu CI verde.
+- [ ] **Politica economică — câmpurile deschise** (#87): formula onorariului, rezerva (și dacă se scade înainte de
+      onorariu), pierderile după ziua 21, cine aprobă cheltuielile. Până atunci decontul final e blocat (fail-closed).
 - [ ] **Backup de producție (C4)** (24 nov. 2026): **amânat de fondator** („o integrăm mai târziu”); până atunci PITR-ul
       inclus în Neon. De reluat: destinație, buget, test automat de restaurare.
 - [ ] **AUD-001, etapa 2** (24 nov. 2026, după #70): separarea rolurilor SQL (aplicația fără drept de a șterge
