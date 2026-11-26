@@ -1,0 +1,11 @@
+# 17 — INFRASTRUCTURE DEPLOYMENT
+Version 0.1 DRAFT — 2026-11-26. Source: founder requirements PR58 §17, PR50, PR62 and PR82 review findings as reported. All target designs PROPUS unless explicitly confirmed. No production changes. Existing code not exhaustively audited for this chapter.
+
+## Environments
+Local synthetic PostgreSQL16, CI ephemeral isolated DB, staging separate credentials/storage, production restricted. Existing Vercel/Neon context reported; verify actual configuration before changes. No production secrets in preview builds or CI logs. Environment schema validates required variables at startup; names proposed DATABASE_URL, SESSION_SECRET, STORAGE_* and provider credentials, separate runtime/migration identities. Secrets injected by platform, rotate and revoke.
+## Pipeline
+PR → lint/typecheck/unit → build → isolated PG integration/RLS → E2E → dependency/secret scan → review → authorized merge → staging smoke → explicit release gate. Artifact immutable commit SHA, migration checksum and release manifest. Expand/contract migrations, backward compatible readers, backfill checkpoints, validate constraints before cutover; destructive changes require backup and explicit approval. Feature flags default off for unapproved workflows; server enforcement. Rollback application to compatible artifact, database forward repair or tested restore; never assume rollback undoes data writes.
+## Operations
+Health endpoints minimal public response; internal diagnostics scoped. Monitor latency, error rates, pool, outbox lag, storage, audit, backup age. Scale from measured demand: targeted queries, indexes, pool tuning, worker concurrency, then replicas only for stale-tolerant reads. No region/provider commitment. C4 external backup deferred: local synthetic backup/restore runbook with checksum, isolated restore, row counts, constraints, audit verification and smoke; production RPO/RTO and offsite retention open, sensitive rollout blocked until approved recovery capability.
+## Acceptance
+OPS-T01 clean build; T02 isolated env; T03 missing secret fails safely; T04 migration rehearsal; T05 rollback compatibility; T06 restore verification; T07 worker restart; T08 alert delivery; T09 load saturation; T10 no prod data in CI; T11 feature flag fail closed. No deployment or tests performed.
