@@ -27,8 +27,11 @@ export function MobileTabBar({ items, label }: { items: PanelNavItem[]; label: s
   const [openAt, setOpenAt] = useState<string | null>(null);
   const open = openAt === path;
   const setOpen = (v: boolean) => setOpenAt(v ? path : null);
-  const tabs = items.filter((i) => i.tab).slice(0, 4);
-  const moreBadge = items.filter((i) => !i.tab).reduce((s, i) => s + (i.badge ?? 0), 0);
+  // Până la 5 secțiuni încap toate jos (fără „Meniu”); altfel: cele marcate `tab` + „Meniu” pentru restul.
+  const all = items.length <= 5;
+  const tabs = all ? items : items.filter((i) => i.tab).slice(0, 4);
+  const moreBadge = items.filter((i) => !tabs.includes(i)).reduce((s, i) => s + (i.badge ?? 0), 0);
+  if (items.length < 2) return null;
   return (
     <>
       {open && (
@@ -51,7 +54,7 @@ export function MobileTabBar({ items, label }: { items: PanelNavItem[]; label: s
         </div>
       )}
       <nav aria-label={label} className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden print:hidden">
-        <ul className="grid grid-cols-5">
+        <ul className="grid" style={{ gridTemplateColumns: `repeat(${tabs.length + (all ? 0 : 1)}, minmax(0, 1fr))` }}>
           {tabs.map((i) => (
             <li key={i.href}>
               <Link href={i.href} aria-current={isActive(i, path) ? "page" : undefined} className={cn("relative flex h-16 flex-col items-center justify-center gap-0.5 text-[11px] font-medium", isActive(i, path) ? "text-slate-900" : "text-slate-500")}>
@@ -62,13 +65,13 @@ export function MobileTabBar({ items, label }: { items: PanelNavItem[]; label: s
               </Link>
             </li>
           ))}
-          <li>
+          {!all && <li>
             <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className={cn("relative flex h-16 w-full flex-col items-center justify-center gap-0.5 text-[11px] font-medium", open ? "text-slate-900" : "text-slate-500")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" className="h-6 w-6" aria-hidden><path d="M4 7h16M4 12h16M4 17h16" /></svg>
               <span>Meniu</span>
               {moreBadge > 0 && <span className="absolute top-2 right-[calc(50%-1.25rem)] min-w-4 rounded-full bg-lime-300 px-1 text-center text-[10px] font-bold text-slate-900">{moreBadge}</span>}
             </button>
-          </li>
+          </li>}
         </ul>
       </nav>
     </>

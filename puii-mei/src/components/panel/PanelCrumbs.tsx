@@ -34,7 +34,7 @@ const LAST: Record<string, string> = { regim: "Regim și suprafață", jurnal: "
 /** Pagina de detaliu, după secțiunea din care face parte. */
 const DETAIL: Record<string, string> = { ture: "Tura de livrare", livrari: "Tura de livrare", investitii: "Investiția", investitor: "Investiția", gospodarii: "Fișa gospodăriei", comenzi: "Comanda" };
 
-const TAB_ROOTS = new Set(["/admin/azi"]);
+const TAB_ROOTS = new Set(["/admin/azi", "/cont/gospodar/jurnal", "/cont/gospodar/documente", "/cont/gospodar/legislatie"]);
 
 /** Traseul în panou (ex. Panou admin › Gospodării › Regim) + „← Înapoi la …” pe telefon. Ascuns pe pagina principală. */
 export function PanelCrumbs() {
