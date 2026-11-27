@@ -108,8 +108,10 @@ _Ultima actualizare: 22 noiembrie 2026_
       bază 93 ms → 2,3 ms, pagina de diagnostic 5,9 s → 0,3 s. #92 (regiunea în vercel.json) unit.
 - [x] **Neon: curățenia branch-urilor** (26 nov. 2026, aprobată „fă ce e mai bine”): preview-ul #71 șters, TTL 72 h pe 8
       preview-uri ale PR-urilor deschise ⇒ 9/10. #91 și #92 unite (regiunea fra1 în vercel.json).
-- [ ] **Neon: „Automatically delete obsolete Neon branches”** (26 nov. 2026): de bifat de fondator în consola Neon →
-      Integrations → Manage → Branches → Automation workflows.
+- [ ] **Neon: curățare automată la închiderea PR-ului** (27 nov. 2026): workflow-ul GitHub e unit (#93). De setat de
+      fondator în GitHub → Settings → Secrets and variables → Actions: secretul `NEON_API_KEY` și variabila
+      `NEON_PROJECT_ID = tiny-term-79368655`. Opțional: Vercel → Settings → Deployment Retention → perioadă mai scurtă
+      pentru pre-production. (Bifa „Automatically delete obsolete Neon branches” nu există la integrarea gestionată de Vercel.)
 - [ ] **POC Neon Object Storage** (26 nov. 2026): branch izolat tmp/ cu date sintetice, TTL 24 h, Files SDK.
 
 - [ ] **Backup de producție (C4)** (24 nov. 2026): **amânat de fondator** („o integrăm mai târziu”); până atunci PITR-ul
