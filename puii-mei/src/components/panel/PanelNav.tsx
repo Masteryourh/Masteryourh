@@ -4,7 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 
-export type PanelNavItem = { href: string; label: string; badge?: number; exact?: boolean; /** Cheia iconiței din bara cu iconițe (RailNav). */ icon?: string };
+export type PanelNavItem = {
+  href: string;
+  label: string;
+  badge?: number;
+  exact?: boolean;
+  /** Cheia iconiței din bara cu iconițe (RailNav). */
+  icon?: string;
+  /** Apare în bara de jos pe telefon (maximum 4). */
+  tab?: boolean;
+  /** Numele scurt din bara de jos. */
+  short?: string;
+};
 
 /** Secțiunile panoului: listă verticală pe desktop, bară orizontală pe telefon. */
 export function PanelNav({ items, label }: { items: PanelNavItem[]; label: string }) {
