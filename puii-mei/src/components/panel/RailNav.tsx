@@ -24,6 +24,8 @@ export const ICONS: Record<string, string> = {
   diagnostic: "M3 12h4l2-6 4 12 2-6h6",
   mesaje: "M4 6h16v12H4zM4 7l8 6 8-6",
   legislatie: "M12 3v18M5 7h14M7 7l-3 7a3 3 0 006 0L7 7zm10 0l-3 7a3 3 0 006 0l-3-7zM8 21h8",
+  securitate: "M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3zM9.5 12l1.8 1.8L15 10",
+  inapoi: "M15 6l-6 6 6 6",
   vedere: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z",
 };
 

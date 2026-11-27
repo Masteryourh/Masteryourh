@@ -9,16 +9,8 @@ import { farmPaymentRepository } from "./repositories/farm-payments";
 import { tourRepository } from "./repositories/delivery";
 import { growthProgress, lotDay, lotStatus } from "@/lib/lots";
 
-/** Un lucru care cere o decizie sau o acțiune a adminului, cu legătura directă spre locul în care se rezolvă. */
-export type TodayItem = {
-  id: string;
-  kind: "precomanda" | "iban" | "lot" | "mesaj" | "locuri" | "crestere" | "document" | "prelungire";
-  severity: "urgent" | "atentie" | "info";
-  title: string;
-  detail: string;
-  href: string;
-  action: string;
-};
+import type { TodayItem } from "@/lib/today";
+export type { TodayItem };
 
 /**
  * Admin › Astăzi: coada „Necesită atenția ta” + cifrele zilei + ce e în desfășurare. Doar citiri, din aceleași surse ca

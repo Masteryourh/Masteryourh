@@ -34,6 +34,10 @@ import { GROWTH, pensForArea } from "@/lib/growth";
 import { expiringDocuments, zile } from "@/lib/document-expiry";
 import { documentRepository } from "@/server/repositories/documents";
 import { mfaEnabled } from "@/server/mfa";
+import { growthLogRepository } from "@/server/repositories/growth-log";
+import { growthAlerts } from "@/lib/growth-log";
+import { farmerToday } from "@/lib/farmer-today";
+import { TodayQueue } from "@/components/panel/TodayQueue";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Contul gospodarului", robots: { index: false, follow: false } };
@@ -78,13 +82,14 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
   const farmPreorders = preorders.filter((p) => p.lotCode && lotCodes.has(p.lotCode) && p.status !== "anulata");
   const zoneName = new Map(zones.map((z) => [z.id, z.name]));
   const activeLots = lots.filter((l) => lotStatus(l) !== "livrat");
-  const [allParcels, allTours, payment, expenses, gov, land] = await Promise.all([
+  const [allParcels, allTours, payment, expenses, gov, land, journal] = await Promise.all([
     parcelRepository.byFarm(farm.slug),
     tourRepository.byFarm(farm.slug),
     farmPaymentRepository.bySlug(farm.slug),
     expenseRepository.byFarm(farm.slug),
     governanceRepository.bySlug(farm.slug),
     landRepository.bySlug(farm.slug),
+    growthLogRepository.byFarm(farm.slug),
   ]);
   const expiring = expiringDocuments(await documentRepository.byFarm(farm.slug), new Date());
   const legalNews = (await legalRepository.list()).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3);
@@ -117,6 +122,22 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
   const nextTour = farmTours
     .filter((t) => t.status === "planificata" || t.status === "in-curs")
     .sort((a, b) => a.date.localeCompare(b.date))[0];
+  // „De făcut azi”: ce cere o acțiune a gospodarului acum, cu legătura spre locul în care se face.
+  const today = farmerToday({
+    base: "/cont/gospodar",
+    q: user.role === "admin" ? `?gospodarie=${farm.slug}` : "",
+    today: todayIso(),
+    growthAlerts: growthAlerts(lots, journal),
+    growing: growing.map((l) => ({ code: l.code, day: Math.max(0, lotDay(l)), days: l.growthDays })),
+    entries: journal,
+    expiring: expiring.map(({ doc, days }) => ({ id: doc.id, title: doc.title, days })),
+    pendingLots: lots.filter((l) => l.approval?.status === "asteapta").map((l) => l.code),
+    advancesDue: farmPreorders.length - feedPaid,
+    hasPayment: Boolean(payment),
+    orders: farmPreorders.length,
+    tours: farmTours.map((t) => ({ id: t.id, code: t.code, date: t.date, status: t.status, parcels: t.parcelIds.length })),
+    readyParcels: readyParcels.length,
+  });
   const mapLots = activeLots.filter((l) => !l.approval || l.approval.status !== "respins").slice(0, FARM_SPOTS.length);
 
   return (
@@ -168,6 +189,8 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
             </Link>
           </div>
         )}
+
+        <TodayQueue title="De făcut azi" items={today} empty="Totul e la zi." emptyHint="Nicio alertă, nicio livrare azi, jurnalul e completat." />
 
         <div className="grid gap-4 xl:grid-cols-[1.55fr_1fr]">
           <AerialMap
@@ -526,7 +549,7 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
         </div>
       </form>
 
-      <h2 className="mt-10 text-2xl font-semibold">Ture de livrare</h2>
+      <h2 id="ture" className="mt-10 scroll-mt-6 text-2xl font-semibold">Ture de livrare</h2>
       <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:items-start">
         <ul className="space-y-3">
           {farmTours.length === 0 && <li className="rounded-2xl bg-white p-5 text-muted ring-1 ring-forest-900/10">Nicio tură încă.</li>}
