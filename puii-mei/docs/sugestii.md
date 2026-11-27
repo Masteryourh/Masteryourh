@@ -28,7 +28,7 @@ _Ultima actualizare: 22 noiembrie 2026_
       preluați; dacă nu o preia nimeni, de stabilit ce se întâmplă cu avansul (puii și furajul sunt deja cumpărați).
       De gândit: lista de așteptare care preia automat locurile, termenul până la care se poate anula, cine returnează
       banii (gospodăria, direct clientului) și cum apare în registru și în contract.
-- [ ] **Căutare în Admin → Precomenzi** după număr, nume sau telefon (propus pe 22 nov. 2026, fără răspuns).
+- [x] **Căutare în Admin → Precomenzi** după număr, nume, telefon sau e-mail (PR #81, 25 nov. 2026).
 - [ ] **Comenzi pentru congelator** (cantități mari) pe lângă cele pentru consum imediat – anunțate pe „În curând” (PR #36).
 - [ ] **Alte produse din gospodărie** la precomandă: borcane, afumături, păstrăvi – anunțate pe „În curând”, cu înscriere
       de interes (PR #36); precomanda lor e de construit.
@@ -68,6 +68,59 @@ _Ultima actualizare: 22 noiembrie 2026_
       Clienții din aceeași rețea mobilă pot avea același IP (NAT) – de reevaluat după lansare, din jurnale.
 - [ ] **Română / engleză** – amânat de utilizator (22 nov. 2026); întâi site-ul public, apoi panourile.
 
+- [x] **NAV-001, restul linkurilor din Admin** (24 nov. 2026): mutate în Admin în PR #73 (Admin Central Command Center).
+- [ ] **Admin Command Center, rămase** (24 nov. 2026, după #73): păstrarea scroll-ului la „Înapoi” pentru paginile
+      fără ancoră (NAV-T14); „Reia Admin” (ultima stare salvată), dacă se dorește; investițiile și calitatea pe
+      gospodărie ca entități separate în Admin. Merge #72 sau închiderea lui (înlocuit de #73) — fără răspuns.
+- [ ] **Scalare / „Librarian Architecture”** (24 nov. 2026, review Claude pe #62, în așteptarea deciziei): 1) indexuri și
+      interogări țintite în locul citirii întregii colecții (`.list()` + filtru; ex. `byNumber`) — cel mai mare risc;
+      2) outbox: notificările (e-mail, SMS) scoase din tranzacție; 3) lanțul de audit fără blocarea globală
+      (`pg_advisory_xact_lock`): lanț pe partiții + ancorare; 4) `AccessContext` obligatoriu + proiecții per rol + RLS;
+      5) benchmark reproductibil (N1/N2) în CI; 6) URL-uri presemnate pentru fișiere, partiționare lunară audit/jurnal.
+      Întrebări deschise: volum țintă, buget bază de date, RPO/RTO, întârzierea acceptată în dashboard-uri, AI, retenție.
+- [ ] **Sarcini și manageri** (24 nov. 2026, decizie fondator, de detaliat): roluri `manager_local` / `manager_zonal`,
+      tabel de sarcini (termen, justificare, rezolvare, escaladare), rezumat zilnic pentru gospodar, coada managerului
+      local, tablou zonal și național. **Decis:** local = comuna (SIRUTA), zonal = grup de comune după circumscripțiile
+      judecătoriilor. Deschis: termenele pe tip de sarcină (zootehnist), termenul
+      de reacție al managerului, ce acțiuni AI rămân cu confirmare umană (propunere: plăți, efectiv, veterinar, blocări).
+- [ ] **Durabilitate E0** (24 nov. 2026, propus pe #62): Neon plătit cu PITR (~20 $/lună), copie zilnică imuabilă la
+      alt furnizor (ex. R2), test automat de restaurare săptămânal — așteaptă acordul pe buget și furnizor.
+- [x] **Consolidare (mandat #62)**: unite în main #69, #70, #73, #74 (citiri țintite), #76 (outbox), #77 (Admin ›
+      Mesaje netrimise), #78 (benchmark scriere), #79 (paginare Admin + agregate), #71; #72 închis (24–25 nov. 2026).
+- [ ] **Rămase din consolidare** (25 nov. 2026): **măsoară latența în Admin › Diagnostic tehnic pe site-ul live** (#80)
+      și trimite cifra; read model pentru `/cifre`; index trigram pentru căutare la volum mare; lanțul de audit pe gospodărie + ancorare
+      (decizie ChatGPT / fondator, date în CLAUDE-BENCH-C3-SCRIERE.md); măsurarea RTT-ului real Vercel ↔ Neon;
+      review-ul lotului 06–11 când e publicat. Recomandări acceptate (R07, R12, R15) — pe #62.
+- [ ] **Decizii din review-ul 06–11** (#82). **Decis 26 nov. 2026:** onorariul pe LOT, din kg totale; cheltuieli eligibile
+      doar ale lotului (fără alte cheltuieli gospodărești); investițiile (amenajare, echipamente) separate; mortalitatea
+      = primele 21 de zile. **Deschis:** formula exactă (10% × (kg × preț − cheltuieli lot) sau tarif pe kg); bugetul de
+      rezervă pentru pierderile din mortalitate (de gândit); ce se întâmplă cu pierderile după ziua 21; cine aprobă
+      cheltuielile; rolul juridic al companiei (consultant / mandatar); codul lotului public sau QR opac; server
+      actions + REST doar pentru integrări / offline.
+- [x] **Conectare Notion** (26 nov. 2026): conectorul funcționează (citire Headquarters + Sarcini). Registrele
+      Documentație și Riscuri sunt goale, iar unele vederi au filtre fără valoare — raportat pe #62, nemodificat.
+- [ ] **PR-uri de unit la decizia fondatorului** (26 nov. 2026, mandat fără merge automat): #82 (review 06–11), #84
+      (schema-țintă R01–R07, harness PG16), #85 (invariante F1/F3/G1/S1/Q1), #86 (verificare C1), #87 (politica
+      economică fail-closed), #88 (runbook backup + restore-check), #89 (benchmark căutare trigram). Toate cu CI verde.
+- [ ] **Politica economică — câmpurile deschise** (#87): formula onorariului, rezerva (și dacă se scade înainte de
+      onorariu), pierderile după ziua 21, cine aprobă cheltuielile. Până atunci decontul final e blocat (fail-closed).
+- [x] **Regiunea Vercel aliniată cu Neon** (26 nov. 2026): funcțiile mutate din iad1 în fra1 (panoul Vercel); RTT la
+      bază 93 ms → 2,3 ms, pagina de diagnostic 5,9 s → 0,3 s. #92 (regiunea în vercel.json) unit.
+- [x] **Neon: curățenia branch-urilor** (26 nov. 2026, aprobată „fă ce e mai bine”): preview-ul #71 șters, TTL 72 h pe 8
+      preview-uri ale PR-urilor deschise ⇒ 9/10. #91 și #92 unite (regiunea fra1 în vercel.json).
+- [ ] **Neon: curățare automată la închiderea PR-ului** (27 nov. 2026): workflow-ul GitHub e unit (#93). De setat de
+      fondator în GitHub → Settings → Secrets and variables → Actions: secretul `NEON_API_KEY` și variabila
+      `NEON_PROJECT_ID = tiny-term-79368655`. Opțional: Vercel → Settings → Deployment Retention → perioadă mai scurtă
+      pentru pre-production. (Bifa „Automatically delete obsolete Neon branches” nu există la integrarea gestionată de Vercel.)
+- [ ] **POC Neon Object Storage** (26 nov. 2026): branch izolat tmp/ cu date sintetice, TTL 24 h, Files SDK.
+
+- [ ] **Backup de producție (C4)** (24 nov. 2026): **amânat de fondator** („o integrăm mai târziu”); până atunci PITR-ul
+      inclus în Neon. De reluat: destinație, buget, test automat de restaurare.
+- [ ] **AUD-001, etapa 2** (24 nov. 2026, după #70): separarea rolurilor SQL (aplicația fără drept de a șterge
+      triggerul), export extern semnat (WORM), interfață de căutare / export pentru investigații (cu audit al
+      accesului), retenția pe categorii (jurist / DPO), auditul vizualizărilor sensibile, `householdId` completat la
+      toate acțiunile pe obiecte primite prin id.
+
 ## De configurat (Vercel / servicii)
 
 - [ ] **SMS pentru PIN-ul clientului** (Twilio): `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` în Vercel. Până atunci
@@ -80,6 +133,22 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [ ] **Vercel Blob** pentru fișiere mari (opțional; documentele merg și fără, până la 3,5 MB).
 - [ ] **`ADMIN_NOTIFY_EMAIL`** în Vercel: adresa care primește alertele (precomenzi, solicitări, mesaje).
 - [x] **Conectorul Higgsfield** conectat (plan gratuit: doar modelul de imagini `z_image`, fără video).
+
+- [x] **Vercel: previzualizările pentru branch-uri noi eșuau** (23 nov. 2026): limita de branch-uri Neon (plan Free).
+      Rezolvat: PO a șters 6 branch-uri Neon ale PR-urilor unite; previzualizările #57, #58, #60, #61 refăcute → READY.
+- [ ] **Ștergerea automată a previzualizărilor vechi** (23 nov. 2026): Neon șterge branch-ul bazei când e șters
+      deployment-ul din Vercel. De setat în Vercel → Settings → Deployment Retention (ex. previzualizări mai vechi de
+      30 de zile), ca limita să nu se mai atingă.
+
+- [ ] **Baza de date gratuită pe termen lung** (23 nov. 2026, PO: „soluție pentru mai multă stocare gratuită”): limita
+      atinsă e cea de 10 branch-uri Neon (câte unul pe previzualizare), nu spațiul. Fotografiile se salvează însă în baza
+      de date (base64) și o vor umple. Propunere: (1) previzualizările pe o singură bază de test fixă, separată de
+      producție; (2) fotografiile și documentele în object storage gratuit (ex. Cloudflare R2), baza de date doar pentru
+      date. Alternativ: Prisma Postgres (2 GB gratuit), Supabase (500 MB, UE). Tokenul Vercel din sesiune trebuie
+      reînnoit (cel salvat e refuzat).
+
+- [ ] **De configurat de PO în Vercel după merge-urile #65–#67** (24 nov. 2026): `FILES_S3_*` (furnizorul de
+      stocare: recomandat Cloudflare R2), `CRON_SECRET`, un token Vercel nou pentru sesiunea Claude (cel salvat e refuzat).
 
 ## De completat pe site
 
@@ -104,6 +173,30 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [x] **Denumirea**: ECORATE S.R.L. (logo în `public/brand/`, frunza = „D” → ECORATED).
 - [ ] **Datele companiei** în `src/lib/site.ts`: CUI, nr. Reg. Com., adresă, telefon (acum `+40 700 000 000`).
 - [ ] **Modelele de contract** și chitanța pentru avansul de hrană, cu datele firmei.
+
+## Securitate (de reparat)
+
+- [x] **PIN-ul clientului ocolibil prin cereri simultane** (V-01/V-02) – reparat în #56 (SEC-007).
+- [x] **Schimbarea IBAN-ului gospodăriei** (CG-03, varianta b): etapa 1 (fără MFA) în PR #61 — contul nou activ doar după
+      apelul de confirmare și 24 h; „Nu am cerut eu”; jurnal (ADR-009).
+- [x] **IBAN, etapa 2 – MFA** (ADR-009): implementat în PR #68 (cod din aplicația de autentificare, resetare din admin).
+- [ ] **IBAN, ce mai rămâne** (ADR-009, 24 nov. 2026): expirarea cererii după 5 zile lucrătoare fără apel [PROPUS, de
+      confirmat de PO]; verificarea titularului la bancă; notificare la schimbarea numărului de telefon al gospodarului
+      (azi doar adminul îl poate schimba).
+- [x] **Supra-rezervarea locurilor** (CG-04) – reparat în PR #59 (registru de locuri atomic + reconciliere, teste E2E).
+      Perioada de grație pentru o rezervare rămasă fără comandă: 10 minute [PROPUS].
+- [x] **Alertele de expirare a documentelor** (decis de PO 23.11.2026): implementat în PR #67 (praguri 60/30/14/7,
+      job zilnic, „sună gospodarul” la 7 zile). **De făcut de PO după merge:** `CRON_SECRET` în Vercel.
+- [ ] **PIN curier**: testul de concurență există (#64: 10 cereri simultane → un singur curier). PIN-ul de ridicare
+      păstrat ca hash ar împiedica gospodarul să-l vadă și să-l trimită curierului → **decizie de produs** (alternativă:
+      criptat în bază). Notat 25 nov. 2026.
+- [x] **Izolarea între gospodării pe codul actual** (CG-05): test IDOR E2E + matricea de dovezi în PR #66.
+- [ ] **RLS pe schema-țintă** (CG-05): toate tabelele cu `household_id`, scriere, pool, mandat revocat — odată cu migrarea.
+
+## De verificat zootehnic
+
+- [ ] **Furajul pe pui** (9,8 kg, „asimilare 70%”) e probabil subestimat: FCR implicit ≈ 1,43; la pui cu creștere lentă
+      FCR-ul e de obicei 2,5–3,5 (≈ 17–24 kg / pui). Afectează avansul și costul lotului (ADR-008).
 
 ## De verificat juridic
 

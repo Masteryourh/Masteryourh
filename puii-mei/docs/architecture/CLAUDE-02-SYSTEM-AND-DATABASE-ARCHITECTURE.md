@@ -220,7 +220,7 @@ neconectată, se șterge — D-11). Alternativă acceptabilă: Prisma cu migraț
 > concizie și sunt obligatorii pe fiecare tabel mutabil.
 >
 > **Verificat:** toate blocurile SQL din acest capitol (cu `/* audit */` expandat) au rulat fără erori pe PostgreSQL 16,
-> într-o bază goală: 14 scheme, 76 de tabele (v0.2, 23 nov. 2026).
+> într-o bază goală: 14 scheme, 78 de tabele (v0.2 + `compliance_holds`, `compliance_reminders`, 23 nov. 2026).
 
 ### 8.1 identity
 
@@ -393,6 +393,7 @@ create table household.compliance_requirements (  -- catalog per program / tip d
   applies_to    text not null,             -- 'gospodarie' sau codul programului
   evidence_kind text not null,             -- 'document','inspectie','declaratie'
   validity_days integer,                   -- null = nu expiră
+  reminder_days integer[] not null default '{60,30,14,7}',  -- alerte de expirare (zile înainte), F-02
   mandatory     boolean not null default true,
   authority     text                       -- DSVSA, contabil, jurist…
 );
@@ -410,6 +411,45 @@ create table household.compliance_checks (        -- Compliance Gate (SC-043)
   /* audit */
   unique (household_id, requirement_id)
 );
+
+create table household.compliance_reminders (     -- alertele de expirare trimise (F-02, decizia PO 23.11.2026)
+  id             uuid primary key,
+  check_id       uuid not null references household.compliance_checks(id),
+  household_id   uuid not null references household.households(id),
+  expires_at     timestamptz not null,          -- data de expirare la care se referă alerta
+  days_before    integer not null check (days_before >= 0),
+  recipient      text not null check (recipient in ('titular','operator','calitate')),
+  channel        text not null check (channel in ('panou','email','sms','apel')),
+  sent_at        timestamptz not null default now(),
+  seen_at        timestamptz,
+  outcome        text,                          -- la 'apel': rezultatul notat de operator
+  unique (check_id, expires_at, days_before, recipient, channel)  -- jobul zilnic e idempotent
+);
+
+create table household.compliance_holds (         -- suspendare de conformitate cu severitate (F-02, CG-06)
+  id             uuid primary key,
+  household_id   uuid not null references household.households(id),
+  check_id       uuid references household.compliance_checks(id),  -- null = constatare fără cerință din catalog
+  cause          text not null check (cause in ('expirare_document','respingere_dovada','constatare_control',
+                                                 'decizie_autoritate','incident_calitate','alta')),
+  severity       text not null check (severity in ('informare','restrictie','oprire')),
+  affected       text[] not null check (cardinality(affected) > 0 and affected <@ array['loturi_noi','alocari_noi',
+                   'crestere','procesare','comercializare','livrare']::text[]),
+  lot_ids        uuid[],                    -- null = toată gospodăria; altfel doar loturile enumerate
+  reason         text not null,
+  issuer         text not null,             -- 'calitate', 'DSVSA', 'jurist'… (cine a constatat)
+  starts_at      timestamptz not null default now(),
+  review_at      timestamptz,               -- termen de reanalizare (obligatoriu la 'oprire', vezi check)
+  status         text not null default 'activ' check (status in ('activ','ridicat')),
+  lifted_at      timestamptz,
+  lifted_by      uuid references identity.users(id),
+  lift_evidence_document_id uuid,
+  placed_by      uuid not null references identity.users(id),
+  check ((status = 'ridicat') = (lifted_at is not null and lifted_by is not null)),
+  check (severity <> 'oprire' or review_at is not null),
+  /* audit */
+);
+create index on household.compliance_holds (household_id) where status = 'activ';
 
 create table household.standing_events (          -- istoric regim (avertizare, suspendare…)
   id            uuid primary key,
@@ -447,11 +487,18 @@ create table program.program_versions (     -- parametrii versionați (AR-06)
   approved_at  timestamptz,
   unique (program_id, version)
 );
--- Exemplu params pentru PUI_PASUNE_60 [CONFIRMAT ca ipoteze operaționale, SC-019]:
+-- Exemplu params pentru PUI_PASUNE_60. Valorile operaționale sunt [CONFIRMAT ca ipoteze] (SC-019); cele
+-- zootehnice sunt parametri SEPARAȚI, fiecare cu statutul validării (vezi CLAUDE-VERIFICATION-V1 §3):
 -- { "birds_per_pen": 40, "pasture_m2_per_pen": 170, "growth_days": 60, "indoor_days": 21,
---   "pen_start_window_days": 7, "carcass_kg": 4.8, "carcass_yield": 0.70, "feed_kg_per_bird": 9.8,
---   "move_alert_days": 2, "photo_interval_days": 7, "one_lot_at_a_time": true,
---   "limits": { "birds_per_year": 10000, "birds_per_lot": 300 } }
+--   "pen_start_window_days": 7, "move_alert_days": 2, "photo_interval_days": 7, "one_lot_at_a_time": true,
+--   "limits": { "birds_per_year": 10000, "birds_per_lot": 300 },
+--   "zootech": {
+--     "target_carcass_kg":   { "value": 4.8,  "status": "ipoteza_nevalidata" },
+--     "carcass_yield":       { "value": 0.70, "status": "ipoteza_nevalidata" },   -- randament la sacrificare (carcasă / viu)
+--     "fcr_kg_feed_per_kg_live": { "value": null, "status": "de_stabilit_zootehnic" }  -- conversia furajului (FCR)
+--   } }
+-- Furajul / pui se CALCULEAZĂ = (target_carcass_kg / carcass_yield) × fcr; nu se mai stochează „9,8 kg” și nici
+-- „asimilare 70%” (care confunda randamentul la sacrificare cu conversia furajului).
 
 create table program.household_programs (   -- gospodăria înscrisă într-un program
   id            uuid primary key,
@@ -1267,7 +1314,7 @@ erDiagram
 | INV-05 | Registrul confirmat are număr de document și fișier | `CHECK` pe `ledger_entries` |
 | INV-06 | Efectivul, jurnalul de creștere, jurnalul turei și auditul nu se modifică / șterg | tabele append-only; aplicația nu are `UPDATE` / `DELETE` (GRANT), corecții prin evenimente de rectificare |
 | INV-07 | Un lot blocat (hold activ) nu primește alocări și nu pleacă în livrare | verificare în `reserveCapacity` și `createTour`; index unic parțial pe hold activ |
-| INV-08 | O gospodărie fără Compliance Gate valid sau suspendată nu poate avea lot nou / alocări noi | verificare în `production.createLot` și `commerce.reserveCapacity` pe `households.standing` și `compliance_status` |
+| INV-08 | O gospodărie fără Compliance Gate valid sau suspendată nu poate avea lot nou / alocări noi; o activitate (creștere, procesare, comercializare, livrare) din `affected` al unei `compliance_holds` active nu poate avansa pentru gospodăria / loturile vizate | verificare în `production.createLot`, `commerce.reserveCapacity` și la fiecare tranziție de stare a lotului / comenzii, pe `households.standing`, `compliance_status` și `compliance_holds` active |
 | INV-09 | Țarcurile unui lot pornesc în fereastra de 7 zile; un lot pe rând (dacă programul o cere) | verificare în `startPen` / `createLot` pe parametrii versiunii de program |
 | INV-10 | Prețul comenzii nu se schimbă după plasare | `orders.price_list_id` + `order_lines.unit_price_bani` înghețate |
 | INV-11 | Onorariul = 10% × max(0, venituri − cheltuieli), o singură închidere pe lot | `lot_closings.lot_id unique`; formula în aplicație + test; `fee_pct` [CONFIRMAT ADR-001] |

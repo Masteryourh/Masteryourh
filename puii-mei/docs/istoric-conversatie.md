@@ -101,6 +101,40 @@ Rezumatul primei conversații de lucru (noiembrie 2026). Citește împreună cu 
   creșterii; 3) cifrele publice; 4) dashboard client; 5) navigare clară (breadcrumbs, „Înapoi” explicit);
   6) română / engleză.
 
+- **23 nov. 2026 (după auditul ChatGPT #57):** IBAN → varianta (b): MFA + 24 h + notificare + confirmare telefonică
+  de la PUII MEI. Documentele care expiră: **compania** anunță gospodarul din timp → alerte în sistem (60 / 30 / 14 / 7
+  zile, apel la 7 zile). Supra-rezervarea locurilor: reparată (PR #59).
+
+- **24 nov. 2026:** PO: „continuă cu pașii propuși fără să-ți scriu; verific când revin” + ChatGPT ținut la curent după
+  fiecare pas (CLAUDE.md). Unite: #56 (PIN client), #59 (locuri), #61 (IBAN etapa 1), #64 (PIN curier). Deschise, în
+  ordinea de merge: #65 (fișiere în stocare S3 + reparație alocare), #66 (test izolare gospodării), #67 (alerte expirare),
+  #68 (MFA pentru schimbarea IBAN-ului: pagina Securitate din panoul gospodarului), #69 (NAV-001: jurnalul în Admin,
+  „Înapoi” contextual, open redirect reparat la login), #70 (AUD-001: jurnal de audit pentru toate acțiunile).
+  Neon: limita de 10 branch-uri de previzualizare (PO a șters branch-uri vechi).
+- **24 nov. 2026 (decizia fondatorului, prin ChatGPT pe #62): Admin Central Command Center.** Admin e centrul
+  operațional: fiecare entitate are pagină în Admin, navigarea rămâne în spațiul curent, „Deschide website ↗” în tab
+  nou, fără impersonare. PR #71 (scos butonul „Cum funcționează?” din josul paginii), #72 (comanda din țarc ieșea din
+  Admin; înlocuit de #73), **#73** (pagina Admin a comenzii, contract, documente, etichete; verificare automată a
+  traversărilor; constituția §6A + ADR-011). Ordinea de merge: #69 → #70 → #73.
+
+- **24 nov. 2026 (seara): arhitectura la scară națională (dezbaterea „Librarian”, #62).** Claude: review critic
+  (bibliotecarul ca nucleu și contract, nu ca serviciu central; 3 probleme de cod de reparat întâi), propunere de
+  durabilitate (PostgreSQL gestionat în UE, replicare, PITR, copie imuabilă la alt furnizor, test de restaurare
+  săptămânal; etape E0 / E1 / E2) și mecanismul de distribuire a sarcinilor (pull, fără dispecer central).
+  **Decizii fondator:** există **manageri locali și zonali**; gospodarul primește zilnic notificări cu sarcinile și
+  programările; fiecare sarcină are **câmp de justificare** → notificare la managerul local; managerul zonal vede
+  justificările și rezolvările; adminul vede tot; **AI: tot ce se poate automatiza**. De scris ADR-012 după aprobare.
+  Zone: **manager local = comuna**, **manager zonal = grup de comune ca circumscripțiile judecătoriilor**. Detaliile
+  rămase (termene, reacția managerului, limite AI, buget E0) sunt notate în `sugestii.md`; se merge mai departe.
+
+- **26 nov. 2026 — decizii fondator (economie lot):** onorariul se calculează pe lot, din kg totale; cheltuielile
+  eligibile sunt doar ale lotului; investițiile (amenajare, echipamente) separate; buget de rezervă pentru pierderi din
+  mortalitate (de gândit); mortalitatea = primele 21 de zile. Notion conectat (citire). Consemnat pe #62.
+
+- **26 nov. 2026 — performanță:** diagnosticul live a arătat RTT 93 ms (funcții Vercel în iad1, baza Neon în
+  aws-eu-central-1). Fondatorul a mutat funcțiile în fra1: RTT 2,3 ms, pagina de diagnostic 5,9 s → 0,3 s. Cheia API Neon
+  salvată în mediu (formular securizat); inventarul Neon: 1 proiect, 10/10 branch-uri.
+
 ## Setări și servicii
 
 - Vercel: `DATABASE_URL` (Neon), `ADMIN_USER`, `ADMIN_PASSWORD`; de adăugat `SESSION_SECRET`, `RESEND_API_KEY`,

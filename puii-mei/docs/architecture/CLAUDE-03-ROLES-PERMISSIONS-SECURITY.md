@@ -154,8 +154,8 @@ Coloane: **Adm** admin_platforma · **Op** manager_operational · **Fin** financ
 | household.standing.change | G·A | G·A | — | G·A | — | — | R | R(H) | — | — | — | — |
 | household.read | G | G | G | G | G | G | G | H | H | H | H⁵ | după scop |
 
-³ activarea cere Compliance Gate valid (INV-08) · ⁴ schimbarea IBAN-ului: notificare pe toate canalele titularului +
-intrare în vigoare după 24 h (protecție la fraudă) [PROPUS] · ⁵ doar câmpurile aprobate de PO (BA-010) · R = citire.
+³ activarea cere Compliance Gate valid (INV-08) · ⁴ schimbarea IBAN-ului: politica (b) din §6.1 [CONFIRMAT PO
+23.11.2026] · ⁵ doar câmpurile aprobate de PO (BA-010) · R = citire.
 
 ### 5.3 program
 | Permisiune | Adm | Op | Fin | Cal | Gsp | AI |
@@ -279,12 +279,37 @@ gospodăriei doar dacă mandatul o permite (SC-041, BA-002 [DESCHIS]) · ¹¹ on
 | Onorariul (ADR-001) | calculat de sistem, aprobat de financiar, acceptat sau contestat de gospodar; cine a confirmat registrul nu aprobă | [PROPUS] |
 | Corecția efectivului / anularea în registru | autorul propune, alt rol aprobă; originalul rămâne | [PROPUS] |
 | Deblocarea lotului | calitate; pentru „critic” + al doilea aprobator | [PROPUS] SC-020 |
-| Schimbarea IBAN-ului gospodăriei | MFA + notificare pe toate canalele + întârziere 24 h | [PROPUS] |
+| Schimbarea IBAN-ului gospodăriei | MFA + notificare pe toate canalele + întârziere 24 h + **confirmare telefonică de la PUII MEI** (§6.1) | [CONFIRMAT PO 23.11.2026, varianta b] |
 | Versiunea de program (parametri, costuri standard) | redactată de operațional / financiar / calitate, aprobată de admin cu MFA | [PROPUS] |
 
 Cererile de aprobare se păstrează în `ai.proposals` (pentru AI) și într-un tabel general `platform.approvals`
 (`id, action, object, requested_by, requested_at, payload, decided_by, decided_at, decision, reason`) [PROPUS, de
 adăugat în CLAUDE-02 v0.3].
+
+### 6.1 Schimbarea IBAN-ului gospodăriei [CONFIRMAT PO 23.11.2026: varianta b]
+
+Decizia PO: **MFA + întârziere 24 h + notificare + confirmare telefonică de la PUII MEI.** Răspunde la CG-03 / V-04 /
+T11. Varianta (c) (aprobarea unui al doilea administrator) rămâne opțiune pentru când există mai mulți administratori.
+
+| Pas | Cine | Ce se întâmplă |
+|---|---|---|
+| 1 | titular / financiar al gospodăriei | introduce IBAN-ul nou, cu MFA proaspăt; IBAN-ul nou intră în starea `in_asteptare`, cel vechi rămâne activ |
+| 2 | sistem | notifică imediat titularul pe **toate** canalele cunoscute (email, SMS, panou) și administratorii PUII MEI: „S-a cerut schimbarea contului bancar. Dacă nu ai fost tu, sună-ne.” |
+| 3 | operator PUII MEI | sună titularul la numărul de telefon **deja înregistrat înainte de cerere** (nu la unul primit odată cu cererea) și confirmă verbal; înregistrează cine a sunat, când, numărul apelat, rezultatul |
+| 4 | sistem | IBAN-ul nou devine activ **numai** după ce au trecut 24 h **și** confirmarea telefonică e înregistrată; până atunci, instrucțiunile de plată către clienți arată IBAN-ul vechi |
+| 5 | oricine din gospodărie / PUII MEI | „Nu am cerut eu” → cererea se anulează, contul utilizatorului care a cerut-o se blochează până la verificare, incident de securitate |
+
+**[PROPUS, de confirmat]:** dacă titularul nu poate fi contactat în 5 zile lucrătoare, cererea expiră; o gospodărie
+nouă (primul IBAN) trece doar prin pașii 1, 3 (fără întârziere), ca să nu întârzie înscrierea; ce se întâmplă cu
+plățile clienților făcute deja în contul vechi în fereastra de 24 h (rămân valabile, sunt ale gospodăriei).
+
+**Date:** `household.bank_accounts` primește `status in ('in_asteptare','activ','inlocuit','anulat')`,
+`requested_at`, `requested_by`, `phone_confirmed_at`, `phone_confirmed_by`, `phone_called`, `activates_at`
+[PROPUS pentru CLAUDE-02 v0.3]. **Teste:** schimbare fără MFA → refuz; activare înainte de 24 h sau fără confirmare
+telefonică → refuz; „Nu am cerut eu” → cerere anulată și cont blocat; notificările trimise pe toate canalele.
+
+**Măsura imediată pe codul actual** (până la MFA): notificare la orice schimbare de IBAN + jurnal + IBAN-ul nou
+inactiv până la confirmarea telefonică de către admin. [PROPUS, cere acordul PO pentru implementare]
 
 ---
 
@@ -408,7 +433,7 @@ analiză) urmează în documentul dedicat agenților.
 | T08 | Fișier malițios încărcat | Tampering | medie / mare | tip real, scanare antivirus, servit doar după „curat”, `Content-Disposition: attachment` |
 | T09 | Escaladare de privilegii prin editarea rolurilor | Elevation | scăzută / foarte mare | aprobare în doi + MFA + alertă |
 | T10 | Abuz din interior (admin) | Repudiation | scăzută / mare | conturi nominale, audit cu lanț de amprente, separarea atribuțiilor |
-| T11 | Schimbarea IBAN-ului pentru a deturna avansurile | Tampering | medie / foarte mare | MFA, întârziere 24 h, notificare pe toate canalele titularului |
+| T11 | Schimbarea IBAN-ului pentru a deturna avansurile | Tampering | medie / foarte mare | MFA, întârziere 24 h, notificare pe toate canalele titularului, confirmare telefonică de la PUII MEI la numărul deja cunoscut (§6.1) |
 | T12 | Injecție de instrucțiuni în agenții AI (prin documente sau mesaje) | Elevation | medie / mare | intrările = date; acțiunile critice doar prin propunere + aprobare umană |
 | T13 | Spam / supraîncărcare pe formularele publice | Denial of service | medie / mediu | limită de rată, câmp-capcană, CAPTCHA doar la nevoie |
 | T14 | Dependențe npm compromise | Tampering | scăzută / mare | `npm ci` cu lockfile, actualizări revizuite, scanare de vulnerabilități în CI |
