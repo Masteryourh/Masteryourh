@@ -58,3 +58,17 @@ DRY-RUN (nicio modificare) · 1 proiect(e) · PR-uri deschise: 17
    celelalte, toate legate de PR-uri încă deschise. Rămân 9 (peste ținta de 8) până se închid PR-urile de documentație.
 3. **Object Storage e disponibil în regiune**, dar POC-ul are nevoie de un branch izolat, deci de un loc liber, deci de
    aprobarea curățeniei de mai sus.
+
+## Curățare la închiderea PR-ului (GitHub Action)
+Contul folosește integrarea **gestionată de Vercel** (organizația „Vercel: DaRe”). Acolo Neon șterge un preview doar când
+Vercel șterge deploy-ul (implicit după 6 luni, `guides/vercel-branch-cleanup`). Varianta recomandată de Neon e
+`.github/workflows/neon-preview-cleanup.yml`, cu acțiunea oficială `neondatabase/delete-branch-action` fixată pe commit
+(v3.2.1). Comportament:
+- la închiderea sau unirea unui PR din acest repository, șterge `preview/<branch-ul PR-ului>`;
+- nu atinge `main / production / staging / development`;
+- fără configurare, se oprește fără eroare.
+
+Configurare (fondator, GitHub → Settings → Secrets and variables → Actions):
+- **Secrets → New repository secret:** `NEON_API_KEY` = cheia API Neon. Ideal, o cheie separată, numită de exemplu
+  `github-actions`.
+- **Variables → New repository variable:** `NEON_PROJECT_ID` = `tiny-term-79368655`.
