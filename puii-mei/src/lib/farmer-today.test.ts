@@ -31,6 +31,19 @@ test("ordinea: urgent (alertă, tura de azi, document expirat) înaintea acțiun
   assert.ok(items.every((i) => i.href.startsWith("/cont/gospodar")));
 });
 
+test("turele de azi: fără colete nu apar; mai multe se adună într-un singur element", () => {
+  const t = (id: string, parcels: number) => ({ id, code: `T-${id}`, date: "2026-11-27", status: "planificata", parcels });
+  assert.deepEqual(farmerToday({ ...base, tours: [t("a", 0)] }), []);
+  const one = farmerToday({ ...base, tours: [t("a", 1), t("b", 0)] });
+  assert.equal(one.length, 1);
+  assert.equal(one[0].href, "/cont/gospodar/ture/a");
+  assert.equal(one[0].detail, "un colet de predat curierului.");
+  const many = farmerToday({ ...base, tours: [t("a", 2), t("b", 3), t("c", 0)] });
+  assert.equal(many.length, 1);
+  assert.equal(many[0].title, "Livrări azi · 2 ture");
+  assert.equal(many[0].href, "/cont/gospodar#ture");
+});
+
 test("fără cont bancar: cere contul, nu confirmarea avansurilor", () => {
   const items = farmerToday({ ...base, orders: 3, advancesDue: 3, hasPayment: false });
   assert.deepEqual(items.map((i) => i.kind), ["cont"]);

@@ -38,8 +38,15 @@ export function farmerToday(d: FarmerDay): TodayItem[] {
   for (const a of d.growthAlerts) {
     out.push({ id: a.id, kind: "crestere", severity: "urgent", title: a.kind === "poza" ? "Poza săptămânii" : "Mută țarcul pe pășune", detail: a.text, href: link("/jurnal"), action: "Notează în jurnal" });
   }
-  for (const t of d.tours.filter((t) => t.date === d.today && (t.status === "planificata" || t.status === "in-curs"))) {
-    out.push({ id: `tura-${t.id}`, kind: "tura", severity: "urgent", title: `Livrare azi · tura ${t.code}`, detail: `${t.parcels} ${t.parcels === 1 ? "colet" : "colete"} de predat curierului.`, href: link(`/ture/${t.id}`), action: "Deschide tura" });
+  // Livrările de azi: doar turele cu colete; mai multe ture în aceeași zi = un singur element (spre lista turelor).
+  const toursToday = d.tours.filter((t) => t.date === d.today && t.parcels > 0 && (t.status === "planificata" || t.status === "in-curs"));
+  const colete = (n: number) => (n === 1 ? "un colet" : `${n}${n % 100 >= 20 || n % 100 === 0 ? " de" : ""} colete`);
+  if (toursToday.length === 1) {
+    const [t] = toursToday;
+    out.push({ id: `tura-${t.id}`, kind: "tura", severity: "urgent", title: `Livrare azi · tura ${t.code}`, detail: `${colete(t.parcels)} de predat curierului.`, href: link(`/ture/${t.id}`), action: "Deschide tura" });
+  } else if (toursToday.length > 1) {
+    const n = toursToday.reduce((s, t) => s + t.parcels, 0);
+    out.push({ id: "ture-azi", kind: "tura", severity: "urgent", title: `Livrări azi · ${toursToday.length} ture`, detail: `${colete(n)} de predat curierilor.`, href: link("", "#ture"), action: "Vezi turele" });
   }
   for (const e of d.expiring.filter((e) => e.days <= 7)) {
     out.push({ id: `doc-${e.id}`, kind: "document", severity: e.days < 0 ? "urgent" : "atentie", title: e.days < 0 ? `A expirat: ${e.title}` : `Expiră curând: ${e.title}`, detail: e.days < 0 ? `Expirat de ${zile(-e.days)}. Încarcă documentul nou.` : e.days === 0 ? "Expiră azi." : `Mai are ${zile(e.days)}.`, href: link("/documente", "#documente"), action: "Încarcă" });
