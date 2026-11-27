@@ -6,7 +6,8 @@ import { cn } from "@/lib/cn";
 import type { PanelNavItem } from "./PanelNav";
 
 /** Iconițe pentru bara laterală din dreapta (contur, 24×24). */
-const ICONS: Record<string, string> = {
+export const ICONS: Record<string, string> = {
+  azi: "M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4M12 16a4 4 0 100-8 4 4 0 000 8z",
   comenzi: "M9 4h6a1 1 0 011 1v1H8V5a1 1 0 011-1zM8 5H6a1 1 0 00-1 1v14a1 1 0 001 1h12a1 1 0 001-1V6a1 1 0 00-1-1h-2M9 13l2 2 4-4",
   loturi: "M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8",
   livrari: "M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z",

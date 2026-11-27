@@ -21,6 +21,7 @@ const LABELS: Record<string, string> = {
   "/admin/utilizatori": "Utilizatori",
   "/admin/legislatie": "Legislație și surse",
   "/admin/mesaje": "Mesaje netrimise",
+  "/admin/azi": "Astăzi",
   "/admin/diagnostic": "Diagnostic tehnic",
   "/cont/gospodar": "Gospodăria mea",
   "/cont/gospodar/jurnal": "Jurnal de creștere",
@@ -32,6 +33,8 @@ const LABELS: Record<string, string> = {
 const LAST: Record<string, string> = { regim: "Regim și suprafață", jurnal: "Jurnal de creștere", contract: "Contract", etichete: "Etichete", documente: "Documente și cheltuieli" };
 /** Pagina de detaliu, după secțiunea din care face parte. */
 const DETAIL: Record<string, string> = { ture: "Tura de livrare", livrari: "Tura de livrare", investitii: "Investiția", investitor: "Investiția", gospodarii: "Fișa gospodăriei", comenzi: "Comanda" };
+
+const TAB_ROOTS = new Set(["/admin/azi"]);
 
 /** Traseul în panou (ex. Panou admin › Gospodării › Regim) + „← Înapoi la …” pe telefon. Ascuns pe pagina principală. */
 export function PanelCrumbs() {
@@ -48,6 +51,8 @@ export function PanelCrumbs() {
   const originLabel = origin ? (LABELS[originPath] ?? LAST[oSegs.at(-1) ?? ""] ?? DETAIL[oSegs.at(-2) ?? ""] ?? "pagina anterioară") : null;
   const rootLen = parts[0] === "admin" ? 1 : 2;
   if (parts.length <= rootLen) return null;
+  // Ecranele principale ale taburilor de pe telefon (ex. Admin › Astăzi) sunt rădăcini, ca într-o aplicație: fără „Înapoi”.
+  if (TAB_ROOTS.has(pathname) && !origin) return null;
   const crumbs = parts
     .slice(rootLen - 1)
     .map((seg, i) => {
