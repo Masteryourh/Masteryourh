@@ -336,3 +336,23 @@
 [data-theme="dark"] body .bg-white\/80, [data-theme="dark"] body .bg-white\/90, [data-theme="dark"] body .bg-white\/70 { background-color: rgba(21, 32, 25, 0.9); }
 [data-theme="dark"] .text-forest-900 { color: var(--color-forest-900); }
 [data-theme="dark"] .bg-forest-700 { background-color: #3d6440; color: #fff; }
+
+/* Panouri: nimic nu are voie să lărgească documentul pe orizontală (pe telefon, browserul ar micșora toată pagina și ar
+   împinge bara de navigare de jos în afara ecranului, chiar și după o tranziție între pagini). Conținutul lat se
+   derulează în containerul lui (ex. tabelele cu overflow-x-auto). „clip” păstrează antetul sticky. */
+html:has(.panou),
+html:has(.panou) body {
+  overflow-x: clip;
+}
+
+/* Telefon, ca într-o aplicație: tabelele late din panouri devin liste de carduri (un rând = un card), fără derulare
+   orizontală. Antetul tabelului se ascunde; fiecare celulă se pune pe rândul ei. */
+@media (max-width: 639px) {
+  .panou .overflow-x-auto > table { display: block; width: 100% !important; min-width: 0 !important; }
+  .panou .overflow-x-auto > table thead { display: none; }
+  .panou .overflow-x-auto > table tbody,
+  .panou .overflow-x-auto > table tr { display: block; }
+  .panou .overflow-x-auto > table tr { padding: 0.75rem 0.25rem; }
+  .panou .overflow-x-auto > table tr + tr { border-top: 1px solid var(--pd-line, rgba(0, 0, 0, 0.08)); }
+  .panou .overflow-x-auto > table td { display: block; padding: 0.125rem 0.5rem !important; overflow-wrap: anywhere; white-space: normal !important; }
+}

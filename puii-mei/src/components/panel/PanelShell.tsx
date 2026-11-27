@@ -30,7 +30,9 @@ export function PanelShell({
 }) {
   if (rail) {
     return (
-      <div className="panou flex min-h-dvh flex-1 flex-col bg-slate-100 text-slate-900 sm:pr-16">
+      // overflow-x-clip: un tabel lat nu are voie să lărgească pagina (pe telefon ar împinge bara de jos în afara
+      // ecranului); conținutul lat se derulează în propriul container. „clip” (nu „hidden”) păstrează antetul sticky.
+      <div className="panou flex min-h-dvh flex-1 flex-col overflow-x-clip bg-slate-100 text-slate-900 sm:pr-16">
         <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-2.5 print:hidden sm:px-6 lg:px-8">
           <Link href={home} className="min-w-0">
             <span className="block text-sm font-bold">Puii mei</span>
