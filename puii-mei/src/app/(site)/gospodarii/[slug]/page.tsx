@@ -56,7 +56,7 @@ export default async function FarmPage({ params }: PageProps<"/gospodarii/[slug]
                 </div>
               )}
             </div>
-            <Photo src={farm.photos[0].src} alt={farm.photos[0].alt} priority className="aspect-[4/3] rounded-[2rem]" />
+            <Photo src={farm.photos?.[0]?.src ?? "/images/gospodarii/fara-fotografie.jpg"} alt={farm.photos?.[0]?.alt ?? farm.name} priority className="aspect-[4/3] rounded-[2rem]" />
           </div>
         </Container>
       </section>
@@ -88,7 +88,7 @@ export default async function FarmPage({ params }: PageProps<"/gospodarii/[slug]
 
         <h2 className="mt-16 text-3xl font-semibold">Fotografii</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          {farm.photos.map((ph) => (
+          {(farm.photos ?? []).map((ph) => (
             <Photo key={ph.src} src={ph.src} alt={ph.alt} className="aspect-[4/3] rounded-3xl" sizes="(min-width: 640px) 33vw, 100vw" />
           ))}
         </div>

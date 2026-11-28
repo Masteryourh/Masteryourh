@@ -22,13 +22,13 @@ export function LoginForm({ returnTo }: { returnTo?: string }) {
       <ErrorBox state={state} />
       {returnTo && <input type="hidden" name="inapoi" value={returnTo} />}
       <div>
-        <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-forest-900">Email</label>
+        <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-forest-900">Email sau nume de utilizator</label>
         <input
           id="email"
           name="email"
           type="text"
-          inputMode="email"
           autoComplete="username"
+          autoCapitalize="none"
           required
           defaultValue={state.status === "error" ? state.email : undefined}
           className={inputClasses}

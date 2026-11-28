@@ -82,10 +82,10 @@ export default async function EditFarmPage({ params, searchParams }: PageProps<"
         <p className="font-semibold text-forest-900">Fotografii</p>
         <p className="mt-1 text-muted">
           Adaugă în proiect, în <code className="font-mono">public/images/gospodarii/</code>, fișierele{" "}
-          {farm.photos.map((p, i) => (
+          {(farm.photos ?? []).map((p, i) => (
             <span key={p.src}>
               <code className="font-mono">{p.src.split("/").at(-1)}</code>
-              {i < farm.photos.length - 1 ? ", " : "."}
+              {i < (farm.photos ?? []).length - 1 ? ", " : "."}
             </span>
           ))}{" "}
           Până atunci se afișează imagini de rezervă.

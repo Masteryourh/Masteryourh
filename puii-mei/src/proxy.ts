@@ -10,6 +10,8 @@ const PROTECTED: { prefix: string; roles: UserRole[] }[] = [
   { prefix: "/admin", roles: ["admin"] },
   { prefix: "/cont/gospodar", roles: ["gospodar"] },
   { prefix: "/cont/investitor", roles: ["investitor"] },
+  { prefix: "/cont/manager", roles: ["manager-local", "manager-zonal"] },
+  { prefix: "/cont/client", roles: ["client"] },
 ];
 
 const matches = (pathname: string, prefix: string) => pathname === prefix || pathname.startsWith(`${prefix}/`);

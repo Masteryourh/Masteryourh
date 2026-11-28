@@ -9,7 +9,7 @@ export function FarmCard({ farm, activeLots }: { farm: Farm; activeLots?: number
       href={`/gospodarii/${farm.slug}`}
       className="group flex flex-col overflow-hidden rounded-3xl border border-forest-900/8 bg-white transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-forest-900/5"
     >
-      <Photo src={farm.photos[0].src} alt={farm.photos[0].alt} className="aspect-[4/3]" sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" />
+      <Photo src={farm.photos?.[0]?.src ?? "/images/gospodarii/fara-fotografie.jpg"} alt={farm.photos?.[0]?.alt ?? farm.name} className="aspect-[4/3]" sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" />
       <div className="flex flex-1 flex-col p-6">
         <p className="flex items-center gap-1.5 text-sm text-muted">
           <Icon name="pin" className="h-4 w-4" />
