@@ -10,6 +10,7 @@
     "test": "node --experimental-strip-types --test 'src/**/*.test.ts'",
     "test:e2e": "playwright test",
     "typecheck": "next typegen && tsc --noEmit",
+    "test:sql-target": "node db/target/harness/run.mjs",
     "neon:branches": "NODE_USE_ENV_PROXY=1 node --no-warnings --experimental-strip-types scripts/neon/branch-lifecycle.ts"
   },
   "dependencies": {
