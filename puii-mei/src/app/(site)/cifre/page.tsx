@@ -4,13 +4,12 @@ import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { pageMetadata } from "@/lib/seo";
 import { formatDate, formatLei, formatNumber } from "@/lib/format";
-import { companyMetrics } from "@/lib/metrics";
 import { pricing } from "@/lib/pricing";
-import { farmRepository, lotRepository } from "@/server/repositories/catalog";
-import { expenseRepository, investmentRepository } from "@/server/repositories/documents";
-import { preorderRepository } from "@/server/repositories/preorders";
+import { farmRepository } from "@/server/repositories/catalog";
+import { publicMetrics } from "@/server/metrics-read-model";
 
-export const revalidate = 600;
+// Pagina: cel mult 5 minute în cache; cifrele: instantaneu de cel mult 5 minute (read-model) ⇒ cel mult 10 minute.
+export const revalidate = 300;
 export const metadata: Metadata = pageMetadata({
   title: "Cifrele noastre",
   description: "Câți bani au intrat în gospodării, venituri, cheltuieli, profit, taxe, pui crescuți și furaj – actualizat automat.",
@@ -28,14 +27,7 @@ function Stat({ label, value, note }: { label: string; value: string; note?: str
 }
 
 export default async function MetricsPage() {
-  const [farms, lots, preorders, expenses, investments] = await Promise.all([
-    farmRepository.list(),
-    lotRepository.list({ all: true }),
-    preorderRepository.list(),
-    expenseRepository.list(),
-    investmentRepository.list(),
-  ]);
-  const m = companyMetrics({ farms, lots: lots.filter((l) => l.approval?.status !== "respins"), preorders, expenses, investments });
+  const [farms, { metrics: m, computedAt }] = await Promise.all([farmRepository.list(), publicMetrics()]);
   const farmName = new Map(farms.map((f) => [f.slug, f.name]));
   const maxCat = Math.max(1, ...m.expensesByCategory.map((c) => c.value));
   const maxYear = Math.max(1, ...m.byYear.flatMap((y) => [y.revenue, y.expenses]));
@@ -126,7 +118,7 @@ export default async function MetricsPage() {
         <p className="text-sm text-muted">
           Cifrele se actualizează automat (cel mult la 10 minute) și includ doar înregistrările confirmate cu documentul fiscal atașat;
           ciornele și înregistrările anulate nu intră. Greutatea și furajul sunt estimate după modelul de creștere ({formatNumber(pricing.avgWeightKg)} kg / pui
-          curățat, ≈ {formatNumber(pricing.feedKgPerBird)} kg furaj / pui). În perioada pilot, o parte din date sunt demonstrative. Actualizat: {formatDate(new Date())}.
+          curățat, ≈ {formatNumber(pricing.feedKgPerBird)} kg furaj / pui). În perioada pilot, o parte din date sunt demonstrative. Calculat: {formatDate(computedAt)}.
         </p>
       </Container>
     </>
