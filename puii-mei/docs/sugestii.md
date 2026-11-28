@@ -75,6 +75,16 @@ _Ultima actualizare: 22 noiembrie 2026_
       (SMS / e-mail prin outbox), cu legătura spre panou – pasul spre sarcinile zilnice din planul de scalare.
 - [ ] **Instalare ca aplicație (PWA)** (27 nov. 2026): manifest + iconiță, ca panoul să se deschidă din ecranul
       telefonului fără bara browserului.
+- [ ] **Direcție de design: bara laterală „glassy”** (27 nov. 2026, cerută de fondator – de ținut cont la toate
+      modificările următoare de panou). Model: „Glassy Sidebar V5” (code.xr). Ce păstrăm din el:
+      - panou flotant cu colțuri foarte rotunjite, fundal translucid (blur) peste imagine / culoare caldă;
+      - stare **extinsă** (logo + nume spațiu, căutare „Caută pagini” cu ⌘K, grupuri „Principal / Lucru” cu titluri mici,
+        element activ ca „pastilă” cu contur, contoare rotunde, puncte de stare, sub-elemente cu linie de arbore,
+        comutator mod de noapte, utilizatorul jos) și **restrânsă** (doar iconițe, aceleași contoare ca bulină,
+        numele în etichetă la trecere/atingere), cu butonul ‹ › pe margine;
+      - aplicat la: bara din dreapta (desktop) din Admin / gospodar și foaia „Meniu” de pe telefon.
+- [ ] **Dashboard admin mai atractiv pentru verificări și teste** (27 nov. 2026, cerut de fondator): de lucrat pe
+      design împreună cu bara „glassy” (vezi mai sus).
 - [ ] **Română / engleză** – amânat de utilizator (22 nov. 2026); întâi site-ul public, apoi panourile.
 
 ## De configurat (Vercel / servicii)

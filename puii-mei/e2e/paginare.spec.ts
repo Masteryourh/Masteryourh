@@ -94,7 +94,7 @@ test("Admin › Precomenzi: căutare după număr, nume, telefon (cu sau fără 
     // Formularul de căutare și întoarcerea din detalii la aceeași căutare.
     await page.goto("/admin");
     await page.fill("input[name=cauta]", "Căutătoarea");
-    await page.getByRole("button", { name: "Caută" }).click();
+    await page.getByRole("button", { name: "Caută", exact: true }).click();
     await page.waitForURL(/cauta=/);
     await page.locator("#comanda-PM9002-CAUTA a", { hasText: "PM9002-CAUTA" }).click();
     await page.waitForURL(/\/admin\/comenzi\/PM9002-CAUTA/);

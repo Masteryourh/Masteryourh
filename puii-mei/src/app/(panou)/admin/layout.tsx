@@ -23,25 +23,25 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       home="/admin"
       rail
       items={[
-        { href: "/admin/azi", label: "Astăzi", icon: "azi", tab: true },
-        { href: "/admin", label: "Precomenzi", exact: true, icon: "comenzi", tab: true, short: "Comenzi" },
-        { href: "/admin/loturi", label: "Loturi", badge: pendingLots, icon: "loturi", tab: true },
-        { href: "/admin/livrari", label: "Livrări live", badge: alerts.filter((a) => a.kind === "prelungire").length, icon: "livrari", tab: true, short: "Livrări" },
-        { href: "/admin/monitorizare", label: "Monitorizare creștere", badge: alerts.filter((a) => a.kind === "crestere").length, icon: "crestere" },
-        { href: "/admin/calitate", label: "Calitate", icon: "calitate" },
-        { href: "/admin/documente", label: "Documente", icon: "documente" },
-        { href: "/admin/investitii", label: "Investiții", icon: "investitii" },
-        { href: "/admin/parteneri", label: "Solicitări parteneri", badge: newApplications, icon: "parteneri" },
-        { href: "/admin/gospodarii", label: "Gospodării", icon: "gospodarii" },
-        { href: "/admin/preturi", label: "Prețuri", icon: "preturi" },
-        { href: "/admin/zone", label: "Zone de livrare", icon: "zone" },
-        { href: "/admin/interes", label: "Interes produse", icon: "interes" },
-        { href: "/admin/utilizatori", label: "Utilizatori", icon: "utilizatori" },
-        { href: "/admin/legislatie", label: "Legislație și surse", icon: "legislatie" },
-        { href: "/admin/mesaje", label: "Mesaje netrimise", badge: deadMessages, icon: "mesaje" },
-        { href: "/admin/diagnostic", label: "Diagnostic tehnic", icon: "diagnostic" },
+        { href: "/admin/azi", label: "Astăzi", icon: "azi", tab: true, group: "Principal" },
+        { href: "/admin", label: "Precomenzi", exact: true, icon: "comenzi", tab: true, short: "Comenzi", group: "Principal" },
+        { href: "/admin/loturi", label: "Loturi", badge: pendingLots, icon: "loturi", tab: true, group: "Principal" },
+        { href: "/admin/livrari", label: "Livrări live", badge: alerts.filter((a) => a.kind === "prelungire").length, icon: "livrari", tab: true, short: "Livrări", group: "Principal" },
+        { href: "/admin/monitorizare", label: "Monitorizare creștere", badge: alerts.filter((a) => a.kind === "crestere").length, icon: "crestere", group: "Creștere" },
+        { href: "/admin/calitate", label: "Calitate", icon: "calitate", group: "Creștere" },
+        { href: "/admin/documente", label: "Documente", icon: "documente", group: "Creștere" },
+        { href: "/admin/investitii", label: "Investiții", icon: "investitii", group: "Afacere" },
+        { href: "/admin/parteneri", label: "Solicitări parteneri", badge: newApplications, icon: "parteneri", group: "Afacere" },
+        { href: "/admin/gospodarii", label: "Gospodării", icon: "gospodarii", group: "Creștere" },
+        { href: "/admin/preturi", label: "Prețuri", icon: "preturi", group: "Afacere" },
+        { href: "/admin/zone", label: "Zone de livrare", icon: "zone", group: "Afacere" },
+        { href: "/admin/interes", label: "Interes produse", icon: "interes", group: "Afacere" },
+        { href: "/admin/utilizatori", label: "Utilizatori", icon: "utilizatori", group: "Sistem" },
+        { href: "/admin/legislatie", label: "Legislație și surse", icon: "legislatie", group: "Sistem" },
+        { href: "/admin/mesaje", label: "Mesaje netrimise", badge: deadMessages, icon: "mesaje", group: "Sistem" },
+        { href: "/admin/diagnostic", label: "Diagnostic tehnic", icon: "diagnostic", group: "Sistem" },
         // nav-permis: schimbare EXPLICITĂ de spațiu (NAV-06); în spațiul gospodarului apare bannerul „Înapoi în Admin”.
-        { href: "/cont/gospodar", label: "Schimbă spațiul: vedere gospodar", icon: "vedere" },
+        { href: "/cont/gospodar", label: "Schimbă spațiul: vedere gospodar", icon: "vedere", group: "Sistem" },
       ]}
     >
       {alerts.length > 0 && (
