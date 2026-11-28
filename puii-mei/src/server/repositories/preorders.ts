@@ -17,6 +17,7 @@ export interface PreorderRepository {
   byId(id: string): Promise<Preorder | null>;
   byTrackingToken(token: string): Promise<Preorder | null>;
   byNumber(number: string): Promise<Preorder | null>;
+  byCustomerUser(userId: string): Promise<Preorder[]>;
   byLots(codes: string[]): Promise<Preorder[]>;
   /** Cele mai noi comenzi, pe pagini (cursor). */
   page(limit: number, after?: string | null): Promise<{ items: Preorder[]; next: string | null }>;
@@ -88,6 +89,10 @@ export const preorderRepository: PreorderRepository = {
     return { count: g?.count ?? 0, birds: g?.sums.birds ?? 0, value: g?.sums["estimate.total"] ?? 0 };
   },
   /** Comenzile de pe loturile date (toate stările), în ordinea creării. */
+  /** Comenzile unui cont de client (opțional), prin index. */
+  async byCustomerUser(userId: string) {
+    return (await store.findBy<Preorder>(COLLECTION, "customerUserId", userId)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
   async byLots(codes: string[]) {
     return store.findBy<Preorder>(COLLECTION, "lotCode", codes);
   },

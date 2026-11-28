@@ -6,8 +6,8 @@
  * Funcții pure, testate unitar (indexes.test.ts).
  */
 export const INDEXED_FIELDS = {
-  preorders: ["number", "trackingToken", "lotCode", "parentNumber"],
-  users: ["email", "setupToken", "farmSlug"],
+  preorders: ["number", "trackingToken", "lotCode", "parentNumber", "customerUserId"],
+  users: ["email", "setupToken", "farmSlug", "username"],
   parcels: ["clientToken", "courierToken", "ratingToken", "farmSlug", "tourId"],
   tours: ["token", "farmSlug"],
   "tour-events": ["tourId"],

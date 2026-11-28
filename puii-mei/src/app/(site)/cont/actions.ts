@@ -34,7 +34,7 @@ const safeReturn = (value: FormDataEntryValue | null) => safeInternalPath(value)
 async function login__impl(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
-  if (!email || !password) return { status: "error", message: "Completează emailul și parola.", email };
+  if (!email || !password) return { status: "error", message: "Completează emailul (sau numele de utilizator) și parola.", email };
   if (!sessionSecretReady()) {
     console.error("[puii-mei] Autentificare oprită: SESSION_SECRET lipsește sau e prea scurt.");
     return { status: "error", message: "Autentificarea e oprită temporar: platforma nu e configurată complet (SESSION_SECRET). Anunță administratorul.", email };
@@ -48,12 +48,13 @@ async function login__impl(_prev: AuthFormState, formData: FormData): Promise<Au
   if (admin && email === admin.email && safeEqual(password, process.env.ADMIN_PASSWORD ?? "")) {
     user = admin;
   } else {
-    const found = await userRepository.byEmail(email);
+    // Fără „@”: nume de utilizator (ex. „ionut”); altfel adresa de e-mail.
+    const found = email.includes("@") ? await userRepository.byEmail(email) : await userRepository.byUsername(email);
     if (found && found.status === "activ" && (await verifyPassword(password, found.passwordHash))) user = found;
   }
   if (!user) {
     fail(email);
-    return { status: "error", message: "Email sau parolă greșită.", email };
+    return { status: "error", message: "Date de autentificare greșite.", email };
   }
 
   attempts.delete(email);

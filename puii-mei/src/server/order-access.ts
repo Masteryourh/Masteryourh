@@ -169,6 +169,8 @@ export async function canViewOrder(p: Preorder) {
   const user = await getCurrentUser();
   if (!user) return false;
   if (user.role === "admin") return true;
+  // Contul de client (opțional) vede comenzile proprii.
+  if (user.role === "client") return Boolean(p.customerUserId && p.customerUserId === user.id);
   if (!p.lotCode) return false;
   const lot = await lotRepository.byCode(p.lotCode, { all: true });
   return Boolean(lot && canManageFarm(user, lot.farmSlug));

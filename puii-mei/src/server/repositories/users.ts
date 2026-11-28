@@ -36,6 +36,12 @@ export const userRepository = {
     const e = normEmail(email);
     return (await store.findBy<User>(COLLECTION, "email", e))[0] ?? null;
   },
+  /** Autentificare cu nume de utilizator (ex. „ionut”), fără e-mail. */
+  async byUsername(username: string) {
+    const u = username.trim().toLowerCase();
+    if (!/^[a-z0-9._-]{2,40}$/.test(u)) return null;
+    return (await store.findBy<User>(COLLECTION, "username", u))[0] ?? null;
+  },
   async bySetupToken(token: string) {
     if (!/^[A-Za-z0-9_-]{20,}$/.test(token)) return null;
     return (await store.findBy<User>(COLLECTION, "setupToken", token))[0] ?? null;

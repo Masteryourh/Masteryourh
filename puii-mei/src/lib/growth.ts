@@ -11,8 +11,8 @@ export const GROWTH = {
   penStartWindowDays: 7,
   growthDays: 60,
   indoorDays: 21,
-  /** Pauza după sacrificare (curățenie, pregătirea locului) până la lotul următor. */
-  turnaroundDays: 10,
+  /** Refacerea pășunii și igienizarea după sacrificare, până la lotul următor (decizia fondatorului, 28.11.2026). */
+  turnaroundDays: 14,
 } as const;
 
 export const pensForArea = (m2: number) => Math.max(0, Math.floor(m2 / GROWTH.pastureM2PerPen));

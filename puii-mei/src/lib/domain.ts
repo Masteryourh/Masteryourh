@@ -27,6 +27,8 @@ export interface Farm {
   /** Căi relative din /public. Lipsa fișierului afișează un placeholder. */
   photos: { src: string; alt: string }[];
   veterinaryRegistration: string;
+  /** Comuna (teritoriul managerului local); lipsă = în afara structurii teritoriale. */
+  commune?: string;
 }
 
 /** Etapele prin care trece un lot de producție. */
@@ -162,6 +164,8 @@ export interface Preorder {
   allocation?: { status: "alocata" | "alegere" | "asteapta" | "impartita"; at: string; parts?: string[] };
   /** Pentru o parte dintr-o comandă împărțită: numărul comenzii inițiale. */
   parentNumber?: string;
+  /** Contul de client (opțional) căruia îi aparține comanda. */
+  customerUserId?: string;
 }
 
 export type FeedPaymentStatus = "de-platit" | "declarata" | "primita";
@@ -456,7 +460,8 @@ export interface InterestSignup {
   products: import("./products").UpcomingProductId[];
 }
 
-export type UserRole = "admin" | "gospodar" | "investitor";
+/** `manager-local` = o comună, `manager-zonal` = mai multe comune; `client` = cont opțional, vede comenzile proprii. */
+export type UserRole = "admin" | "gospodar" | "investitor" | "manager-local" | "manager-zonal" | "client";
 export type UserStatus = "invitat" | "activ" | "dezactivat";
 
 /** Cont de utilizator al platformei (curierii nu au cont: primesc acces temporar pe tură). */
@@ -468,6 +473,12 @@ export interface User {
   role: UserRole;
   /** Pentru gospodari: gospodăria administrată. */
   farmSlug?: string;
+  /** Nume de utilizator (autentificare fără e-mail), litere mici. */
+  username?: string;
+  /** Pentru manageri: comunele din grijă (local: una; zonal: mai multe). */
+  communes?: string[];
+  /** Cont demonstrativ (simulare): marcat vizibil în panou. */
+  demo?: boolean;
   status: UserStatus;
   passwordHash?: string;
   /** Crește la schimbarea parolei / dezactivare: invalidează sesiunile vechi. */
