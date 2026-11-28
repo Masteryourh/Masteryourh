@@ -73,7 +73,7 @@ test("managerul local vede doar gospodăriile comunei lui și nu intră în alte
 test("clientul cu cont vede doar comenzile proprii, inclusiv pagina de urmărire", async ({ browser }) => {
   const page = await login(browser, `cli${S}`);
   expect(new URL(page.url()).pathname).toBe("/cont/client");
-  await expect(page.locator(`[data-comanda="PM-MINE-${S}".toUpperCase()]`)).toBeVisible();
+  await expect(page.locator(`[data-comanda="${`PM-MINE-${S}`.toUpperCase()}"]`)).toBeVisible();
   await expect(page.getByText(`PM-OTHER-${S}`.toUpperCase())).toHaveCount(0);
   await page.getByRole("link", { name: "Detalii și urmărire" }).click();
   await expect(page.getByText(`PM-MINE-${S}`.toUpperCase()).first()).toBeVisible();
