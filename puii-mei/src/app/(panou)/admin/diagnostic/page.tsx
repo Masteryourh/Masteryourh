@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { requireUser } from "@/server/session";
 import { measureLatency } from "@/server/diagnostic";
+import { writeCeiling } from "@/lib/db-region";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Diagnostic", robots: { index: false, follow: false } };
@@ -16,7 +17,8 @@ export default async function DiagnosticPage() {
   await requireUser(["admin"], "/admin/diagnostic");
   const m = await measureLatency();
   const p50 = m.rtt.p50;
-  const row = p50 === null ? null : p50 < 1 ? "0 ms" : p50 < 6 ? "2 ms" : "10 ms";
+  const ceiling = p50 === null ? null : writeCeiling(p50);
+  const mismatch = Boolean(m.db?.vercel && m.region && m.db.vercel !== m.region);
   return (
     <Container className="max-w-3xl py-8">
       <h1>Diagnostic tehnic</h1>
@@ -36,10 +38,24 @@ export default async function DiagnosticPage() {
               <div><dt className="text-slate-500">p95</dt><dd className="font-semibold">{ms(m.rtt.p95)}</dd></div>
               <div><dt className="text-slate-500">maxim</dt><dd className="font-semibold">{ms(m.rtt.max)}</dd></div>
             </dl>
-            {row && (
-              <p className="mt-3 text-slate-600">
-                Rândul relevant din benchmark-ul de scriere (C3): <strong>RTT {row}</strong>. Cu lacătul global al auditului,
-                plafonul măsurat acolo e de circa {row === "10 ms" ? "30" : row === "2 ms" ? "120" : "800"} de scrieri pe secundă.
+            {ceiling && (
+              <p className="mt-3 text-slate-600" data-ceiling={ceiling.perSecond}>
+                Benchmark-ul de scriere (C3): {ceiling.measured ? <>rândul <strong>RTT {ceiling.row}</strong>, plafon măsurat</> : <>RTT {ceiling.row} e <strong>peste ce s-a măsurat</strong> (0 / 2 / 10 ms), plafon <strong>estimat</strong></>} de circa{" "}
+                <strong>{ceiling.perSecond} scrieri pe secundă</strong> cu lacătul global al auditului.
+              </p>
+            )}
+          </section>
+          <section className="mt-4 rounded-xl bg-white p-4 text-sm ring-1 ring-slate-200" data-diagnostic="regiuni">
+            <h2 className="text-lg">Unde rulează</h2>
+            <ul className="mt-2 space-y-1">
+              <li>Serverul aplicației (Vercel): <strong>{m.region ?? "necunoscut (local)"}</strong></li>
+              <li>Baza de date: <strong>{m.db ? `${m.db.provider} ${m.db.region}${m.db.city ? ` (${m.db.city})` : ""}` : "necunoscută (nu e Neon)"}</strong></li>
+            </ul>
+            {mismatch && (
+              <p role="alert" className="mt-3 rounded-lg bg-amber-50 p-3 font-medium text-amber-950" data-region-mismatch>
+                Aplicația și baza de date sunt în regiuni diferite, deci fiecare interogare face drumul între ele. Mută funcțiile
+                Vercel în <strong>{m.db!.vercel}</strong> (Vercel → proiect → Settings → Functions → Function Region), apoi
+                Redeploy și deschide din nou această pagină.
               </p>
             )}
           </section>

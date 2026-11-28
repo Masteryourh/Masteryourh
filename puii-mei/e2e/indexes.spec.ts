@@ -43,6 +43,7 @@ test("Admin › Diagnostic tehnic: măsoară latența reală la baza de date", a
   const p50 = Number(await page.locator("[data-rtt-p50]").getAttribute("data-rtt-p50"));
   expect(p50).toBeGreaterThan(0);
   expect(p50).toBeLessThan(1000);
-  await expect(page.getByText("Rândul relevant din benchmark-ul de scriere")).toBeVisible();
+  await expect(page.locator("[data-ceiling]")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Unde rulează" })).toBeVisible();
   await expect(page.getByText("Comandă după număr (index)")).toBeVisible();
 });
