@@ -37,6 +37,9 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
   alternates: { canonical: "/" },
   formatDetection: { telephone: false },
+  // Instalarea pe iPhone („Adaugă pe ecranul principal”): iconița și titlul aplicației.
+  icons: { apple: "/pwa/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Puii mei", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
