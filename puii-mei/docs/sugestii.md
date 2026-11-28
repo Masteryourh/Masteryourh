@@ -136,6 +136,10 @@ _Ultima actualizare: 22 noiembrie 2026_
 - [ ] GDPR: poziții GPS, fotografii, semnături, documente.
 
 ## La lansare
+- [ ] **Șterge „rădăcina temp” a simulării** (28 nov. 2026): `SIMULARE_NEON_HTTP=1 SIMULARE_DATABASE_URL=… node scripts/demo/simulare.mjs --purge`
+      șterge cele 12 gospodării, 196 de comenzi, 20 de conturi demo (parola 0000) și tot ce s-a adăugat peste ele.
+      Copia bazei dinaintea simulării: făcută pe 28.11 (33 documente, 13 evenimente de audit).
+
 
 - [ ] Scoaterea ramei „UNDER CONSTRUCTION” (bandă negru-galben + text transparent): în Vercel `UNDER_CONSTRUCTION=0`,
       apoi Redeploy. Site-ul e live între timp („under construction live”).
