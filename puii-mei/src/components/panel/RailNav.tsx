@@ -6,7 +6,8 @@ import { cn } from "@/lib/cn";
 import type { PanelNavItem } from "./PanelNav";
 
 /** Iconițe pentru bara laterală din dreapta (contur, 24×24). */
-const ICONS: Record<string, string> = {
+export const ICONS: Record<string, string> = {
+  azi: "M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4M12 16a4 4 0 100-8 4 4 0 000 8z",
   comenzi: "M9 4h6a1 1 0 011 1v1H8V5a1 1 0 011-1zM8 5H6a1 1 0 00-1 1v14a1 1 0 001 1h12a1 1 0 001-1V6a1 1 0 00-1-1h-2M9 13l2 2 4-4",
   loturi: "M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8",
   livrari: "M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z",
@@ -23,6 +24,8 @@ const ICONS: Record<string, string> = {
   diagnostic: "M3 12h4l2-6 4 12 2-6h6",
   mesaje: "M4 6h16v12H4zM4 7l8 6 8-6",
   legislatie: "M12 3v18M5 7h14M7 7l-3 7a3 3 0 006 0L7 7zm10 0l-3 7a3 3 0 006 0l-3-7zM8 21h8",
+  securitate: "M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3zM9.5 12l1.8 1.8L15 10",
+  inapoi: "M15 6l-6 6 6 6",
   vedere: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z",
 };
 
