@@ -1,0 +1,51 @@
+# Curăță branch-ul Neon al previzualizării (preview/<git-branch>) imediat ce PR-ul se închide sau e unit.
+# Integrarea gestionată de Vercel l-ar șterge doar când Vercel șterge deploy-ul (implicit după 6 luni), iar planul
+# Neon Free are maximum 10 branch-uri. Recomandat de Neon: https://neon.com/docs/guides/vercel-branch-cleanup
+#
+# Necesită (setate de fondator în GitHub → Settings → Secrets and variables → Actions):
+#   - secretul NEON_API_KEY (cheia API Neon)
+#   - variabila NEON_PROJECT_ID (ID-ul proiectului Neon)
+# Fără ele, jobul se oprește fără eroare. Șterge DOAR branch-ul preview/<branch-ul PR-ului>; niciodată main.
+name: Curățare branch Neon de previzualizare
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-preview-cleanup-${{ github.head_ref }}
+  cancel-in-progress: false
+
+jobs:
+  delete-preview-branch:
+    # Doar PR-uri din acest repository (forks nu primesc secretul) și niciodată pentru branch-uri protejate.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !contains(fromJSON('["main","production","staging","development"]'), github.head_ref)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Verifică configurarea
+        id: cfg
+        env:
+          HAS_KEY: ${{ secrets.NEON_API_KEY != '' }}
+          PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+        run: |
+          if [ "$HAS_KEY" != "true" ] || [ -z "$PROJECT_ID" ]; then
+            echo "NEON_API_KEY sau NEON_PROJECT_ID lipsește: nimic de făcut."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Șterge preview/${{ github.head_ref }}
+        if: steps.cfg.outputs.ready == 'true'
+        # Branch-ul poate lipsi deja (șters de TTL, de alt rulaj sau de Vercel): nu e o eroare.
+        continue-on-error: true
+        uses: neondatabase/delete-branch-action@4468d825d5a88ef4012f1705a82f02ec3072f776 # v3.2.1
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: preview/${{ github.head_ref }}
+          api_key: ${{ secrets.NEON_API_KEY }}

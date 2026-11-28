@@ -23,9 +23,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       home="/admin"
       rail
       items={[
-        { href: "/admin", label: "Precomenzi", exact: true, icon: "comenzi" },
-        { href: "/admin/loturi", label: "Loturi", badge: pendingLots, icon: "loturi" },
-        { href: "/admin/livrari", label: "Livrări live", badge: alerts.filter((a) => a.kind === "prelungire").length, icon: "livrari" },
+        { href: "/admin/azi", label: "Astăzi", icon: "azi", tab: true },
+        { href: "/admin", label: "Precomenzi", exact: true, icon: "comenzi", tab: true, short: "Comenzi" },
+        { href: "/admin/loturi", label: "Loturi", badge: pendingLots, icon: "loturi", tab: true },
+        { href: "/admin/livrari", label: "Livrări live", badge: alerts.filter((a) => a.kind === "prelungire").length, icon: "livrari", tab: true, short: "Livrări" },
         { href: "/admin/monitorizare", label: "Monitorizare creștere", badge: alerts.filter((a) => a.kind === "crestere").length, icon: "crestere" },
         { href: "/admin/calitate", label: "Calitate", icon: "calitate" },
         { href: "/admin/documente", label: "Documente", icon: "documente" },

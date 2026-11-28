@@ -66,6 +66,15 @@ _Ultima actualizare: 22 noiembrie 2026_
       „← Înapoi la <pagina părinte>”.
 - [ ] **Limitele pe IP pentru PIN** (SEC-007, 23 nov. 2026): 30 verificări/oră și 30 cereri/zi pe aceeași adresă IP.
       Clienții din aceeași rețea mobilă pot avea același IP (NAT) – de reevaluat după lansare, din jurnale.
+- [x] **Admin › Astăzi + navigare de telefon ca într-o aplicație** (27 nov. 2026): bara de jos cu 4 taburi + „Meniu”,
+      tabelele late devin carduri pe telefon.
+- [x] **Același stil „Astăzi” pentru gospodar și investitor** (27 nov. 2026): gospodarul are „De făcut azi” (alerte
+      de creștere, livrarea de azi, documente care expiră, jurnalul zilei, avansuri, colete, loturi de aprobat) și bara
+      de jos cu cele 5 secțiuni; investitorul are aceeași navigare.
+- [ ] **Notificare zilnică pentru gospodar din „De făcut azi”** (27 nov. 2026): aceeași listă, trimisă dimineața
+      (SMS / e-mail prin outbox), cu legătura spre panou – pasul spre sarcinile zilnice din planul de scalare.
+- [ ] **Instalare ca aplicație (PWA)** (27 nov. 2026): manifest + iconiță, ca panoul să se deschidă din ecranul
+      telefonului fără bara browserului.
 - [ ] **Română / engleză** – amânat de utilizator (22 nov. 2026); întâi site-ul public, apoi panourile.
 
 ## De configurat (Vercel / servicii)
