@@ -34,9 +34,7 @@ import { GROWTH, pensForArea } from "@/lib/growth";
 import { expiringDocuments, zile } from "@/lib/document-expiry";
 import { documentRepository } from "@/server/repositories/documents";
 import { mfaEnabled } from "@/server/mfa";
-import { growthLogRepository } from "@/server/repositories/growth-log";
-import { growthAlerts } from "@/lib/growth-log";
-import { farmerToday } from "@/lib/farmer-today";
+import { farmerDayItems } from "@/server/farmer-day";
 import { TodayQueue } from "@/components/panel/TodayQueue";
 
 export const dynamic = "force-dynamic";
@@ -82,14 +80,13 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
   const farmPreorders = preorders.filter((p) => p.lotCode && lotCodes.has(p.lotCode) && p.status !== "anulata");
   const zoneName = new Map(zones.map((z) => [z.id, z.name]));
   const activeLots = lots.filter((l) => lotStatus(l) !== "livrat");
-  const [allParcels, allTours, payment, expenses, gov, land, journal] = await Promise.all([
+  const [allParcels, allTours, payment, expenses, gov, land] = await Promise.all([
     parcelRepository.byFarm(farm.slug),
     tourRepository.byFarm(farm.slug),
     farmPaymentRepository.bySlug(farm.slug),
     expenseRepository.byFarm(farm.slug),
     governanceRepository.bySlug(farm.slug),
     landRepository.bySlug(farm.slug),
-    growthLogRepository.byFarm(farm.slug),
   ]);
   const expiring = expiringDocuments(await documentRepository.byFarm(farm.slug), new Date());
   const legalNews = (await legalRepository.list()).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3);
@@ -123,21 +120,8 @@ export default async function FarmerDashboard({ searchParams }: PageProps<"/cont
     .filter((t) => t.status === "planificata" || t.status === "in-curs")
     .sort((a, b) => a.date.localeCompare(b.date))[0];
   // „De făcut azi”: ce cere o acțiune a gospodarului acum, cu legătura spre locul în care se face.
-  const today = farmerToday({
-    base: "/cont/gospodar",
-    q: user.role === "admin" ? `?gospodarie=${farm.slug}` : "",
-    today: todayIso(),
-    growthAlerts: growthAlerts(lots, journal),
-    growing: growing.map((l) => ({ code: l.code, day: Math.max(0, lotDay(l)), days: l.growthDays })),
-    entries: journal,
-    expiring: expiring.map(({ doc, days }) => ({ id: doc.id, title: doc.title, days })),
-    pendingLots: lots.filter((l) => l.approval?.status === "asteapta").map((l) => l.code),
-    advancesDue: farmPreorders.length - feedPaid,
-    hasPayment: Boolean(payment),
-    orders: farmPreorders.length,
-    tours: farmTours.map((t) => ({ id: t.id, code: t.code, date: t.date, status: t.status, parcels: t.parcelIds.length })),
-    readyParcels: readyParcels.length,
-  });
+  const today = await farmerDayItems(farm.slug, { q: user.role === "admin" ? `?gospodarie=${farm.slug}` : "" });
+
   const mapLots = activeLots.filter((l) => !l.approval || l.approval.status !== "respins").slice(0, FARM_SPOTS.length);
 
   return (
