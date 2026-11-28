@@ -229,10 +229,10 @@
   color: var(--pd-text) !important;
   color-scheme: dark;
 }
-[data-theme="dark"] .panou aside { background: rgba(255, 255, 255, 0.03) !important; border-color: var(--pd-line) !important; backdrop-filter: blur(12px); }
-[data-theme="dark"] .panou aside a[aria-current="page"] { background: var(--pd-gold) !important; color: #1b2a1d !important; }
-[data-theme="dark"] .panou aside a:not([aria-current="page"]) { color: var(--pd-muted) !important; }
-[data-theme="dark"] .panou aside a:not([aria-current="page"]):hover { background: var(--pd-glass-2) !important; color: var(--pd-text) !important; }
+[data-theme="dark"] .panou aside:not(.glass) { background: rgba(255, 255, 255, 0.03) !important; border-color: var(--pd-line) !important; backdrop-filter: blur(12px); }
+[data-theme="dark"] .panou aside:not(.glass) a[aria-current="page"] { background: var(--pd-gold) !important; color: #1b2a1d !important; }
+[data-theme="dark"] .panou aside:not(.glass) a:not([aria-current="page"]) { color: var(--pd-muted) !important; }
+[data-theme="dark"] .panou aside:not(.glass) a:not([aria-current="page"]):hover { background: var(--pd-glass-2) !important; color: var(--pd-text) !important; }
 [data-theme="dark"] .panou h1, [data-theme="dark"] .panou h2, [data-theme="dark"] .panou h3 { color: var(--pd-text) !important; font-weight: 500; }
 
 [data-theme="dark"] .panou .bg-white, [data-theme="dark"] .panou .bg-slate-50, [data-theme="dark"] .panou .bg-slate-100, [data-theme="dark"] .panou .bg-cream-100, [data-theme="dark"] .panou .bg-cream-200, [data-theme="dark"] .panou .bg-white\/90 {
@@ -355,4 +355,59 @@ html:has(.panou) body {
   .panou .overflow-x-auto > table tr { padding: 0.75rem 0.25rem; }
   .panou .overflow-x-auto > table tr + tr { border-top: 1px solid var(--pd-line, rgba(0, 0, 0, 0.08)); }
   .panou .overflow-x-auto > table td { display: block; padding: 0.125rem 0.5rem !important; overflow-wrap: anywhere; white-space: normal !important; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Bara „sticlă” din panouri (direcția de design aleasă de fondator,   */
+/* 27.11.2026). Fundal translucid + blur, cu variante opace când       */
+/* browserul nu are blur sau utilizatorul cere transparență redusă.    */
+/* Textul stă pe un fundal de cel puțin 82% opac (contrast WCAG AA).   */
+/* ------------------------------------------------------------------ */
+.panou-rail { --rail-w: 0px; }
+@media (min-width: 640px) {
+  .panou-rail { --rail-w: 5.25rem; }
+  .panou-rail > main { padding-right: var(--rail-w); }
+  /* Extinsă: pe ecrane late împinge conținutul; pe tabletă se suprapune (Esc o restrânge). */
+}
+@media (min-width: 1024px) {
+  .panou-rail:has(aside[data-rail="extinsa"]) { --rail-w: 17.5rem; }
+}
+.panou .glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(250, 244, 233, 0.84));
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 20px 50px -20px rgba(15, 23, 42, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+  color: #0f172a;
+}
+.panou .glass-pill {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 6px 16px -8px rgba(15, 23, 42, 0.35);
+  outline: 1px solid rgba(15, 23, 42, 0.12);
+}
+.panou .glass-field { background: rgba(255, 255, 255, 0.7); outline: 1px solid rgba(15, 23, 42, 0.08); }
+.panou .glass-knob { background: #fff; box-shadow: 0 4px 12px -4px rgba(15, 23, 42, 0.4); outline: 1px solid rgba(15, 23, 42, 0.1); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .panou .glass { background: #fbf7ef; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .panou .glass { background: #fbf7ef; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+[data-theme="dark"] .panou .glass {
+  background: linear-gradient(180deg, rgba(24, 36, 28, 0.9), rgba(16, 25, 19, 0.9));
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: var(--pd-text);
+}
+[data-theme="dark"] .panou .glass .text-slate-900 { color: var(--pd-text) !important; }
+[data-theme="dark"] .panou .glass .text-slate-700,
+[data-theme="dark"] .panou .glass .text-slate-600,
+[data-theme="dark"] .panou .glass .text-slate-500 { color: #c3cfc4 !important; }
+[data-theme="dark"] .panou .glass-pill { background: rgba(255, 255, 255, 0.14); outline-color: rgba(255, 255, 255, 0.22); box-shadow: none; }
+[data-theme="dark"] .panou .glass-field { background: rgba(255, 255, 255, 0.07); outline-color: rgba(255, 255, 255, 0.12); }
+[data-theme="dark"] .panou .glass input { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+[data-theme="dark"] .panou .glass-knob { background: #22332a; color: var(--pd-text); outline-color: rgba(255, 255, 255, 0.15); }
+[data-theme="dark"] .panou .glass a:hover, [data-theme="dark"] .panou .glass button:hover { background-color: rgba(255, 255, 255, 0.08); }
+@media (prefers-reduced-transparency: reduce) {
+  [data-theme="dark"] .panou .glass { background: #16221b; }
 }

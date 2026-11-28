@@ -4,7 +4,7 @@ import type { User } from "@/lib/domain";
 import { roleLabels } from "@/lib/roles";
 import { PanelNav, type PanelNavItem } from "./PanelNav";
 import { PanelCrumbs } from "./PanelCrumbs";
-import { RailNav } from "./RailNav";
+import { GlassRail } from "./GlassRail";
 import { MobileTabBar } from "./MobileTabBar";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
@@ -32,7 +32,7 @@ export function PanelShell({
     return (
       // overflow-x-clip: un tabel lat nu are voie să lărgească pagina (pe telefon ar împinge bara de jos în afara
       // ecranului); conținutul lat se derulează în propriul container. „clip” (nu „hidden”) păstrează antetul sticky.
-      <div className="panou flex min-h-dvh flex-1 flex-col overflow-x-clip bg-slate-100 text-slate-900 sm:pr-16">
+      <div className="panou panou-rail flex min-h-dvh flex-1 flex-col overflow-x-clip bg-slate-100 text-slate-900">
         <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-2.5 print:hidden sm:px-6 lg:px-8">
           <Link href={home} className="min-w-0">
             <span className="block text-sm font-bold">Puii mei</span>
@@ -50,10 +50,8 @@ export function PanelShell({
             </form>
           </div>
         </header>
-        {/* Telefon: bara de jos ca într-o aplicație; de la sm în sus: bara laterală cu iconițe. */}
-        <aside className="fixed top-0 right-0 bottom-0 z-40 hidden w-16 flex-col items-center border-l border-slate-200 bg-slate-50 py-3 print:hidden sm:flex [@media(max-height:760px)]:overflow-y-auto">
-          <RailNav items={items} label={title} />
-        </aside>
+        {/* Telefon: bara de jos ca într-o aplicație; de la sm în sus: bara „sticlă” flotantă (restrânsă / extinsă). */}
+        <GlassRail items={items} label={title} userName={user.name} userRole={roleLabels[user.role]} />
         <main id="continut" className="min-w-0 flex-1 pb-[calc(env(safe-area-inset-bottom)+6rem)] sm:pb-10">
           <Suspense fallback={null}><PanelCrumbs /></Suspense>
           {children}

@@ -15,6 +15,8 @@ export type PanelNavItem = {
   tab?: boolean;
   /** Numele scurt din bara de jos. */
   short?: string;
+  /** Grupul din bara „sticlă” extinsă (ex. „Principal”). */
+  group?: string;
 };
 
 /** Secțiunile panoului: listă verticală pe desktop, bară orizontală pe telefon. */
