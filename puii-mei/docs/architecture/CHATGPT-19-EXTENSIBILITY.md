@@ -1,0 +1,11 @@
+# 19 — EXTENSIBILITY
+Version 0.1 DRAFT — 2026-11-26. Source: founder requirements PR58 §19, PR50, PR62 and PR82 review findings as reported. All target designs PROPUS unless explicitly confirmed. No production changes. Existing code not exhaustively audited for this chapter.
+
+## Core and verticals
+Stable core identity, household/producer, territory, contracts, catalog, orders, obligations, inventory, trace, tasks, compliance, audit and AI policy. Vertical owns production-specific lifecycle, measurements and rules through versioned ProgramDefinition/ProgramVersion. Poultry first; future produce or other livestock not assumed to share bird count, mortality or slaughter. No arbitrary executable expressions in database.
+## Extension contract
+Manifest verticalKey, schemaVersion, capabilities, lifecycle transitions, measurement definitions (unit/dimension/precision), validation rules, event schemas, UI sections, compliance requirement references, pricing/settlement policy references. Register via reviewed code/config; validate compatibility and dependencies. Program version immutable after activation; existing lots retain version, new version applies to new enrollment unless approved migration. Domain ownership unchanged; vertical cannot bypass IAM, audit, compliance or transaction boundaries. Shared commerce supports quantity/unit and conversion evidence, never equates live weight and carcass kg.
+## Example
+Vegetable vertical: sowing/harvest cohorts, kg yield and spoilage, storage/trace transformations; no bird mortality KPI. Uses same producer identity, preorder, obligation, stock and trace contracts. New UI sections capability-driven. New legal rules require specialist validation; no activation by agent. Additive schemas and event versions; consumers tolerate unknown optional fields, breaking changes new major version.
+## Acceptance
+EXT-T01 add synthetic non-poultry vertical without core rewrite; T02 old lot retains version; T03 invalid unit conversion denied; T04 unknown KPI null; T05 tenant isolation; T06 incompatible manifest rejected; T07 rollback disables new enrollments not historical reads; T08 event compatibility; T09 no compliance bypass. Proposed architecture, no implementation.
